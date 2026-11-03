@@ -1,0 +1,2112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fidelização Rede Credenciada - Hapvida NDI - Painel Operacional</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- FIREBASE SDK (COMPAT PARA TEMPO REAL EM MULTI-USUÁRIO) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+  <style>
+    body { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f8fafc; }
+    .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+    .scrollbar-thin::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 9999px; }
+    .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+  </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden text-slate-800 antialiased bg-slate-100">
+
+  <!-- BANNER DE STATUS DO FIREBASE / MULTI-USUÁRIO -->
+  <div id="firebase-status-banner" class="bg-amber-500 text-slate-950 px-4 py-1.5 text-xs font-bold flex items-center justify-between shrink-0 border-b border-amber-600">
+    <div class="flex items-center gap-2">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      <span id="firebase-status-text">Modo Local (Offline): Configure as credenciais do Firebase para sincronizar com as 30 pessoas simultaneamente.</span>
+    </div>
+    <button onclick="abrirConfigFirebase()" class="bg-slate-950 text-white px-2.5 py-0.5 rounded text-[11px] font-extrabold hover:bg-slate-800 transition">
+      ⚙️ Configurar Firebase
+    </button>
+  </div>
+
+  <!-- TOP TEAMS HEADER -->
+  <header class="bg-[#1e1b4b] border-b border-indigo-950 text-white px-5 py-2.5 flex items-center justify-between shadow-xs shrink-0">
+    <div class="flex items-center space-x-3">
+      <div class="bg-white px-2.5 py-1 rounded-xl flex items-center gap-1.5 shadow-xs border border-indigo-200/40">
+        <div class="w-4 h-4 rounded-full bg-gradient-to-tr from-amber-500 to-rose-500 flex items-center justify-center text-[10px] text-white font-black">H</div>
+        <span class="font-extrabold text-xs text-indigo-950 tracking-tight">Hapvida <span class="text-blue-600">NDI</span></span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="font-bold text-sm tracking-tight text-white">Fidelização Rede Credenciada - Hapvida NDI</span>
+        <span id="cloud-sync-badge" class="text-[10px] bg-slate-800 text-slate-300 font-bold px-2 py-0.5 rounded-full border border-slate-700 flex items-center gap-1">
+          <i class="fa-solid fa-cloud text-[9px]"></i> <span id="cloud-sync-label">Local</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- Global Search -->
+    <div class="hidden md:flex items-center w-1/4 max-w-sm">
+      <div class="relative w-full">
+        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-2.5 text-indigo-300 text-xs"></i>
+        <input type="text" id="searchInput" oninput="render()" placeholder="Pesquisar utente, guia, procedimento ou prestador..." 
+          class="w-full pl-9 pr-4 py-1.5 text-xs bg-indigo-950/60 border border-indigo-800/80 rounded-lg text-white placeholder-indigo-300/60 focus:outline-none focus:ring-1 focus:ring-indigo-400">
+      </div>
+    </div>
+
+    <!-- Actions & User Profile & Planilha Upload -->
+    <div class="flex items-center space-x-2">
+      <!-- Botão Subir Planilha do Dia -->
+      <label class="cursor-pointer text-[11px] bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-3 py-1.5 rounded-lg border border-emerald-500 shadow-sm flex items-center gap-1.5 transition active:scale-[0.98]" title="Carregar planilha do dia e enviar para todos">
+        <i class="fa-solid fa-cloud-arrow-up text-xs"></i>
+        <span>Subir Planilha</span>
+        <input type="file" id="inputPlanilhaDia" accept=".xlsx, .xls, .csv" class="hidden" onchange="executarSubirPlanilha(event)">
+      </label>
+
+      <!-- Botão Exportar Planilha Base do Histórico -->
+      <button onclick="verificarSenhaEExecutar('baixar_base')" title="Baixar Planilha Base completa com todo o Histórico acumulado (.xlsx)"
+        class="text-[11px] bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold px-3 py-1.5 rounded-lg border border-amber-400 shadow-sm flex items-center gap-1.5 transition active:scale-[0.98]">
+        <i class="fa-solid fa-download text-xs"></i>
+        <span class="hidden lg:inline">Baixar Base</span>
+      </button>
+
+      <!-- Botão Importar / Sincronizar Base de Histórico -->
+      <label class="cursor-pointer text-[11px] bg-indigo-800 hover:bg-indigo-700 text-indigo-100 font-bold px-2.5 py-1.5 rounded-lg border border-indigo-600 flex items-center gap-1.5 transition" title="Importar/Mesclar uma Planilha Base de Histórico na Nuvem">
+        <i class="fa-solid fa-file-import text-xs text-amber-300"></i>
+        <span class="hidden xl:inline">Restaurar</span>
+        <input type="file" id="inputRestaurarBase" accept=".xlsx, .xls" class="hidden" onchange="verificarSenhaEExecutar('restaurar_base', event)">
+      </label>
+
+      <!-- Limpar esteira do dia -->
+      <button onclick="verificarSenhaEExecutar('limpar_fila')" title="Limpar apenas os casos ativos da esteira na Nuvem" 
+        class="text-[11px] bg-indigo-950/80 hover:bg-rose-900 text-indigo-200 hover:text-white px-2.5 py-1.5 rounded-lg border border-indigo-800/80 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-broom text-[10px]"></i> <span class="hidden sm:inline">Limpar Fila</span>
+      </button>
+
+      <!-- Limpar Todo o Histórico do Cofre -->
+      <button onclick="verificarSenhaEExecutar('limpar_todo_historico')" title="Apaga permanentemente todo o cofre de histórico na Nuvem" 
+        class="text-[11px] bg-rose-700 hover:bg-rose-800 text-white font-extrabold px-2.5 py-1.5 rounded-lg border border-rose-500 flex items-center gap-1.5 transition shadow-sm">
+        <i class="fa-solid fa-triangle-exclamation text-[10px]"></i> <span class="hidden xl:inline">Zerar</span>
+      </button>
+
+      <!-- Operador Ativo Customizável -->
+      <div onclick="trocarOperadorAtivo()" title="Clique para trocar seu nome de operador" class="cursor-pointer text-right pl-2 pr-1 py-1 rounded-lg hover:bg-indigo-900/60 transition">
+        <p id="lblOperadorNome" class="text-xs font-extrabold text-white leading-tight flex items-center justify-end gap-1">
+          Fernando Mena <i class="fa-solid fa-pen text-[9px] text-indigo-300"></i>
+        </p>
+        <p class="text-[10px] text-emerald-400 font-bold flex items-center justify-end gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Operador Ativo
+        </p>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================== -->
+  <!-- TELA 1: ESTEIRA PRINCIPAL (BOARD / GERAL)  -->
+  <!-- ========================================== -->
+  <div id="screen-main" class="flex-1 flex flex-col overflow-hidden">
+    
+    <!-- SUB-BAR: CONTROLES, KPIS E VISTAS -->
+    <div class="bg-white border-b border-slate-200/80 px-5 py-3 flex flex-wrap items-center justify-between gap-4 shrink-0 shadow-xs">
+      <div>
+        <h1 class="text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
+          Esteira Operacional de Fidelização Rede Credenciada
+          <span id="badgeTotalTop" class="text-[11px] font-extrabold text-indigo-600 px-2 py-0.5 bg-indigo-50 rounded-md border border-indigo-200/60">0 Casos na Esteira</span>
+        </h1>
+        <p class="text-xs text-slate-500 mt-0.5">Sincronização <strong>em tempo real na Nuvem</strong> para até 30 pessoas conectadas.</p>
+      </div>
+
+      <!-- FILTRO EXCLUSIVO POR MÉDICO NA PRIMEIRA ESTEIRA -->
+      <div class="flex items-center gap-2 bg-indigo-50/70 border border-indigo-200 px-3 py-1.5 rounded-xl shadow-2xs">
+        <label for="filterMedico" class="text-xs font-bold text-indigo-950 flex items-center gap-1.5 shrink-0">
+          <i class="fa-solid fa-user-doctor text-indigo-600 text-xs"></i> Filtrar Médico:
+        </label>
+        <select id="filterMedico" onchange="render()" 
+          class="bg-white border border-indigo-300 rounded-lg text-xs font-bold text-slate-800 py-1 px-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-2xs">
+          <option value="">Todos os Médicos (Geral)</option>
+        </select>
+        <button id="btnLimparFiltroMed" onclick="limparFiltroMedico()" title="Limpar filtro de médico" class="hidden text-slate-400 hover:text-rose-600 text-xs px-1">
+          <i class="fa-solid fa-circle-xmark"></i>
+        </button>
+      </div>
+
+      <!-- KPI Pills -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <div class="px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col items-center min-w-[65px]">
+          <span id="kpi-total" class="text-xs font-extrabold text-slate-700">0</span>
+          <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Ativas</span>
+        </div>
+        <div class="px-3 py-1.5 rounded-xl bg-rose-50 border border-rose-200/70 flex flex-col items-center min-w-[65px]">
+          <span id="badge-count-critico" class="text-xs font-extrabold text-rose-700">0</span>
+          <span class="text-[10px] font-semibold text-rose-500 uppercase tracking-wider">Crítico (&gt;10d)</span>
+        </div>
+        <div class="px-3 py-1.5 rounded-xl bg-amber-50 border border-amber-200/70 flex flex-col items-center min-w-[65px]">
+          <span id="badge-count-atencao" class="text-xs font-extrabold text-amber-700">0</span>
+          <span class="text-[10px] font-semibold text-amber-600 uppercase tracking-wider">Atenção</span>
+        </div>
+        <div class="px-3 py-1.5 rounded-xl bg-sky-50 border border-sky-200/70 flex flex-col items-center min-w-[65px]">
+          <span id="badge-count-regular" class="text-xs font-extrabold text-sky-700">0</span>
+          <span class="text-[10px] font-semibold text-sky-600 uppercase tracking-wider">Regular</span>
+        </div>
+        <div onclick="setView('historico')" class="cursor-pointer hover:bg-emerald-100/80 transition px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-300 flex flex-col items-center min-w-[85px]" title="Clique para ver o Cofre de Histórico Permanente">
+          <span id="kpi-concluidas" class="text-xs font-extrabold text-emerald-700">0</span>
+          <span class="text-[10px] font-extrabold text-emerald-700 uppercase tracking-wider flex items-center gap-1"><i class="fa-solid fa-lock text-[9px]"></i> Histórico</span>
+        </div>
+      </div>
+
+      <!-- Segmented View Switcher -->
+      <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-semibold">
+        <button onclick="setView('kanban')" id="btn-view-kanban" class="px-3 py-1.5 rounded-lg bg-white text-indigo-700 shadow-xs flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-table-columns text-indigo-600"></i> Kanban
+        </button>
+        <button onclick="setView('lista')" id="btn-view-lista" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-list-ul"></i> Lista
+        </button>
+        <button onclick="setView('fichas')" id="btn-view-fichas" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-address-card"></i> Fichas
+        </button>
+        <button onclick="setView('historico')" id="btn-view-historico" class="px-3 py-1.5 rounded-lg text-emerald-800 hover:text-emerald-950 flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-shield-halved text-emerald-600"></i> Histórico Geral
+        </button>
+      </div>
+    </div>
+
+    <!-- MAIN VIEWS CONTAINER -->
+    <main class="flex-1 overflow-auto p-4 scrollbar-thin">
+      
+      <!-- 1. KANBAN VIEW -->
+      <div id="view-kanban" class="grid grid-cols-1 md:grid-cols-3 gap-4 h-full min-h-[550px]">
+        <div class="bg-rose-50/40 border border-rose-200/70 rounded-2xl flex flex-col overflow-hidden shadow-xs">
+          <div class="bg-white/80 backdrop-blur-xs border-b border-rose-200/60 px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-rose-500 ring-4 ring-rose-100"></span>
+              <span class="text-xs font-bold text-rose-900">Prazo Crítico (&gt;10 dias)</span>
+            </div>
+            <span id="col-count-critico" class="text-[11px] bg-rose-100 text-rose-700 font-extrabold px-2 py-0.5 rounded-md">0</span>
+          </div>
+          <div id="col-critico" class="p-3 flex-1 overflow-y-auto space-y-2.5 scrollbar-thin"></div>
+        </div>
+
+        <div class="bg-amber-50/40 border border-amber-200/70 rounded-2xl flex flex-col overflow-hidden shadow-xs">
+          <div class="bg-white/80 backdrop-blur-xs border-b border-amber-200/60 px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-500 ring-4 ring-amber-100"></span>
+              <span class="text-xs font-bold text-amber-900">Em Atenção (7 a 10 dias)</span>
+            </div>
+            <span id="col-count-atencao" class="text-[11px] bg-amber-100 text-amber-800 font-extrabold px-2 py-0.5 rounded-md">0</span>
+          </div>
+          <div id="col-atencao" class="p-3 flex-1 overflow-y-auto space-y-2.5 scrollbar-thin"></div>
+        </div>
+
+        <div class="bg-emerald-50/30 border border-emerald-200/70 rounded-2xl flex flex-col overflow-hidden shadow-xs">
+          <div class="bg-white/80 backdrop-blur-xs border-b border-emerald-200/60 px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-4 ring-emerald-100"></span>
+              <span class="text-xs font-bold text-emerald-900">Regular (&le;6 dias)</span>
+            </div>
+            <span id="col-count-regular" class="text-[11px] bg-emerald-100 text-emerald-800 font-extrabold px-2 py-0.5 rounded-md">0</span>
+          </div>
+          <div id="col-regular" class="p-3 flex-1 overflow-y-auto space-y-2.5 scrollbar-thin"></div>
+        </div>
+      </div>
+
+      <!-- 2. LIST VIEW -->
+      <div id="view-lista" class="hidden bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="bg-slate-50 text-slate-500 uppercase tracking-wider font-bold border-b border-slate-200/80 text-[11px]">
+              <th class="py-3 px-4">Cód. Utente</th>
+              <th class="py-3 px-4">Beneficiário</th>
+              <th class="py-3 px-4">Procedimento / TUSS</th>
+              <th class="py-3 px-4">Prestador Solicitante</th>
+              <th class="py-3 px-4 text-center">Prazo Decorrido</th>
+              <th class="py-3 px-4 text-right">Ação</th>
+            </tr>
+          </thead>
+          <tbody id="lista-tbody" class="divide-y divide-slate-100 text-slate-700"></tbody>
+        </table>
+      </div>
+
+      <!-- 3. FICHAS VIEW -->
+      <div id="view-fichas" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5"></div>
+
+      <!-- 4. HISTÓRICO BLINDADO VIEW -->
+      <div id="view-historico" class="hidden space-y-4">
+        <div class="bg-gradient-to-r from-emerald-950 via-teal-900 to-indigo-950 text-white p-4 rounded-2xl shadow-xs flex flex-wrap items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-300 text-lg">
+              <i class="fa-solid fa-vault"></i>
+            </div>
+            <div>
+              <h2 class="text-sm font-extrabold flex items-center gap-2">
+                Cofre de Histórico Permanente na Nuvem
+                <span class="text-[10px] bg-emerald-500 text-slate-950 font-black px-2 py-0.5 rounded-full uppercase">Protegido &amp; Compartilhado</span>
+              </h2>
+              <p class="text-xs text-emerald-200/90 mt-0.5">Todos os casos trabalhados, pareceres, pacotes e finalizações compartilhados entre a equipe.</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="verificarSenhaEExecutar('baixar_base')" class="bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs px-4 py-2 rounded-xl flex items-center gap-2 shadow-sm transition">
+              <i class="fa-solid fa-file-excel"></i> Exportar Planilha Base (.xlsx)
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-slate-50 text-slate-500 uppercase tracking-wider font-bold border-b border-slate-200/80 text-[11px]">
+                <th class="py-3 px-4">Status no Cofre</th>
+                <th class="py-3 px-4">Cód. Utente</th>
+                <th class="py-3 px-4">Beneficiário</th>
+                <th class="py-3 px-4">Procedimento</th>
+                <th class="py-3 px-4">Equipe / Orçamento</th>
+                <th class="py-3 px-4">Último Desfecho / Parecer</th>
+                <th class="py-3 px-4 text-right">Consulta</th>
+              </tr>
+            </thead>
+            <tbody id="historico-tbody" class="divide-y divide-slate-100 text-slate-700"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- TELA 2: TELA DEDICADA EXCLUSIVA DO CASO                  -->
+  <!-- ======================================================== -->
+  <div id="screen-case-detail" class="hidden flex-1 flex flex-col overflow-hidden bg-slate-100">
+    <div class="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between shadow-xs shrink-0">
+      <div class="flex items-center gap-3">
+        <button onclick="closeCaseDetail()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3.5 py-2 rounded-xl flex items-center gap-2 transition border border-slate-200">
+          <i class="fa-solid fa-arrow-left"></i> Voltar à Esteira
+        </button>
+        <div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <h2 id="singleDetailCode" class="text-sm font-extrabold text-slate-900 tracking-tight">-</h2>
+            <span id="singleDetailSLA" class="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-700">0 dias</span>
+            <span id="singleDetailTipoPendencia" class="text-[10.5px] font-extrabold px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-800 border border-purple-300 flex items-center gap-1">
+              <i class="fa-solid fa-hashtag text-[9.5px]"></i> <span id="labelTipoPendencia">-</span>
+            </span>
+            <span id="singleDetailBaseTopBadge" class="text-[10.5px] font-extrabold px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-800 border border-sky-300 flex items-center gap-1">
+              <i class="fa-solid fa-map-pin text-[9.5px]"></i> <span id="labelBaseTop">-</span>
+            </span>
+          </div>
+          <p id="singleDetailBeneficiaryHeader" class="text-xs text-slate-500 font-medium">-</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button onclick="copiarFichaCasoAtual()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold text-xs px-3.5 py-2 rounded-xl flex items-center gap-2 transition shadow-xs">
+          <i class="fa-solid fa-copy text-indigo-600"></i> Copiar Ficha para Teams / WhatsApp
+        </button>
+      </div>
+    </div>
+
+    <!-- DEDICATED MAIN 2-COLUMN VIEW -->
+    <div class="flex-1 overflow-auto p-6 scrollbar-thin">
+      <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <!-- LEFT COLUMN -->
+        <div class="lg:col-span-7 bg-white rounded-2xl border border-slate-200/90 p-6 shadow-xs space-y-5">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+              <i class="fa-solid fa-file-invoice-dollar text-indigo-600"></i> Informações Cadastrais da Guia
+            </h3>
+            <span class="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200 flex items-center gap-1">
+              <i class="fa-solid fa-cloud-arrow-up text-[10px]"></i> Sincronizado na Nuvem
+            </span>
+          </div>
+
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Beneficiário</span>
+                <p id="singleDetailName" class="text-sm font-bold text-slate-900 mt-0.5">-</p>
+              </div>
+              <span id="singleDetailBaseBadge" class="text-xs font-extrabold px-3 py-1 rounded-lg bg-indigo-100 text-indigo-800 border border-indigo-200 flex items-center gap-1.5 shadow-2xs">
+                <i class="fa-solid fa-map-location-dot text-indigo-600"></i> <span id="labelBaseCard">-</span>
+              </span>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3 pt-3 border-t border-slate-200/60 text-xs">
+              <div>
+                <span class="text-[10px] font-bold uppercase text-slate-400">Código Utente / Carteira</span>
+                <p id="singleDetailUserCode" class="font-mono font-bold text-indigo-700 mt-0.5">-</p>
+              </div>
+              <div>
+                <span class="text-[10px] font-bold uppercase text-slate-400">Plano / Contrato</span>
+                <p id="singleDetailPlan" class="font-semibold text-slate-700 mt-0.5">-</p>
+              </div>
+              <div>
+                <span class="text-[10px] font-bold uppercase text-slate-400">Base da Operadora</span>
+                <p id="singleDetailBaseText" class="font-extrabold text-indigo-900 mt-0.5 flex items-center gap-1">
+                  <i class="fa-solid fa-building-shield text-indigo-500 text-[11px]"></i> <span id="labelBaseText">-</span>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
+              <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Procedimento Cirúrgico</span>
+              <p id="singleDetailProcedure" class="text-xs font-bold text-slate-800 mt-1 leading-snug">-</p>
+              <p id="singleDetailTUSS" class="text-[11px] font-mono text-slate-500 mt-1">Cód. TUSS: -</p>
+            </div>
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80 space-y-2">
+              <div>
+                <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Prestador Solicitante</span>
+                <p id="singleDetailProvider" class="text-xs font-bold text-slate-800 mt-0.5 leading-snug">-</p>
+                <p id="singleDetailCity" class="text-[11px] text-slate-500 mt-0.5"><i class="fa-solid fa-location-dot text-rose-500"></i> -</p>
+              </div>
+              <div class="pt-2 border-t border-slate-200/60">
+                <span class="text-[10px] font-extrabold uppercase text-indigo-900 tracking-wider flex items-center gap-1">
+                  <i class="fa-solid fa-user-pen text-indigo-600"></i> Nome do Solicitante:
+                </span>
+                <p id="singleDetailSolicitante" class="text-xs font-extrabold text-slate-900 mt-0.5">-</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- ORÇAMENTO & PACOTE -->
+          <div class="bg-gradient-to-br from-indigo-50/70 via-slate-50 to-violet-50/70 p-4.5 rounded-2xl border-2 border-indigo-200/90 shadow-2xs space-y-3.5">
+            <div class="flex items-center justify-between border-b border-indigo-100/80 pb-2.5">
+              <span class="text-[11px] font-extrabold uppercase text-indigo-950 tracking-wider flex items-center gap-2">
+                <i class="fa-solid fa-coins text-indigo-600"></i> Orçamento &amp; Pacote Negociado
+              </span>
+              <span class="text-[9.5px] font-extrabold text-indigo-700 bg-white px-2.5 py-0.5 rounded-md border border-indigo-200 shadow-2xs">
+                Fidelização de Custos
+              </span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+              <div class="sm:col-span-6">
+                <label for="editCaseStatusOrcamento" class="text-[10px] font-extrabold uppercase text-slate-600 tracking-wider block mb-1.5">Status Orçamento:</label>
+                <select id="editCaseStatusOrcamento" onchange="autoSalvarProfissionais()" class="w-full bg-white font-bold text-slate-800 text-xs px-3 py-2.5 rounded-xl border border-slate-300">
+                  <option value="">Selecione o status...</option>
+                  <option value="SEM OPME">SEM OPME</option>
+                  <option value="COM OPME, SEM ORÇAM.">COM OPME, SEM ORÇAM.</option>
+                  <option value="COM OPME, LECOM ABERTO">COM OPME, LECOM ABERTO</option>
+                  <option value="ORÇAMENTO LECOM">ORÇAMENTO LECOM</option>
+                  <option value="ORÇAMENTO SIGO">ORÇAMENTO SIGO</option>
+                  <option value="MEDICAMENTO">MEDICAMENTO</option>
+                  <option value="PACOTE (SEM ORÇAM.)">PACOTE (SEM ORÇAM.)</option>
+                  <option value="A INICAR">A INICAR</option>
+                </select>
+              </div>
+              <div class="sm:col-span-3">
+                <label for="editCaseValorInicial" class="text-[10px] font-extrabold uppercase text-slate-600 tracking-wider block mb-1.5">Valor Inicial:</label>
+                <input type="text" id="editCaseValorInicial" oninput="autoSalvarProfissionais()" placeholder="Ex: R$ 8.500,00" class="w-full bg-white font-bold text-slate-800 text-xs px-3 py-2.5 rounded-xl border border-slate-300">
+              </div>
+              <div class="sm:col-span-3">
+                <label for="editCaseValorPacote" class="text-[10px] font-extrabold uppercase text-emerald-800 tracking-wider block mb-1.5">Valor Pacote:</label>
+                <input type="text" id="editCaseValorPacote" oninput="autoSalvarProfissionais()" placeholder="Ex: R$ 2.900,00" class="w-full bg-white font-extrabold text-emerald-700 text-xs px-3 py-2.5 rounded-xl border-2 border-emerald-400">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end pt-1">
+              <div class="sm:col-span-7">
+                <label for="editCaseQualPacote" class="text-[10px] font-extrabold uppercase text-slate-600 tracking-wider block mb-1.5">Qual Pacote:</label>
+                <input type="text" id="editCaseQualPacote" oninput="autoSalvarProfissionais()" placeholder="Ex: 98307333 - Pacote Infiltração" class="w-full bg-white font-bold text-slate-800 text-xs px-3 py-2.5 rounded-xl border border-slate-300">
+              </div>
+              <div class="sm:col-span-5">
+                <label for="editCasePrestadorPacote" class="text-[10px] font-extrabold uppercase text-slate-600 tracking-wider block mb-1.5">Prestador Pacote:</label>
+                <input type="text" id="editCasePrestadorPacote" oninput="autoSalvarProfissionais()" placeholder="Ex: Hospital Albert Sabin" class="w-full bg-white font-bold text-slate-800 text-xs px-3 py-2.5 rounded-xl border border-slate-300">
+              </div>
+            </div>
+          </div>
+
+          <!-- EQUIPA DESIGNADA -->
+          <div class="pt-3 border-t border-slate-200 text-xs space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-[10.5px] font-extrabold uppercase text-indigo-950 tracking-wider flex items-center gap-1.5">
+                <i class="fa-solid fa-users-gear text-indigo-600 text-xs"></i> EQUIPA DESIGNADA &amp; CORPO DELIBERATIVO:
+              </span>
+            </div>
+
+            <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-indigo-900 text-white p-3.5 rounded-xl border border-indigo-900/80 flex items-center justify-between flex-wrap gap-2">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-indigo-600/60 border border-indigo-400/30 flex items-center justify-center text-indigo-200 text-base shrink-0 shadow-inner">
+                  <i class="fa-solid fa-user-doctor"></i>
+                </div>
+                <div>
+                  <span class="text-[10px] font-extrabold uppercase text-indigo-300 tracking-wider">Médico Responsável</span>
+                  <p id="singleDetailMedResponsavel" class="text-sm font-extrabold text-white mt-0.5">-</p>
+                </div>
+              </div>
+              <div class="text-right">
+                <span class="text-[10px] text-indigo-300/80 font-medium block">Base / Regional:</span>
+                <span id="singleDetailBase" class="text-xs font-bold text-indigo-100 block">-</span>
+              </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <!-- Consultor -->
+              <div class="p-3 rounded-xl bg-violet-50/80 border-2 border-violet-200 shadow-2xs space-y-2">
+                <label class="text-[10px] font-extrabold text-violet-950 block">Médico Consultor</label>
+                <select id="editCaseMedConsultor" onchange="autoSalvarProfissionais()" class="w-full bg-white font-bold text-slate-900 text-xs px-2 py-1.5 rounded-lg border border-violet-300">
+                  <option value="">Selecione...</option>
+                  <option value="Rodrigo R.">Rodrigo R.</option>
+                  <option value="Marco G.">Marco G.</option>
+                  <option value="Fernanda">Fernanda</option>
+                  <option value="Luiz F.">Luiz F.</option>
+                  <option value="Diego Bernardes">Diego Bernardes</option>
+                  <option value="Murilo Fernandes">Murilo Fernandes</option>
+                  <option value="Lorena Santana">Lorena Santana</option>
+                  <option value="Rubens Augusto">Rubens Augusto</option>
+                  <option value="Ederson">Ederson</option>
+                  <option value="Diego">Diego</option>
+                </select>
+                <label class="text-[9.5px] font-bold text-violet-900 block mt-1">Observação:</label>
+                <textarea id="editCaseObsMedConsultor" onchange="autoSalvarProfissionais()" rows="3" placeholder="Observações do Médico Consultor..." class="w-full text-xs p-2 rounded-lg border border-violet-300 bg-white focus:outline-none focus:ring-1 focus:ring-violet-400"></textarea>
+              </div>
+
+              <!-- Enfermagem -->
+              <div class="p-3 rounded-xl bg-sky-50/80 border-2 border-sky-200 shadow-2xs space-y-2">
+                <label class="text-[10px] font-extrabold text-sky-950 block">Enfermagem</label>
+                <select id="editCaseEnf" onchange="autoSalvarProfissionais()" class="w-full bg-white font-bold text-slate-900 text-xs px-2 py-1.5 rounded-lg border border-sky-300">
+                  <option value="">Selecione...</option>
+                  <option value="Enf. Valéria">Enf. Valéria</option>
+                  <option value="Enf. Gilsa">Enf. Gilsa</option>
+                  <option value="Enf. Natalia">Enf. Natalia</option>
+                  <option value="Enf. Fatima">Enf. Fatima</option>
+                  <option value="Enf. Gabrielly">Enf. Gabrielly</option>
+                  <option value="Enf. Nice">Enf. Nice</option>
+                  <option value="Enf. Jaqueline">Enf. Jaqueline</option>
+                </select>
+                <label class="text-[9.5px] font-bold text-sky-900 block mt-1">Observação:</label>
+                <textarea id="editCaseObsEnf" onchange="autoSalvarProfissionais()" rows="3" placeholder="Observações da Enfermagem..." class="w-full text-xs p-2 rounded-lg border border-sky-300 bg-white focus:outline-none focus:ring-1 focus:ring-sky-400"></textarea>
+              </div>
+
+              <!-- ADM -->
+              <div class="p-3 rounded-xl bg-slate-100 border-2 border-slate-300 shadow-2xs space-y-2">
+                <label class="text-[10px] font-extrabold text-slate-900 block">ADM</label>
+                <select id="editCaseAdm" onchange="autoSalvarProfissionais()" class="w-full bg-white font-bold text-slate-900 text-xs px-2 py-1.5 rounded-lg border border-slate-300">
+                  <option value="">Selecione...</option>
+                  <option value="Ana (Chris)">Ana (Chris)</option>
+                  <option value="Luciene">Luciene</option>
+                  <option value="Vivi">Vivi</option>
+                  <option value="Jose">Jose</option>
+                  <option value="William">William</option>
+                  <option value="Henrique">Henrique</option>
+                  <option value="Vitor Hugo">Vitor Hugo</option>
+                </select>
+                <label class="text-[9.5px] font-bold text-slate-700 block mt-1">Observação:</label>
+                <textarea id="editCaseObsAdm" onchange="autoSalvarProfissionais()" rows="3" placeholder="Observações do ADM..." class="w-full text-xs p-2 rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-1 focus:ring-slate-400"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT COLUMN -->
+        <div class="lg:col-span-5 space-y-5">
+          <div class="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-3">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+              <h3 class="text-xs font-extrabold uppercase tracking-wider text-indigo-900 flex items-center gap-2">
+                <i class="fa-solid fa-comment-medical text-indigo-600"></i> Registrar Andamento no Histórico
+              </h3>
+              <span class="text-[10px] font-bold text-slate-400">Gravado em Nuvem</span>
+            </div>
+            <div class="flex gap-2">
+              <input type="text" id="inputAndamentoRapido" placeholder="Digite uma evolução/observação permanente..." class="flex-1 p-2.5 text-xs bg-slate-50 border border-slate-300 rounded-xl">
+              <button onclick="registrarAndamentoImutavel()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition shrink-0">
+                + Gravar
+              </button>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-3.5">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+              <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-800 flex items-center gap-2">
+                <i class="fa-solid fa-clipboard-check text-emerald-600"></i> Parecer &amp; Desfecho Final
+              </h3>
+            </div>
+
+            <div class="space-y-2.5">
+              <div>
+                <label class="block text-[11px] font-bold text-slate-700 mb-1">1. Macro-desfecho:</label>
+                <select id="singleSelectMacroDesfecho" onchange="atualizarSubmotivosDesfecho()" class="w-full p-2.5 text-xs bg-slate-50 border border-slate-300 rounded-xl font-bold text-slate-800">
+                  <option value="">-- Selecione o Macro-desfecho --</option>
+                  <option value="Consenso integral">✔ Consenso integral</option>
+                  <option value="Consenso parcial">⚡ Consenso parcial</option>
+                  <option value="Ausência completa de consenso">✖ Ausência completa de consenso</option>
+                  <option value="Acolhimento">🤝 Acolhimento</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-[11px] font-bold text-slate-700 mb-1">2. Submotivo do Desfecho:</label>
+                <select id="singleSelectDesfecho" disabled class="w-full p-2.5 text-xs bg-slate-100 border border-slate-200 rounded-xl font-semibold text-slate-500">
+                  <option value="">-- Selecione primeiro o Macro-desfecho --</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-bold text-slate-700 mb-1">Finalização - SIGO:</label>
+              <textarea id="singleInputNota" rows="3" placeholder="Insira aqui as informações finais..." class="w-full p-3 text-xs bg-slate-50 border border-slate-300 rounded-xl"></textarea>
+            </div>
+
+            <div class="pt-1">
+              <button onclick="singleConcluirCasoOK()" class="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-sm transition">
+                <i class="fa-solid fa-check-double text-sm"></i> Finalizar Guia (Arquivar no Cofre)
+              </button>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-3">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+              <h3 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                <i class="fa-solid fa-shield-halved text-emerald-600"></i> Linha do Tempo Blindada
+              </h3>
+              <span id="singleTimelineCount" class="text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">0 registos</span>
+            </div>
+            <div id="singleTimelineContainer" class="space-y-3 relative border-l-2 border-slate-200 ml-2.5 pl-3.5 max-h-72 overflow-y-auto scrollbar-thin">
+              <p class="text-slate-400 italic text-[11px]">Nenhuma observação registrada.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL IDENTIFICAÇÃO DE USUÁRIO / OPERADOR -->
+  <div id="modal-operador" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+      <div class="text-center space-y-1.5">
+        <div class="w-14 h-14 mx-auto rounded-2xl bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-600 text-2xl shadow-inner">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <h2 class="text-base font-extrabold text-slate-900 tracking-tight">Login de Acesso</h2>
+        <p class="text-xs text-slate-500">Selecione seu nome e digite a senha para acessar a esteira:</p>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label for="selectOperadorModal" class="text-xs font-extrabold text-slate-700 block mb-1">Selecione seu nome:</label>
+          <div class="relative">
+            <select id="selectOperadorModal" class="w-full bg-slate-50 border-2 border-indigo-200 rounded-xl text-xs font-extrabold text-slate-800 p-3 appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer">
+              <!-- Preenchido dinamicamente via JS -->
+            </select>
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-indigo-600">
+              <i class="fa-solid fa-chevron-down text-xs"></i>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label for="inputSenhaLogin" class="text-xs font-extrabold text-slate-700 block mb-1">Senha de Acesso:</label>
+          <div class="relative">
+            <input type="password" id="inputSenhaLogin" onkeydown="if(event.key==='Enter') confirmarOperadorSelecionado()" placeholder="Digite a senha..." class="w-full bg-slate-50 border-2 border-indigo-200 rounded-xl text-xs font-bold text-slate-800 p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+            <button type="button" onclick="alternarVisibilidadeSenha()" class="absolute inset-y-0 right-0 flex items-center px-3.5 text-slate-400 hover:text-indigo-600 transition">
+              <i id="iconeOlhoSenha" class="fa-solid fa-eye text-xs"></i>
+            </button>
+          </div>
+          <p id="msgErroLogin" class="hidden text-[11px] text-rose-600 font-extrabold mt-1.5 flex items-center gap-1">
+            <i class="fa-solid fa-circle-exclamation"></i> Senha incorreta! Tente novamente.
+          </p>
+        </div>
+      </div>
+
+      <div class="pt-2">
+        <button onclick="confirmarOperadorSelecionado()" class="w-full py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-md transition active:scale-[0.98]">
+          <i class="fa-solid fa-lock-open text-xs"></i> Entrar no Painel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CONFIGURAÇÃO FIREBASE -->
+  <div id="modal-firebase" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-cloud text-amber-500 text-lg"></i>
+          <h2 class="text-sm font-extrabold text-slate-900">Conectar com Firebase Firestore</h2>
+        </div>
+        <button onclick="fecharConfigFirebase()" class="text-slate-400 hover:text-slate-700 text-sm">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <p class="text-xs text-slate-600 leading-relaxed">
+        Cole abaixo o objeto <code>firebaseConfig</code> do seu projeto no console do Firebase (<a href="https://console.firebase.google.com" target="_blank" class="text-indigo-600 underline font-semibold">console.firebase.google.com</a>) para que os 30 computadores compartilhem o mesmo painel em tempo real:
+      </p>
+
+      <textarea id="inputFirebaseConfigJson" rows="8" placeholder='{
+  "apiKey": "AIzaSy...",
+  "authDomain": "seu-projeto.firebaseapp.com",
+  "projectId": "seu-projeto",
+  "storageBucket": "seu-projeto.appspot.com",
+  "messagingSenderId": "...",
+  "appId": "..."
+}' class="w-full text-xs font-mono p-3 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+
+      <div class="flex items-center justify-between pt-2">
+        <button onclick="limparCredenciaisFirebase()" class="text-xs text-rose-600 hover:text-rose-800 font-bold">
+          Voltar ao Modo Local
+        </button>
+        <div class="flex gap-2">
+          <button onclick="fecharConfigFirebase()" class="px-4 py-2 text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition">
+            Cancelar
+          </button>
+          <button onclick="salvarConfigFirebase()" class="px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition shadow-xs">
+            Salvar e Conectar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ==========================================
+    // CONTROLE DE OPERADOR & SENHA MESTRE
+    // ==========================================
+    const SENHA_MESTRE = 'hapvida2026';
+
+    // Lista exclusiva de usuários sem repetição
+    const LISTA_OPERADORES_UNICA = [
+      "Fernando Mena",
+      "Rodrigo R.",
+      "Fernanda",
+      "Luiz F.",
+      "Diego Bernardes",
+      "João Henrique",
+      "Murilo Fernandes",
+      "Lorena Santana",
+      "Marcela Gutierre",
+      "Mauricio Guimarães",
+      "Ederson",
+      "Diego",
+      "Tania",
+      "Paula Pertsew",
+      "Enf. Gilsa",
+      "Enf. Natalia",
+      "Larissa",
+      "Amanda",
+      "Enf. Fatima",
+      "Enf. Gabrielly",
+      "Enf. Valéria",
+      "Enf. Nice",
+      "Enf. Maurício",
+      "Enf. Jaqueline",
+      "Ana (Chris)",
+      "Luciene",
+      "Vivi",
+      "Jose",
+      "William",
+      "Henrique",
+      "Vitor Hugo"
+    ];
+
+    let operadorAtual = localStorage.getItem('hapvida_operador_ativo') || '';
+
+    const SENHA_ACESSO_SISTEMA = 'fidelizacao';
+
+    function popularSelectOperadores() {
+      const select = document.getElementById('selectOperadorModal');
+      if (!select) return;
+      select.innerHTML = '<option value="">-- Selecione seu nome na lista suspensa --</option>' +
+        LISTA_OPERADORES_UNICA.map(op => `<option value="${op}" ${op === operadorAtual ? 'selected' : ''}>${op}</option>`).join('');
+    }
+
+    function alternarVisibilidadeSenha() {
+      const input = document.getElementById('inputSenhaLogin');
+      const icone = document.getElementById('iconeOlhoSenha');
+      if (!input || !icone) return;
+      if (input.type === 'password') {
+        input.type = 'text';
+        icone.classList.remove('fa-eye');
+        icone.classList.add('fa-eye-slash');
+      } else {
+        input.type = 'password';
+        icone.classList.remove('fa-eye-slash');
+        icone.classList.add('fa-eye');
+      }
+    }
+
+    function abrirModalOperador() {
+      popularSelectOperadores();
+      const inputSenha = document.getElementById('inputSenhaLogin');
+      const msgErro = document.getElementById('msgErroLogin');
+      if (inputSenha) {
+        inputSenha.value = '';
+        inputSenha.classList.remove('border-rose-400', 'bg-rose-50');
+        inputSenha.classList.add('border-indigo-200');
+      }
+      if (msgErro) msgErro.classList.add('hidden');
+
+      const modal = document.getElementById('modal-operador');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        setTimeout(() => {
+          if (inputSenha) inputSenha.focus();
+        }, 150);
+      }
+    }
+
+    function fecharModalOperador() {
+      const modal = document.getElementById('modal-operador');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    function confirmarOperadorSelecionado() {
+      const select = document.getElementById('selectOperadorModal');
+      const inputSenha = document.getElementById('inputSenhaLogin');
+      const msgErro = document.getElementById('msgErroLogin');
+
+      const escolhido = select ? select.value : '';
+      const senhaDigitada = inputSenha ? inputSenha.value.trim() : '';
+
+      if (!escolhido) {
+        alert('Por favor, selecione seu nome na lista para acessar o painel.');
+        return;
+      }
+
+      if (senhaDigitada !== SENHA_ACESSO_SISTEMA) {
+        if (msgErro) msgErro.classList.remove('hidden');
+        if (inputSenha) {
+          inputSenha.classList.remove('border-indigo-200');
+          inputSenha.classList.add('border-rose-400', 'bg-rose-50');
+          inputSenha.focus();
+        }
+        return;
+      }
+
+      if (msgErro) msgErro.classList.add('hidden');
+      operadorAtual = escolhido;
+      localStorage.setItem('hapvida_operador_ativo', operadorAtual);
+      sessionStorage.setItem('hapvida_sessao_autenticada', 'true');
+      atualizarLabelOperador();
+      fecharModalOperador();
+    }
+
+    function trocarOperadorAtivo() {
+      abrirModalOperador();
+    }
+
+    function atualizarLabelOperador() {
+      const lbl = document.getElementById('lblOperadorNome');
+      if (lbl) {
+        const nomeExibido = operadorAtual || 'Selecionar Operador';
+        lbl.innerHTML = `${nomeExibido} <i class="fa-solid fa-pen text-[9px] text-indigo-300"></i>`;
+      }
+    }
+
+    // ==========================================
+    // CONFIGURAÇÃO DO FIREBASE (EM NUVEM)
+    // ==========================================
+    // 💡 DICA: Você também pode colar seu objeto de configuração direto aqui dentro da variável DEFAULT_FIREBASE_CONFIG
+    // para que já venha configurado automaticamente para todas as 30 pessoas que abrirem o link!
+    const DEFAULT_FIREBASE_CONFIG = {
+      apiKey: "AIzaSyBa7gV76Iv7hhtjZ8sbXSmHWusIbDovatw",
+      authDomain: "fidelizacao-hapvida.firebaseapp.com",
+      projectId: "fidelizacao-hapvida",
+      storageBucket: "fidelizacao-hapvida.firebasestorage.app",
+      messagingSenderId: "845593683861",
+      appId: "1:845593683861:web:51184b2e92b87e6ce8389c",
+      measurementId: "G-40N1M0ND2C"
+    };
+
+    let db = null;
+    let isCloudConnected = false;
+
+    const STORAGE_KEY = 'hapvida_fidelizacao_ativa_v4';
+    const HISTORY_KEY = 'hapvida_fidelizacao_hist_v4';
+    const VAULT_CASES_KEY = 'hapvida_fidelizacao_vault_cases_v4';
+    const FIREBASE_CONFIG_KEY = 'hapvida_firebase_config_v1';
+
+    let activeCases = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    let historyLog = JSON.parse(localStorage.getItem(HISTORY_KEY)) || {};
+    let vaultCases = JSON.parse(localStorage.getItem(VAULT_CASES_KEY)) || {};
+    let currentCase = null;
+    let currentView = 'kanban';
+
+    function initFirebase() {
+      const savedConfig = localStorage.getItem(FIREBASE_CONFIG_KEY);
+      let config = DEFAULT_FIREBASE_CONFIG;
+      if (savedConfig) {
+        try { config = JSON.parse(savedConfig); } catch (e) { console.error('Erro config salva:', e); }
+      }
+
+      const banner = document.getElementById('firebase-status-banner');
+      const badge = document.getElementById('cloud-sync-badge');
+      const label = document.getElementById('cloud-sync-label');
+
+      if (!config || !config.projectId || config.apiKey === 'SUA_API_KEY_AQUI') {
+        isCloudConnected = false;
+        if (banner) banner.classList.remove('hidden');
+        if (badge) badge.className = 'text-[10px] bg-slate-800 text-slate-300 font-bold px-2 py-0.5 rounded-full border border-slate-700 flex items-center gap-1';
+        if (label) label.innerText = 'Local (Offline)';
+        return;
+      }
+
+      try {
+        if (!firebase.apps.length) {
+          firebase.initializeApp(config);
+        }
+        db = firebase.firestore();
+        isCloudConnected = true;
+
+        if (banner) banner.classList.add('hidden');
+        if (badge) badge.className = 'text-[10px] bg-emerald-900/90 text-emerald-300 font-bold px-2 py-0.5 rounded-full border border-emerald-700/60 flex items-center gap-1';
+        if (label) label.innerText = 'Nuvem Conectada (30 Operadores)';
+
+        iniciarOuvintesTempoReal();
+      } catch (err) {
+        console.error('Falha ao conectar no Firebase:', err);
+        isCloudConnected = false;
+        if (banner) {
+          banner.classList.remove('hidden');
+          document.getElementById('firebase-status-text').innerText = 'Erro ao conectar ao Firebase: ' + err.message;
+        }
+      }
+    }
+
+    // ==========================================
+    // SINCRONIZAÇÃO EM TEMPO REAL (FIRESTORE)
+    // ==========================================
+    function iniciarOuvintesTempoReal() {
+      if (!db) return;
+
+      // 1. Escutar Casos Ativos em Tempo Real
+      db.collection('casos_ativos').onSnapshot((snapshot) => {
+        const novos = [];
+        snapshot.forEach(doc => {
+          novos.push(doc.data());
+        });
+        activeCases = novos;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(activeCases));
+        render();
+
+        // Se o caso atual estiver aberto, atualiza seus dados
+        if (currentCase) {
+          const atualizado = activeCases.find(c => String(c.CD_USUARIO) === String(currentCase.CD_USUARIO));
+          if (atualizado) currentCase = atualizado;
+        }
+      }, (err) => console.error('Erro sync casos_ativos:', err));
+
+      // 2. Escutar Cofre de Casos Arquivados
+      db.collection('cofre_casos').onSnapshot((snapshot) => {
+        const novoVault = {};
+        snapshot.forEach(doc => {
+          novoVault[doc.id] = doc.data();
+        });
+        vaultCases = novoVault;
+        localStorage.setItem(VAULT_CASES_KEY, JSON.stringify(vaultCases));
+        render();
+      }, (err) => console.error('Erro sync cofre_casos:', err));
+
+      // 3. Escutar Linhas do Tempo / Logs
+      db.collection('cofre_logs').onSnapshot((snapshot) => {
+        const novosLogs = {};
+        snapshot.forEach(doc => {
+          novosLogs[doc.id] = doc.data().itens || [];
+        });
+        historyLog = novosLogs;
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(historyLog));
+        if (currentCase) renderSingleTimeline();
+      }, (err) => console.error('Erro sync cofre_logs:', err));
+    }
+
+    function abrirConfigFirebase() {
+      const saved = localStorage.getItem(FIREBASE_CONFIG_KEY) || (DEFAULT_FIREBASE_CONFIG ? JSON.stringify(DEFAULT_FIREBASE_CONFIG, null, 2) : '');
+      document.getElementById('inputFirebaseConfigJson').value = saved;
+      document.getElementById('modal-firebase').classList.remove('hidden');
+      document.getElementById('modal-firebase').classList.add('flex');
+    }
+
+    function fecharConfigFirebase() {
+      document.getElementById('modal-firebase').classList.add('hidden');
+      document.getElementById('modal-firebase').classList.remove('flex');
+    }
+
+    function salvarConfigFirebase() {
+      const raw = document.getElementById('inputFirebaseConfigJson').value.trim();
+      try {
+        let objStr = raw;
+        if (objStr.includes('const firebaseConfig =')) {
+          objStr = objStr.replace('const firebaseConfig =', '').replace(/;$/, '').trim();
+        }
+        // Permitir formato JS com chaves sem aspas
+        const parsed = Function('"use strict";return (' + objStr + ')')();
+        if (!parsed.projectId || !parsed.apiKey) {
+          throw new Error('A configuração deve conter ao menos apiKey e projectId.');
+        }
+        localStorage.setItem(FIREBASE_CONFIG_KEY, JSON.stringify(parsed));
+        fecharConfigFirebase();
+        alert('Configuração salva com sucesso! Recarregando aplicação...');
+        location.reload();
+      } catch (err) {
+        alert('Erro ao interpretar configuração: ' + err.message + '\n\nCertifique-se de colar o JSON válido das credenciais do Firebase.');
+      }
+    }
+
+    function limparCredenciaisFirebase() {
+      if (confirm('Deseja desconectar da Nuvem e voltar ao modo Local?')) {
+        localStorage.removeItem(FIREBASE_CONFIG_KEY);
+        location.reload();
+      }
+    }
+
+    // ==========================================
+    // OPERAÇÕES DE DADOS (NUVEM OU LOCAL)
+    // ==========================================
+    function sanitizeDocId(id) {
+      return String(id || '').trim().replace(/[\/\.#$\[\]]/g, '_');
+    }
+
+    function syncToVault(caso) {
+      if (!caso || !caso.CD_USUARIO) return;
+      const cod = String(caso.CD_USUARIO).trim();
+      const docId = sanitizeDocId(cod);
+      const payload = {
+        ...caso,
+        ULTIMA_ATUALIZACAO: new Date().toLocaleString('pt-BR')
+      };
+      vaultCases[cod] = payload;
+
+      if (isCloudConnected && db) {
+        db.collection('cofre_casos').doc(docId).set(payload, { merge: true }).catch(e => console.error(e));
+      }
+    }
+
+    function addImmutableLog(codUsuario, author, date, text) {
+      if (!codUsuario || !text || !String(text).trim()) return;
+      const cod = String(codUsuario).trim();
+      const docId = sanitizeDocId(cod);
+      if (!historyLog[cod]) historyLog[cod] = [];
+      const cleanText = String(text).trim();
+      const jaExiste = historyLog[cod].some(l => l.text === cleanText && l.author === author);
+      if (!jaExiste) {
+        const item = { author, date, text: cleanText };
+        historyLog[cod].unshift(item);
+        if (isCloudConnected && db) {
+          db.collection('cofre_logs').doc(docId).set({
+            itens: firebase.firestore.FieldValue.arrayUnion(item)
+          }, { merge: true }).catch(e => console.error(e));
+        }
+      }
+    }
+
+    function saveState() {
+      try {
+        activeCases.forEach(c => syncToVault(c));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(activeCases));
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(historyLog));
+        localStorage.setItem(VAULT_CASES_KEY, JSON.stringify(vaultCases));
+      } catch (err) {
+        console.warn('Alerta de armazenamento:', err);
+      }
+    }
+
+    function verificarSenhaEExecutar(acao, event = null) {
+      if (acao === 'subir_planilha') {
+        executarSubirPlanilha(event);
+        return;
+      }
+
+      const senhaInformada = prompt('🔒 Acesso Restrito\nDigite a senha de autorização para prosseguir:');
+      if (senhaInformada === null) return;
+      
+      if (senhaInformada !== SENHA_MESTRE) {
+        alert('❌ Senha incorreta! Acesso negado.');
+        if (event && event.target) event.target.value = '';
+        return;
+      }
+
+      if (acao === 'baixar_base') {
+        exportarPlanilhaBaseHistorico();
+      } else if (acao === 'restaurar_base') {
+        executarRestaurarBase(event);
+      } else if (acao === 'limpar_fila') {
+        executarLimparFila();
+      } else if (acao === 'limpar_todo_historico') {
+        executarZerarCofreHistorico();
+      }
+    }
+
+    function executarLimparFila() {
+      if (confirm('Deseja limpar apenas a fila de trabalho do dia para TODOS os usuários?\n\n🔒 O Histórico e o Cofre permanecerão salvos na Nuvem.')) {
+        if (isCloudConnected && db) {
+          const batch = db.batch();
+          activeCases.forEach(c => {
+            const ref = db.collection('casos_ativos').doc(sanitizeDocId(c.CD_USUARIO));
+            batch.delete(ref);
+          });
+          batch.commit().catch(e => console.error(e));
+        }
+        activeCases = [];
+        currentCase = null;
+        localStorage.removeItem(STORAGE_KEY);
+        saveState();
+        render();
+        closeCaseDetail();
+      }
+    }
+
+    function executarZerarCofreHistorico() {
+      const confirmacao1 = confirm('⚠️ ATENÇÃO MÁXIMA!\n\nVocê está prestes a APAGAR PERMANENTEMENTE todo o Cofre de Histórico na Nuvem para todas as 30 pessoas.\n\nDeseja realmente continuar?');
+      if (!confirmacao1) return;
+
+      const confirmacao2 = prompt('Para confirmar a exclusão TOTAL de todo o histórico, digite exatamente a palavra: DELETAR');
+      if (confirmacao2 !== 'DELETAR') {
+        alert('Operação cancelada. O histórico está seguro.');
+        return;
+      }
+
+      if (isCloudConnected && db) {
+        // Limpar coleções no Firestore
+        const limparColecao = async (colName) => {
+          const snap = await db.collection(colName).get();
+          const batch = db.batch();
+          snap.forEach(d => batch.delete(d.ref));
+          await batch.commit();
+        };
+        Promise.all([limparColecao('casos_ativos'), limparColecao('cofre_casos'), limparColecao('cofre_logs')])
+          .catch(e => console.error('Erro ao limpar nuvem:', e));
+      }
+
+      activeCases = [];
+      historyLog = {};
+      vaultCases = {};
+      currentCase = null;
+
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(HISTORY_KEY);
+      localStorage.removeItem(VAULT_CASES_KEY);
+
+      render();
+      closeCaseDetail();
+      alert('🗑️ Todo o histórico e cofre foram limpos com sucesso!');
+    }
+
+    function normalizarTexto(str) {
+      return String(str || '')
+        .trim()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]/g, '');
+    }
+
+    function dividirLinhaCSV(linha, sep) {
+      const res = [];
+      let atual = '';
+      let inQuotes = false;
+      for (let i = 0; i < linha.length; i++) {
+        const c = linha[i];
+        if (c === '"') {
+          if (inQuotes && linha[i + 1] === '"') {
+            atual += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (c === sep && !inQuotes) {
+          res.push(atual.trim());
+          atual = '';
+        } else {
+          atual += c;
+        }
+      }
+      res.push(atual.trim());
+      return res;
+    }
+
+    function repararMatrizSeNecessario(matrix) {
+      if (!matrix || matrix.length === 0) return matrix;
+      const primeiraLinhaValida = matrix.find(r => Array.isArray(r) && r.some(c => c !== null && c !== undefined && String(c).trim() !== ''));
+      if (!primeiraLinhaValida) return matrix;
+
+      if (primeiraLinhaValida.length === 1 && typeof primeiraLinhaValida[0] === 'string') {
+        const txt = primeiraLinhaValida[0];
+        const sep = txt.includes(';') ? ';' : (txt.includes('\t') ? '\t' : (txt.includes(',') ? ',' : null));
+        if (sep) {
+          return matrix.map(row => {
+            if (!row || row.length === 0) return [];
+            if (row.length === 1 && typeof row[0] === 'string') {
+              return dividirLinhaCSV(row[0], sep);
+            }
+            return row;
+          });
+        }
+      }
+      return matrix;
+    }
+
+    const DICIONARIO_COLUNAS = {
+      CD_USUARIO: [
+        'cdusuario', 'codusuario', 'codigousuario', 'idusuario', 'usuarioid',
+        'codigoutente', 'codutente', 'cdutente', 'utente', 'utentecodigo',
+        'carteira', 'carteirinha', 'nrcarteira', 'numcarteira', 'cdcarteira', 'codcarteira',
+        'matricula', 'cdmatricula', 'codmatricula', 'nummatricula', 'nrmatricula',
+        'guia', 'nrguia', 'numeroguia', 'numguia', 'nroguia', 'codguia', 'cdguia', 'guiaprincipal',
+        'senha', 'senhapendencia', 'nrsenha', 'numsenha', 'codsenha',
+        'solicitacao', 'nrsolicitacao', 'numsolicitacao', 'solicitacaoid',
+        'atendimento', 'nratendimento', 'numatendimento', 'protocolo', 'nrprotocolo',
+        'codbeneficiario', 'cdbeneficiario', 'codigobeneficiario', 'idbeneficiario',
+        'codpaciente', 'cdpaciente', 'codigopaciente', 'idpaciente',
+        'prontuario', 'nrprontuario', 'registro', 'identificador', 'codigo', 'cod', 'id'
+      ],
+      NM_USUARIO: [
+        'nmusuario', 'nomeusuario', 'nomedousuario',
+        'beneficiario', 'nmbeneficiario', 'nomebeneficiario', 'nomedobeneficiario',
+        'paciente', 'nmpaciente', 'nomepaciente', 'nomedopaciente',
+        'utente', 'nomeutente', 'nmutente',
+        'associado', 'nomeassociado', 'titular', 'nometitular',
+        'cliente', 'nomecliente', 'nomecompleto', 'nmcompleto', 'nome', 'usuario'
+      ],
+      DIAS_AUTORIZACAO: [
+        'diasautorizacao', 'dias', 'diascorridos', 'diasdecorridos', 'diasemaberto',
+        'diaspendente', 'diaspendentes', 'diasaguardando', 'diasfila', 'diasespera',
+        'sla', 'sladias', 'prazo', 'prazodecorrido', 'idade', 'idadeguia', 'tempo', 'tempoespera',
+        'diaspermanencia', 'permanencia', 'aging'
+      ],
+      BASE: [
+        'base', 'operadora', 'regional', 'filial', 'unidade', 'empresa', 'marca',
+        'baseoperadora', 'ufbase', 'polo', 'nucleo'
+      ],
+      TIPO_PENDENCIA: [
+        'tipopendencia', 'tppendencia', 'pendencia', 'codpendencia', 'cdpendencia',
+        'motivopendencia', 'tipodependencia', 'pendencias', 'pend', 'tipo', 'motivo', 'statuspendencia'
+      ],
+      GERENTE_MEDICO: [
+        'gerentemedico', 'medicoprofissional', 'medicoresponsavel', 'medicotitular',
+        'auditor', 'medicoauditor', 'responsavel', 'gerente', 'drresponsavel',
+        'drtitular', 'auditoria', 'medico'
+      ],
+      MEDICO_CONSULTOR: [
+        'medicoconsultor', 'consultor', 'assumidopor', 'medicoassumiu', 'consultoria'
+      ],
+      PROCEDIMENTO_AGRUPADO: [
+        'procedimentoagrupado', 'procedimento', 'dsprocedimento', 'nmprocedimento',
+        'descricaoprocedimento', 'cirurgia', 'dscirurgia', 'nomecirurgia',
+        'descricao', 'servico', 'dsservico', 'tratamento', 'especialidade', 'intervencao'
+      ],
+      CD_PROCEDIMENTO: [
+        'cdprocedimento', 'codprocedimento', 'codigoprocedimento',
+        'tuss', 'codtuss', 'cdtuss', 'codigotuss', 'codigocirurgia', 'tabelatuss',
+        'codigotermo', 'cdtermo', 'codservico', 'cdservico'
+      ],
+      NM_PRESTADOR: [
+        'nmprestador', 'prestador', 'nomeprestador', 'nomedoprestador',
+        'hospital', 'nmhospital', 'nomehospital', 'clinica', 'local',
+        'localatendimento', 'estabelecimento', 'razaosocial', 'entidade', 'unidadeatendimento'
+      ],
+      NM_SOLICITANTE: [
+        'nmsolicitante', 'solicitante', 'nomesolicitante', 'nomedosolicitante',
+        'medicosolicitante', 'drsolicitante', 'profissionalsolicitante',
+        'crmsolicitante', 'prescritor', 'medicosolic'
+      ],
+      NM_PLANO: [
+        'nmplano', 'plano', 'nomeplano', 'nomedoplano', 'contrato', 'produto',
+        'nmproduto', 'tipoplano', 'segmentacao'
+      ],
+      NM_EMPRESA: [
+        'nmempresa', 'empresa', 'nomeempresa', 'estipulante', 'subfatura'
+      ],
+      CIDADE: [
+        'cidade', 'municipio', 'nmmunicipio', 'localidade', 'cidadeprestador'
+      ],
+      UF: [
+        'uf', 'estado', 'siglauf', 'estadoprestador'
+      ],
+      STATUS_ORCAMENTO: [
+        'statusorcamento', 'statusorcam', 'orcamento', 'situacaoorcamento'
+      ],
+      VALOR_INICIAL: [
+        'valorinicial', 'vlinicial', 'valorsolicitado', 'vlestimado', 'valor'
+      ],
+      'QUAL PACOTE?': [
+        'qualpacote', 'qualpacote?', 'pacote', 'nmpacote', 'codpacote', 'descricaopacote'
+      ],
+      'VALOR PACOTE': [
+        'valorpacote', 'vlpacote', 'precopacote'
+      ],
+      PRESTADOR_PACOTE: [
+        'prestadorpacote', 'hospitalpacote', 'localpacote'
+      ],
+      OBS_MEDICO: [
+        'obsmedico', 'obsmedicoplanilha', 'parecermedico', 'observacaomedica', 'condutamedica'
+      ],
+      OBS_ENF: [
+        'obsenf', 'obsenfplanilha', 'obsenfermagem', 'observacaoenfermagem', 'parecerenf'
+      ],
+      OBS_ADM: [
+        'obsadm', 'obsadmplanilha', 'pareceradm', 'observacaoadm', 'analiseadm'
+      ]
+    };
+
+    function executarSubirPlanilha(event) {
+      const file = (event && event.target && event.target.files) ? event.target.files[0] : null;
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+
+          if (!workbook || !workbook.SheetNames || workbook.SheetNames.length === 0) {
+            alert('Não foi possível ler o arquivo. O arquivo pode estar vazio ou corrompido.');
+            return;
+          }
+
+          let todasCandidatas = [];
+
+          for (const sheetName of workbook.SheetNames) {
+            const sheet = workbook.Sheets[sheetName];
+            if (!sheet) continue;
+            const matrix = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+            if (!matrix || matrix.length < 2) continue;
+
+            const raw = String(sheetName || '').trim();
+            const limpo = raw
+              .replace(/Ãª/gi, 'e').replace(/ãª/gi, 'e')
+              .replace(/Ã©/gi, 'e').replace(/ã©/gi, 'e')
+              .replace(/Ã¡/gi, 'a').replace(/ã¡/gi, 'a')
+              .replace(/Ã/gi, 'a').replace(/ã/gi, 'a');
+            const n = normalizarTexto(limpo);
+
+            const ehExato = (n === 'pendencias' || n === 'pendencia');
+            const contem = (n.includes('pendenc') || n.startsWith('pend'));
+
+            if (ehExato || contem) {
+              todasCandidatas.push({
+                sheetName,
+                linhas: matrix.length,
+                ehExato,
+                matrix: repararMatrizSeNecessario(matrix)
+              });
+            }
+          }
+
+          let abaEscolhidaObj = null;
+
+          if (todasCandidatas.length > 0) {
+            abaEscolhidaObj = todasCandidatas.find(c => c.ehExato && c.linhas <= 250) ||
+                              todasCandidatas.find(c => c.ehExato) ||
+                              todasCandidatas.find(c => c.linhas <= 250);
+            if (!abaEscolhidaObj) {
+              todasCandidatas.sort((a, b) => a.linhas - b.linhas);
+              abaEscolhidaObj = todasCandidatas[0];
+            }
+          }
+
+          let abaEscolhida = null;
+          let matrixFinal = null;
+
+          if (abaEscolhidaObj) {
+            abaEscolhida = abaEscolhidaObj.sheetName;
+            matrixFinal = abaEscolhidaObj.matrix;
+          } else if (workbook.SheetNames.length === 1) {
+            abaEscolhida = workbook.SheetNames[0];
+            matrixFinal = repararMatrizSeNecessario(XLSX.utils.sheet_to_json(workbook.Sheets[abaEscolhida], { header: 1, defval: '' }));
+          } else {
+            const abasDisponiveis = workbook.SheetNames.map(s => `• "${s}"`).join('\n');
+            alert(`A aba "Pendências" não foi localizada!\n\nAbas existentes:\n${abasDisponiveis}`);
+            return;
+          }
+
+          if (!matrixFinal || matrixFinal.length < 2) {
+            alert(`A aba "${abaEscolhida}" está vazia ou contém menos de 2 linhas.`);
+            return;
+          }
+
+          let indiceCabecalho = 0;
+          let maxPontosHeader = -1;
+          let mapeamentoColunas = {};
+
+          for (let r = 0; r < Math.min(25, matrixFinal.length); r++) {
+            const row = matrixFinal[r];
+            if (!row || !Array.isArray(row)) continue;
+
+            const mapTentativo = {};
+            let pontos = 0;
+
+            row.forEach((cell, colIdx) => {
+              const norm = normalizarTexto(cell);
+              if (!norm) return;
+
+              for (const [campo, sinonimos] of Object.entries(DICIONARIO_COLUNAS)) {
+                if (mapTentativo[campo] !== undefined) continue;
+
+                if (sinonimos.includes(norm)) {
+                  mapTentativo[campo] = colIdx;
+                  pontos += (campo === 'CD_USUARIO' || campo === 'NM_USUARIO' ? 10 : 3);
+                  break;
+                }
+                const matchParcial = sinonimos.some(s => s.length >= 4 && (norm.includes(s) || s.includes(norm)));
+                if (matchParcial) {
+                  mapTentativo[campo] = colIdx;
+                  pontos += (campo === 'CD_USUARIO' || campo === 'NM_USUARIO' ? 7 : 2);
+                  break;
+                }
+              }
+            });
+
+            if (pontos > maxPontosHeader) {
+              maxPontosHeader = pontos;
+              indiceCabecalho = r;
+              mapeamentoColunas = mapTentativo;
+            }
+          }
+
+          if (mapeamentoColunas.CD_USUARIO === undefined) {
+            for (let c = 0; c < (matrixFinal[indiceCabecalho] || []).length; c++) {
+              if (c !== mapeamentoColunas.NM_USUARIO) {
+                mapeamentoColunas.CD_USUARIO = c;
+                break;
+              }
+            }
+            if (mapeamentoColunas.CD_USUARIO === undefined) mapeamentoColunas.CD_USUARIO = 0;
+          }
+
+          if (mapeamentoColunas.NM_USUARIO === undefined) {
+            for (let c = 0; c < (matrixFinal[indiceCabecalho] || []).length; c++) {
+              if (c !== mapeamentoColunas.CD_USUARIO) {
+                mapeamentoColunas.NM_USUARIO = c;
+                break;
+              }
+            }
+            if (mapeamentoColunas.NM_USUARIO === undefined) mapeamentoColunas.NM_USUARIO = 1;
+          }
+
+          const dataRows = matrixFinal.slice(indiceCabecalho + 1);
+          const novosCasos = [];
+          const dataHoje = new Date().toLocaleDateString('pt-BR') + ' - Importação Planilha';
+          let recuperadosDoCofre = 0;
+
+          dataRows.forEach((row) => {
+            if (!row || !Array.isArray(row)) return;
+            const temConteudo = row.some(cell => cell !== null && cell !== undefined && String(cell).trim() !== '');
+            if (!temConteudo) return;
+
+            const getVal = (campo, defaultVal = '') => {
+              const idx = mapeamentoColunas[campo];
+              if (idx !== undefined && row[idx] !== undefined && row[idx] !== null) {
+                const s = String(row[idx]).trim();
+                if (s !== '') return s;
+              }
+              return defaultVal;
+            };
+
+            let codUsuario = getVal('CD_USUARIO');
+            let nmUsuario = getVal('NM_USUARIO');
+
+            const normCod = normalizarTexto(codUsuario);
+            const normNm = normalizarTexto(nmUsuario);
+            if (
+              normCod === 'cdusuario' || normCod === 'codusuario' || normCod === 'utente' || normCod === 'carteira' || normCod === 'guia' ||
+              normNm === 'nmusuario' || normNm === 'nomeusuario' || normNm === 'beneficiario' || normNm === 'paciente' || normNm === 'nome'
+            ) {
+              return;
+            }
+
+            if (!codUsuario && nmUsuario) codUsuario = 'GUIA_' + (novosCasos.length + 1);
+            if (codUsuario && !nmUsuario) nmUsuario = 'Beneficiário ' + codUsuario;
+            if (!codUsuario && !nmUsuario) return;
+
+            let diasSla = 0;
+            if (mapeamentoColunas.DIAS_AUTORIZACAO !== undefined && row[mapeamentoColunas.DIAS_AUTORIZACAO] !== undefined) {
+              const valCell = row[mapeamentoColunas.DIAS_AUTORIZACAO];
+              if (valCell instanceof Date) {
+                const diffTime = Math.max(0, new Date() - valCell);
+                diasSla = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+              } else if (valCell !== null && valCell !== undefined && String(valCell).trim() !== '') {
+                const parsed = parseInt(String(valCell).replace(/[^0-9-]/g, ''), 10);
+                if (!isNaN(parsed)) diasSla = parsed;
+              }
+            }
+
+            const obsMedPlan = getVal('OBS_MEDICO');
+            const obsEnfPlan = getVal('OBS_ENF');
+            const obsAdmPlan = getVal('OBS_ADM');
+
+            if (obsMedPlan) addImmutableLog(codUsuario, 'Médico (Planilha)', dataHoje, obsMedPlan);
+            if (obsEnfPlan) addImmutableLog(codUsuario, 'Enfermagem (Planilha)', dataHoje, obsEnfPlan);
+            if (obsAdmPlan) addImmutableLog(codUsuario, 'ADM (Planilha)', dataHoje, obsAdmPlan);
+
+            const salvoNoCofre = vaultCases[codUsuario] || {};
+            if (vaultCases[codUsuario]) recuperadosDoCofre++;
+
+            const novoCaso = {
+              CD_USUARIO: codUsuario,
+              NM_USUARIO: nmUsuario,
+              DIAS_AUTORIZACAO: diasSla,
+              BASE: getVal('BASE', salvoNoCofre.BASE || 'NDI'),
+              TIPO_PENDENCIA: getVal('TIPO_PENDENCIA', salvoNoCofre.TIPO_PENDENCIA || '69'),
+              GERENTE_MEDICO: getVal('GERENTE_MEDICO', salvoNoCofre.GERENTE_MEDICO || ''),
+              MEDICO_CONSULTOR: getVal('MEDICO_CONSULTOR', salvoNoCofre.MEDICO_CONSULTOR || ''),
+              STATUS_MED_CONSULTOR: salvoNoCofre.STATUS_MED_CONSULTOR || '',
+              OBS_MED_CONSULTOR: obsMedPlan || salvoNoCofre.OBS_MED_CONSULTOR || '',
+              ENF: getVal('ENF', salvoNoCofre.ENF || ''),
+              STATUS_ENF: salvoNoCofre.STATUS_ENF || '',
+              OBS_ENF: obsEnfPlan || salvoNoCofre.OBS_ENF || '',
+              ADM: getVal('ADM', salvoNoCofre.ADM || ''),
+              STATUS_ADM: salvoNoCofre.STATUS_ADM || '',
+              OBS_ADM: obsAdmPlan || salvoNoCofre.OBS_ADM || '',
+              NM_PLANO: getVal('NM_PLANO', salvoNoCofre.NM_PLANO || '-'),
+              NM_EMPRESA: getVal('NM_EMPRESA', salvoNoCofre.NM_EMPRESA || '-'),
+              NM_PRESTADOR: getVal('NM_PRESTADOR', salvoNoCofre.NM_PRESTADOR || '-'),
+              PROCEDIMENTO_AGRUPADO: getVal('PROCEDIMENTO_AGRUPADO', salvoNoCofre.PROCEDIMENTO_AGRUPADO || '-'),
+              CD_PROCEDIMENTO: getVal('CD_PROCEDIMENTO', salvoNoCofre.CD_PROCEDIMENTO || '-'),
+              NM_SOLICITANTE: getVal('NM_SOLICITANTE', salvoNoCofre.NM_SOLICITANTE || '-'),
+              CIDADE: getVal('CIDADE', salvoNoCofre.CIDADE || '-'),
+              UF: getVal('UF', salvoNoCofre.UF || '-'),
+              STATUS_ORCAMENTO: getVal('STATUS_ORCAMENTO', salvoNoCofre.STATUS_ORCAMENTO || ''),
+              VALOR_INICIAL: getVal('VALOR_INICIAL', salvoNoCofre.VALOR_INICIAL || ''),
+              'QUAL PACOTE?': getVal('QUAL PACOTE?', salvoNoCofre['QUAL PACOTE?'] || ''),
+              'VALOR PACOTE': getVal('VALOR PACOTE', salvoNoCofre['VALOR PACOTE'] || ''),
+              PRESTADOR_PACOTE: salvoNoCofre.PRESTADOR_PACOTE || '',
+              STATUS_COFRE: salvoNoCofre.STATUS_COFRE || 'EM ANDAMENTO',
+              ULTIMO_DESFECHO: salvoNoCofre.ULTIMO_DESFECHO || ''
+            };
+
+            novosCasos.push(novoCaso);
+            syncToVault(novoCaso);
+          });
+
+          if (novosCasos.length === 0) {
+            alert('Nenhum caso identificado na planilha.');
+            return;
+          }
+
+          // Se estiver conectado na Nuvem, sincroniza em lote para todos os 30 usuários
+          if (isCloudConnected && db) {
+            const batch = db.batch();
+            novosCasos.forEach(c => {
+              const ref = db.collection('casos_ativos').doc(sanitizeDocId(c.CD_USUARIO));
+              batch.set(ref, c, { merge: true });
+            });
+            await batch.commit();
+          }
+
+          activeCases = novosCasos;
+          saveState();
+          render();
+          alert(`✅ Sucesso! ${novosCasos.length} casos carregados.\n${isCloudConnected ? '☁️ Sincronizados na Nuvem para todos os operadores!' : '⚠️ Salvos apenas neste navegador.'}\n🔒 ${recuperadosDoCofre} casos vinculados ao histórico existente.`);
+        } catch (err) {
+          console.error(err);
+          alert('Erro ao processar planilha: ' + (err.message || err));
+        } finally {
+          if (event && event.target) {
+            try { event.target.value = ''; } catch (_) {}
+          }
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function exportarPlanilhaBaseHistorico() {
+      const todosCodigos = Object.keys(vaultCases);
+      if (todosCodigos.length === 0 && Object.keys(historyLog).length === 0) {
+        alert('Ainda não há registros no Cofre de Histórico para exportar.');
+        return;
+      }
+
+      const linhasCasos = todosCodigos.map(cod => {
+        const c = vaultCases[cod];
+        const logs = historyLog[cod] || [];
+        const resumoHistorico = logs.map(l => `[${l.date} - ${l.author}]: ${l.text}`).join(' | ');
+        return {
+          'STATUS_COFRE': c.STATUS_COFRE || 'ATIVO',
+          'CD_USUARIO': c.CD_USUARIO || cod,
+          'NM_USUARIO': c.NM_USUARIO || '-',
+          'BASE': c.BASE || 'NDI',
+          'TIPO_PENDENCIA': c.TIPO_PENDENCIA || '-',
+          'DIAS_AUTORIZACAO': c.DIAS_AUTORIZACAO || 0,
+          'GERENTE_MEDICO': c.GERENTE_MEDICO || '',
+          'MEDICO_CONSULTOR': c.MEDICO_CONSULTOR || '',
+          'STATUS_MED_CONSULTOR': c.STATUS_MED_CONSULTOR || '',
+          'OBS_MED_CONSULTOR': c.OBS_MED_CONSULTOR || '',
+          'ENF': c.ENF || '',
+          'STATUS_ENF': c.STATUS_ENF || '',
+          'OBS_ENF': c.OBS_ENF || '',
+          'ADM': c.ADM || '',
+          'STATUS_ADM': c.STATUS_ADM || '',
+          'OBS_ADM': c.OBS_ADM || '',
+          'STATUS_ORCAMENTO': c.STATUS_ORCAMENTO || '',
+          'VALOR_INICIAL': c.VALOR_INICIAL || '',
+          'VALOR_PACOTE': c['VALOR PACOTE'] || '',
+          'QUAL_PACOTE': c['QUAL PACOTE?'] || '',
+          'PRESTADOR_PACOTE': c.PRESTADOR_PACOTE || '',
+          'PROCEDIMENTO_AGRUPADO': c.PROCEDIMENTO_AGRUPADO || '',
+          'CD_PROCEDIMENTO': c.CD_PROCEDIMENTO || '',
+          'NM_PRESTADOR': c.NM_PRESTADOR || '',
+          'NM_SOLICITANTE': c.NM_SOLICITANTE || '',
+          'CIDADE': c.CIDADE || '',
+          'UF': c.UF || '',
+          'ULTIMO_DESFECHO': c.ULTIMO_DESFECHO || '',
+          'ULTIMA_ATUALIZACAO': c.ULTIMA_ATUALIZACAO || '',
+          'HISTORICO_COMPLETO': resumoHistorico
+        };
+      });
+
+      const linhasLogs = [];
+      Object.keys(historyLog).forEach(cod => {
+        const c = vaultCases[cod] || {};
+        (historyLog[cod] || []).forEach(l => {
+          linhasLogs.push({
+            'CD_USUARIO': cod,
+            'NM_USUARIO': c.NM_USUARIO || '-',
+            'DATA_HORA': l.date,
+            'AUTOR': l.author,
+            'REGISTRO_HISTORICO': l.text
+          });
+        });
+      });
+
+      const wb = XLSX.utils.book_new();
+      const wsCasos = XLSX.utils.json_to_sheet(linhasCasos.length ? linhasCasos : [{ AVISO: 'Sem casos' }]);
+      const wsLogs = XLSX.utils.json_to_sheet(linhasLogs.length ? linhasLogs : [{ AVISO: 'Sem logs' }]);
+
+      XLSX.utils.book_append_sheet(wb, wsCasos, 'Casos_Consolidados');
+      XLSX.utils.book_append_sheet(wb, wsLogs, 'Linha_do_Tempo_Logs');
+
+      const dataStr = new Date().toISOString().slice(0, 10);
+      XLSX.writeFile(wb, `Base_Historico_Fidelizacao_Hapvida_${dataStr}.xlsx`);
+    }
+
+    function executarRestaurarBase(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const wb = XLSX.read(data, { type: 'array' });
+
+          let casosImportados = 0;
+          let logsImportados = 0;
+
+          if (wb.SheetNames.includes('Casos_Consolidados')) {
+            const rows = XLSX.utils.sheet_to_json(wb.Sheets['Casos_Consolidados'], { defval: '' });
+            rows.forEach(r => {
+              if (!r.CD_USUARIO) return;
+              const cod = String(r.CD_USUARIO).trim();
+              vaultCases[cod] = {
+                ...(vaultCases[cod] || {}),
+                ...r,
+                'VALOR PACOTE': r.VALOR_PACOTE || r['VALOR PACOTE'] || '',
+                'QUAL PACOTE?': r.QUAL_PACOTE || r['QUAL PACOTE?'] || ''
+              };
+              if (isCloudConnected && db) {
+                db.collection('cofre_casos').doc(sanitizeDocId(cod)).set(vaultCases[cod], { merge: true });
+              }
+              casosImportados++;
+            });
+          }
+
+          if (wb.SheetNames.includes('Linha_do_Tempo_Logs')) {
+            const logs = XLSX.utils.sheet_to_json(wb.Sheets['Linha_do_Tempo_Logs'], { defval: '' });
+            logs.forEach(l => {
+              if (!l.CD_USUARIO || !l.REGISTRO_HISTORICO) return;
+              addImmutableLog(l.CD_USUARIO, l.AUTOR || 'Sistema', l.DATA_HORA || '-', l.REGISTRO_HISTORICO);
+              logsImportados++;
+            });
+          }
+
+          activeCases = activeCases.map(c => {
+            const salvo = vaultCases[c.CD_USUARIO];
+            return salvo ? { ...c, ...salvo } : c;
+          });
+
+          saveState();
+          render();
+          alert(`Base restaurada!\n✔ ${casosImportados} fichas consolidadas\n✔ ${logsImportados} registros de histórico.`);
+        } catch (err) {
+          alert('Erro ao restaurar Base: ' + err.message);
+        } finally {
+          event.target.value = '';
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function setView(view) {
+      currentView = view;
+      ['kanban', 'lista', 'fichas', 'historico'].forEach(v => {
+        document.getElementById('view-' + v).classList.add('hidden');
+        document.getElementById('btn-view-' + v).className = 'px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 flex items-center gap-1.5 transition';
+      });
+      document.getElementById('view-' + view).classList.remove('hidden');
+      document.getElementById('btn-view-' + view).className = 'px-3 py-1.5 rounded-lg bg-white text-indigo-700 shadow-xs flex items-center gap-1.5 font-bold transition';
+      render();
+    }
+
+    function popularFiltroMedicos() {
+      const select = document.getElementById('filterMedico');
+      if (!select) return;
+      const currentVal = select.value;
+      const medicosSet = new Set();
+      activeCases.forEach(c => {
+        if (c.GERENTE_MEDICO && c.GERENTE_MEDICO.trim()) medicosSet.add(c.GERENTE_MEDICO.trim());
+      });
+      const medicos = Array.from(medicosSet).sort();
+      select.innerHTML = '<option value="">Todos os Médicos (Geral)</option>' +
+        medicos.map(m => `<option value="${m}">Dr(a). ${m}</option>`).join('');
+      if (currentVal && medicos.includes(currentVal)) select.value = currentVal;
+    }
+
+    function limparFiltroMedico() {
+      const select = document.getElementById('filterMedico');
+      if (select) { select.value = ''; render(); }
+    }
+
+    function getFilteredCases() {
+      const q = (document.getElementById('searchInput').value || '').toLowerCase();
+      const medSelect = document.getElementById('filterMedico');
+      const medFiltro = medSelect ? medSelect.value : '';
+
+      const btnLimpar = document.getElementById('btnLimparFiltroMed');
+      if (btnLimpar) {
+        if (medFiltro) btnLimpar.classList.remove('hidden');
+        else btnLimpar.classList.add('hidden');
+      }
+
+      return activeCases.filter(c => {
+        if (medFiltro && (!c.GERENTE_MEDICO || c.GERENTE_MEDICO.trim() !== medFiltro)) return false;
+        return !q || 
+          (c.NM_USUARIO && c.NM_USUARIO.toLowerCase().includes(q)) ||
+          (c.CD_USUARIO && c.CD_USUARIO.toLowerCase().includes(q)) ||
+          (c.PROCEDIMENTO_AGRUPADO && c.PROCEDIMENTO_AGRUPADO.toLowerCase().includes(q)) ||
+          (c.NM_PRESTADOR && c.NM_PRESTADOR.toLowerCase().includes(q));
+      });
+    }
+
+    function openCaseDetail(cod) {
+      currentCase = activeCases.find(c => String(c.CD_USUARIO) === String(cod)) || vaultCases[String(cod)];
+      if (!currentCase) return;
+
+      // Atualiza o hash da URL para permitir compartilhamento direto por link
+      try {
+        history.replaceState(null, null, '#caso=' + encodeURIComponent(cod));
+      } catch (_) {}
+
+      document.getElementById('screen-main').classList.add('hidden');
+      document.getElementById('screen-case-detail').classList.remove('hidden');
+
+      document.getElementById('singleDetailCode').innerText = currentCase.CD_USUARIO;
+      document.getElementById('singleDetailBeneficiaryHeader').innerText = currentCase.NM_USUARIO;
+      document.getElementById('singleDetailName').innerText = currentCase.NM_USUARIO;
+      document.getElementById('singleDetailUserCode').innerText = currentCase.CD_USUARIO;
+      document.getElementById('singleDetailPlan').innerText = currentCase.NM_PLANO || '-';
+      document.getElementById('singleDetailProcedure').innerText = currentCase.PROCEDIMENTO_AGRUPADO || '-';
+      document.getElementById('singleDetailTUSS').innerText = 'Cód: ' + (currentCase.CD_PROCEDIMENTO || '-');
+      document.getElementById('singleDetailProvider').innerText = currentCase.NM_PRESTADOR || '-';
+      document.getElementById('singleDetailCity').innerHTML = '<i class="fa-solid fa-location-dot text-rose-500"></i> ' + (currentCase.CIDADE || '-') + ' - ' + (currentCase.UF || '-');
+      document.getElementById('singleDetailSolicitante').innerText = currentCase.NM_SOLICITANTE || '-';
+      
+      const baseVal = currentCase.BASE || 'NDI';
+      document.getElementById('labelBaseCard').innerText = baseVal;
+      document.getElementById('labelBaseText').innerText = baseVal;
+      document.getElementById('labelBaseTop').innerText = baseVal;
+      document.getElementById('singleDetailBase').innerText = baseVal;
+      document.getElementById('singleDetailMedResponsavel').innerText = currentCase.GERENTE_MEDICO ? 'Dr(a). ' + currentCase.GERENTE_MEDICO : 'Não Atribuído';
+      
+      document.getElementById('editCaseStatusOrcamento').value = currentCase.STATUS_ORCAMENTO || '';
+      document.getElementById('editCaseValorInicial').value = currentCase.VALOR_INICIAL || '';
+      document.getElementById('editCaseValorPacote').value = currentCase['VALOR PACOTE'] || '';
+      document.getElementById('editCaseQualPacote').value = currentCase['QUAL PACOTE?'] || '';
+      document.getElementById('editCasePrestadorPacote').value = currentCase.PRESTADOR_PACOTE || '';
+
+      document.getElementById('editCaseMedConsultor').value = currentCase.MEDICO_CONSULTOR || '';
+      document.getElementById('editCaseObsMedConsultor').value = currentCase.OBS_MED_CONSULTOR || '';
+
+      document.getElementById('editCaseEnf').value = currentCase.ENF || '';
+      document.getElementById('editCaseObsEnf').value = currentCase.OBS_ENF || '';
+
+      document.getElementById('editCaseAdm').value = currentCase.ADM || '';
+      document.getElementById('editCaseObsAdm').value = currentCase.OBS_ADM || '';
+
+      const dias = currentCase.DIAS_AUTORIZACAO || 0;
+      const slaBadge = document.getElementById('singleDetailSLA');
+      slaBadge.innerText = dias + ' dias decorridos';
+      slaBadge.className = 'text-[11px] font-extrabold px-3 py-1 rounded-full ' + 
+        (dias > 10 ? 'bg-rose-100 text-rose-700' : (dias >= 7 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'));
+
+      document.getElementById('labelTipoPendencia').innerText = currentCase.TIPO_PENDENCIA || '69';
+      document.getElementById('singleSelectMacroDesfecho').value = '';
+      atualizarSubmotivosDesfecho();
+      document.getElementById('singleInputNota').value = '';
+      renderSingleTimeline();
+    }
+
+    function closeCaseDetail() {
+      // Limpa o hash da URL ao voltar para a esteira
+      try {
+        history.replaceState(null, null, window.location.pathname + window.location.search);
+      } catch (_) {}
+
+      document.getElementById('screen-case-detail').classList.add('hidden');
+      document.getElementById('screen-main').classList.remove('hidden');
+      currentCase = null;
+      render();
+    }
+
+    function renderSingleTimeline() {
+      if (!currentCase) return;
+      const container = document.getElementById('singleTimelineContainer');
+      const logs = historyLog[currentCase.CD_USUARIO] || [];
+      document.getElementById('singleTimelineCount').innerText = logs.length + ' registos blindados';
+
+      if (logs.length === 0) {
+        container.innerHTML = '<p class="text-slate-400 italic text-[11px]">Nenhuma observação registrada.</p>';
+        return;
+      }
+      container.innerHTML = logs.map(l => `
+        <div class="relative">
+          <span class="absolute -left-[19px] top-1.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-4 ring-emerald-50"></span>
+          <div class="flex items-center justify-between text-[11px] mb-1">
+            <span class="font-extrabold text-slate-900 flex items-center gap-1"><i class="fa-solid fa-lock text-[9px] text-emerald-600"></i> ${l.author}</span>
+            <span class="text-slate-400 text-[10px]">${l.date}</span>
+          </div>
+          <div class="p-3 rounded-xl border bg-slate-50 border-slate-200 text-xs text-slate-700">${l.text}</div>
+        </div>
+      `).join('');
+    }
+
+    function registrarAndamentoImutavel() {
+      if (!currentCase) return;
+      const input = document.getElementById('inputAndamentoRapido');
+      const texto = input.value.trim();
+      if (!texto) return;
+
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('pt-BR') + ' às ' + now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      addImmutableLog(currentCase.CD_USUARIO, `${operadorAtual} (Andamento)`, dateStr, texto);
+      syncToVault(currentCase);
+      saveState();
+      input.value = '';
+      renderSingleTimeline();
+    }
+
+    function autoSalvarProfissionais() {
+      if (!currentCase) return;
+      currentCase.STATUS_ORCAMENTO = document.getElementById('editCaseStatusOrcamento').value;
+      currentCase.VALOR_INICIAL = document.getElementById('editCaseValorInicial').value;
+      currentCase['VALOR PACOTE'] = document.getElementById('editCaseValorPacote').value;
+      currentCase['QUAL PACOTE?'] = document.getElementById('editCaseQualPacote').value;
+      currentCase.PRESTADOR_PACOTE = document.getElementById('editCasePrestadorPacote').value;
+
+      currentCase.MEDICO_CONSULTOR = document.getElementById('editCaseMedConsultor').value;
+      currentCase.OBS_MED_CONSULTOR = document.getElementById('editCaseObsMedConsultor').value;
+
+      currentCase.ENF = document.getElementById('editCaseEnf').value;
+      currentCase.OBS_ENF = document.getElementById('editCaseObsEnf').value;
+
+      currentCase.ADM = document.getElementById('editCaseAdm').value;
+      currentCase.OBS_ADM = document.getElementById('editCaseObsAdm').value;
+      
+      const idx = activeCases.findIndex(c => String(c.CD_USUARIO) === String(currentCase.CD_USUARIO));
+      if (idx !== -1) activeCases[idx] = { ...currentCase };
+      
+      // Salva no Firestore instantaneamente para que os outros 29 vejam
+      if (isCloudConnected && db) {
+        db.collection('casos_ativos').doc(sanitizeDocId(currentCase.CD_USUARIO)).set(currentCase, { merge: true });
+      }
+
+      syncToVault(currentCase);
+      saveState();
+    }
+
+    function singleConcluirCasoOK() {
+      if (!currentCase) return;
+      const macroDesfecho = document.getElementById('singleSelectMacroDesfecho').value;
+      const desfecho = document.getElementById('singleSelectDesfecho').value;
+      const nota = document.getElementById('singleInputNota').value.trim();
+
+      if (!macroDesfecho) { alert('Selecione o Macro-desfecho.'); return; }
+      if (!desfecho) { alert('Selecione o Submotivo do Desfecho.'); return; }
+      if (!nota) { alert('Preencha a Finalização - SIGO.'); return; }
+
+      const desfechoCompleto = `${macroDesfecho} ➔ ${desfecho}`;
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('pt-BR') + ' às ' + now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+      addImmutableLog(currentCase.CD_USUARIO, `${operadorAtual} (Finalização)`, dateStr, `[DESFECHO: ${desfechoCompleto}] - ${nota}`);
+
+      currentCase.STATUS_COFRE = 'CONCLUÍDO';
+      currentCase.ULTIMO_DESFECHO = `${desfechoCompleto} (${nota})`;
+      syncToVault(currentCase);
+
+      // Remove de casos_ativos na Nuvem
+      if (isCloudConnected && db) {
+        db.collection('casos_ativos').doc(sanitizeDocId(currentCase.CD_USUARIO)).delete().catch(e => console.error(e));
+      }
+
+      activeCases = activeCases.filter(c => String(c.CD_USUARIO) !== String(currentCase.CD_USUARIO));
+      saveState();
+      alert('Guia finalizada e arquivada permanentemente no Cofre de Histórico!');
+      closeCaseDetail();
+    }
+
+    const mapaSubmotivosDesfecho = {
+      "Consenso integral": ["Cancelamento de guia", "Verticalização", "Autorizado dentro do pacote", "Direcionamento de Rede", "Adequação completa de TUSS e/ou OPME"],
+      "Consenso parcial": ["Integral de códigos e parcial de OPME", "Parcial de códigos"],
+      "Ausência completa de consenso": ["Sugerido Junta Médica", "Deliberação VP auditoria", "Sugerido Resolução"],
+      "Acolhimento": ["Acolhimento Rede Credenciada", "Acolhimento Rede Própria"]
+    };
+
+    function atualizarSubmotivosDesfecho() {
+      const macro = document.getElementById('singleSelectMacroDesfecho').value;
+      const sub = document.getElementById('singleSelectDesfecho');
+      if (!macro || !mapaSubmotivosDesfecho[macro]) {
+        sub.disabled = true;
+        sub.innerHTML = '<option value="">-- Selecione o Macro-desfecho --</option>';
+        return;
+      }
+      sub.disabled = false;
+      sub.innerHTML = '<option value="">-- Selecione o Submotivo --</option>' +
+        mapaSubmotivosDesfecho[macro].map(s => `<option value="${s}">${s}</option>`).join('');
+    }
+
+    function copiarFichaCasoAtual() {
+      if (!currentCase) return;
+
+      // Gerar link direto para este caso (funciona na web hospedada ou localmente)
+      let linkDireto = '';
+      if (window.location.protocol.startsWith('http')) {
+        linkDireto = `${window.location.origin}${window.location.pathname}#caso=${encodeURIComponent(currentCase.CD_USUARIO)}`;
+      } else {
+        linkDireto = `${window.location.href.split('#')[0]}#caso=${encodeURIComponent(currentCase.CD_USUARIO)}`;
+      }
+
+      // Coleta dados dos inputs em tempo real para garantir que pegou o que foi preenchido
+      const statusOrcamento = document.getElementById('editCaseStatusOrcamento')?.value || currentCase.STATUS_ORCAMENTO || 'Não informado';
+      const valorInicial = document.getElementById('editCaseValorInicial')?.value || currentCase.VALOR_INICIAL || 'Não informado';
+      const valorPacote = document.getElementById('editCaseValorPacote')?.value || currentCase['VALOR PACOTE'] || 'Não informado';
+      const qualPacote = document.getElementById('editCaseQualPacote')?.value || currentCase['QUAL PACOTE?'] || 'Não informado';
+      const prestadorPacote = document.getElementById('editCasePrestadorPacote')?.value || currentCase.PRESTADOR_PACOTE || 'Não informado';
+
+      const medResponsavel = currentCase.GERENTE_MEDICO ? `Dr(a). ${currentCase.GERENTE_MEDICO}` : 'Não atribuído';
+      const medConsultor = document.getElementById('editCaseMedConsultor')?.value || currentCase.MEDICO_CONSULTOR || '';
+      const obsMedConsultor = document.getElementById('editCaseObsMedConsultor')?.value || currentCase.OBS_MED_CONSULTOR || '';
+
+      const enf = document.getElementById('editCaseEnf')?.value || currentCase.ENF || '';
+      const obsEnf = document.getElementById('editCaseObsEnf')?.value || currentCase.OBS_ENF || '';
+
+      const adm = document.getElementById('editCaseAdm')?.value || currentCase.ADM || '';
+      const obsAdm = document.getElementById('editCaseObsAdm')?.value || currentCase.OBS_ADM || '';
+
+      const logs = historyLog[currentCase.CD_USUARIO] || [];
+      const ultimosLogs = logs.slice(0, 3).map(l => `• [${l.date}] ${l.author}: ${l.text}`).join('\n');
+
+      let txt = `📋 *FICHA DE CASO - FIDELIZAÇÃO HAPVIDA NDI*\n`;
+      txt += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+      txt += `👤 *Beneficiário:* ${currentCase.NM_USUARIO || '-'}\n`;
+      txt += `🔢 *Cód. Utente / Carteira:* ${currentCase.CD_USUARIO || '-'}\n`;
+      txt += `📄 *Plano:* ${currentCase.NM_PLANO || '-'}\n`;
+      txt += `🏢 *Base:* ${currentCase.BASE || 'NDI'}\n`;
+      txt += `⏱ *Prazo / SLA:* ${currentCase.DIAS_AUTORIZACAO || 0} dias decorridos (Pendência: #${currentCase.TIPO_PENDENCIA || '-'})\n`;
+      txt += `\n🏥 *DADOS DO PROCEDIMENTO & PRESTADOR*\n`;
+      txt += `• *Procedimento:* ${currentCase.PROCEDIMENTO_AGRUPADO || '-'}\n`;
+      txt += `• *Cód. TUSS:* ${currentCase.CD_PROCEDIMENTO || '-'}\n`;
+      txt += `• *Prestador:* ${currentCase.NM_PRESTADOR || '-'}\n`;
+      txt += `• *Local:* ${currentCase.CIDADE || '-'} - ${currentCase.UF || '-'}\n`;
+      txt += `• *Solicitante:* ${currentCase.NM_SOLICITANTE || '-'}\n`;
+      txt += `\n💰 *ORÇAMENTO & PACOTE NEGOCIADO*\n`;
+      txt += `• *Status Orçamento:* ${statusOrcamento}\n`;
+      txt += `• *Valor Inicial:* ${valorInicial}\n`;
+      txt += `• *Valor Pacote:* ${valorPacote}\n`;
+      txt += `• *Qual Pacote:* ${qualPacote}\n`;
+      txt += `• *Prestador Pacote:* ${prestadorPacote}\n`;
+      txt += `\n👥 *EQUIPE DESIGNADA*\n`;
+      txt += `• *Médico Resp.:* ${medResponsavel}\n`;
+      if (medConsultor) txt += `• *Médico Consultor:* ${medConsultor}${obsMedConsultor ? ` (Obs: ${obsMedConsultor})` : ''}\n`;
+      if (enf) txt += `• *Enfermagem:* ${enf}${obsEnf ? ` (Obs: ${obsEnf})` : ''}\n`;
+      if (adm) txt += `• *ADM:* ${adm}${obsAdm ? ` (Obs: ${obsAdm})` : ''}\n`;
+
+      if (currentCase.ULTIMO_DESFECHO) {
+        txt += `\n🏁 *Último Desfecho:* ${currentCase.ULTIMO_DESFECHO}\n`;
+      }
+
+      if (ultimosLogs) {
+        txt += `\n📝 *Últimos Registros Blindados:*\n${ultimosLogs}\n`;
+      }
+
+      txt += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+      txt += `🔗 *Acesse a ficha deste caso diretamente no link:*\n${linkDireto}\n`;
+
+      navigator.clipboard.writeText(txt).then(() => {
+        alert('✅ Ficha completa e link direto copiados com sucesso!\n\nPronto para colar no Teams ou WhatsApp.');
+      }).catch(err => {
+        console.error('Erro ao copiar ficha:', err);
+        prompt('Copie o texto da ficha abaixo:', txt);
+      });
+    }
+
+    function render() {
+      popularFiltroMedicos();
+      const cases = getFilteredCases();
+      
+      const criticos = cases.filter(c => (c.DIAS_AUTORIZACAO || 0) > 10);
+      const atencao = cases.filter(c => (c.DIAS_AUTORIZACAO || 0) >= 7 && (c.DIAS_AUTORIZACAO || 0) <= 10);
+      const regular = cases.filter(c => (c.DIAS_AUTORIZACAO || 0) <= 6);
+
+      const totalNoCofre = Object.keys(vaultCases).length;
+
+      document.getElementById('badgeTotalTop').innerText = `${activeCases.length} Casos na Esteira`;
+      document.getElementById('kpi-total').innerText = cases.length;
+      document.getElementById('badge-count-critico').innerText = criticos.length;
+      document.getElementById('col-count-critico').innerText = criticos.length;
+      document.getElementById('badge-count-atencao').innerText = atencao.length;
+      document.getElementById('col-count-atencao').innerText = atencao.length;
+      document.getElementById('badge-count-regular').innerText = regular.length;
+      document.getElementById('col-count-regular').innerText = regular.length;
+      document.getElementById('kpi-concluidas').innerText = totalNoCofre;
+
+      const buildCard = (c) => {
+        const qtdLogs = (historyLog[c.CD_USUARIO] || []).length;
+        return `
+        <div onclick="openCaseDetail('${c.CD_USUARIO}')" class="bg-white p-4 rounded-xl border border-slate-200 hover:border-indigo-500 hover:shadow-md transition cursor-pointer space-y-2.5 group">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-mono">${c.CD_USUARIO}</span>
+            <div class="flex items-center gap-1">
+              ${qtdLogs > 0 ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200" title="Registros no Cofre"><i class="fa-solid fa-clock-rotate-left"></i> ${qtdLogs}</span>` : ''}
+              <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full ${c.DIAS_AUTORIZACAO > 10 ? 'bg-rose-100 text-rose-700' : (c.DIAS_AUTORIZACAO >= 7 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800')}">⏱ ${c.DIAS_AUTORIZACAO || 0}d</span>
+            </div>
+          </div>
+          <div>
+            <h3 class="font-bold text-slate-800 text-xs leading-snug group-hover:text-indigo-600 transition mb-1">${c.NM_USUARIO}</h3>
+            <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200 font-extrabold text-[10px]">
+              Pendência: <strong>${c.TIPO_PENDENCIA || '-'}</strong>
+            </div>
+            <p class="text-[11px] text-slate-500 truncate mt-1">${c.PROCEDIMENTO_AGRUPADO || '-'}</p>
+          </div>
+          <div class="text-[10.5px] text-slate-400 truncate flex items-center gap-1">
+            <i class="fa-solid fa-hospital text-[10px]"></i> ${c.NM_PRESTADOR || '-'}
+          </div>
+          <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
+            <span class="text-indigo-600 font-bold bg-indigo-50 px-2 py-0.5 rounded-md">${c.GERENTE_MEDICO ? 'Dr(a). ' + c.GERENTE_MEDICO : 'Sem Resp.'}</span>
+            <span class="font-bold text-indigo-600">Abrir ➔</span>
+          </div>
+        </div>
+      `};
+
+      const emptyMsg = (msg) => `<p class="text-xs text-slate-400 italic p-4 text-center">${msg}</p>`;
+
+      document.getElementById('col-critico').innerHTML = criticos.length ? criticos.map(buildCard).join('') : emptyMsg('Nenhum caso crítico.');
+      document.getElementById('col-atencao').innerHTML = atencao.length ? atencao.map(buildCard).join('') : emptyMsg('Nenhum caso em atenção.');
+      document.getElementById('col-regular').innerHTML = regular.length ? regular.map(buildCard).join('') : emptyMsg('Nenhum caso regular.');
+
+      document.getElementById('lista-tbody').innerHTML = cases.length ? cases.map(c => `
+        <tr onclick="openCaseDetail('${c.CD_USUARIO}')" class="hover:bg-indigo-50/50 cursor-pointer transition">
+          <td class="py-3 px-4 font-mono font-bold text-indigo-700 text-xs">${c.CD_USUARIO}</td>
+          <td class="py-3 px-4 font-bold text-slate-900">${c.NM_USUARIO}</td>
+          <td class="py-3 px-4 text-slate-600 truncate max-w-xs">${c.PROCEDIMENTO_AGRUPADO}</td>
+          <td class="py-3 px-4 text-slate-500 truncate max-w-xs">${c.NM_PRESTADOR}</td>
+          <td class="py-3 px-4 text-center font-extrabold">${c.DIAS_AUTORIZACAO || 0} dias</td>
+          <td class="py-3 px-4 text-right font-bold text-indigo-600">Abrir ➔</td>
+        </tr>
+      `).join('') : `<tr><td colspan="6" class="py-8 text-center text-slate-400 italic">Suba a planilha do dia no botão verde acima.</td></tr>`;
+
+      document.getElementById('view-fichas').innerHTML = cases.length ? cases.map(buildCard).join('') : `<div class="col-span-3">${emptyMsg('Nenhum caso carregado.')}</div>`;
+
+      const q = (document.getElementById('searchInput').value || '').toLowerCase();
+      const listaCofre = Object.values(vaultCases).filter(c => {
+        return !q ||
+          (c.NM_USUARIO && c.NM_USUARIO.toLowerCase().includes(q)) ||
+          (c.CD_USUARIO && c.CD_USUARIO.toLowerCase().includes(q)) ||
+          (c.PROCEDIMENTO_AGRUPADO && c.PROCEDIMENTO_AGRUPADO.toLowerCase().includes(q));
+      });
+
+      document.getElementById('historico-tbody').innerHTML = listaCofre.length ? listaCofre.map(c => {
+        const logs = historyLog[c.CD_USUARIO] || [];
+        const ultimoLog = logs[0] ? `${logs[0].text} (${logs[0].date})` : (c.ULTIMO_DESFECHO || 'Sem parecer final');
+        const isConcluido = c.STATUS_COFRE === 'CONCLUÍDO';
+        return `
+          <tr onclick="openCaseDetail('${c.CD_USUARIO}')" class="hover:bg-emerald-50/50 cursor-pointer transition">
+            <td class="py-3 px-4">
+              <span class="text-[10px] font-extrabold px-2.5 py-1 rounded-full ${isConcluido ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-indigo-100 text-indigo-800 border border-indigo-200'}">
+                ${isConcluido ? '✔ CONCLUÍDO' : '⏳ EM HISTÓRICO'}
+              </span>
+            </td>
+            <td class="py-3 px-4 font-mono font-bold text-slate-800">${c.CD_USUARIO}</td>
+            <td class="py-3 px-4 font-bold text-slate-900">${c.NM_USUARIO}</td>
+            <td class="py-3 px-4 text-slate-600 truncate max-w-xs">${c.PROCEDIMENTO_AGRUPADO || '-'}</td>
+            <td class="py-3 px-4 text-xs">
+              <span class="font-bold text-indigo-700">${c.MEDICO_CONSULTOR || c.GERENTE_MEDICO || '-'}</span>
+              ${c['VALOR PACOTE'] ? `<span class="block text-[10px] font-extrabold text-emerald-700">Pacote: ${c['VALOR PACOTE']}</span>` : ''}
+            </td>
+            <td class="py-3 px-4 text-slate-600 truncate max-w-sm">${ultimoLog}</td>
+            <td class="py-3 px-4 text-right font-bold text-emerald-700">Ver Ficha ➔</td>
+          </tr>
+        `;
+      }).join('') : `<tr><td colspan="7" class="py-8 text-center text-slate-400 italic">Nenhum registro acumulado no Cofre ainda.</td></tr>`;
+    }
+
+    document.getElementById('searchInput').addEventListener('input', render);
+    
+    // Abertura Direta via Link (Hash na URL #caso=...)
+    function verificarCasoNaURL() {
+      const hash = window.location.hash;
+      if (hash && hash.includes('caso=')) {
+        const cod = decodeURIComponent(hash.split('caso=')[1].split('&')[0]);
+        if (cod) {
+          const abrirSeExistir = () => {
+            const achou = activeCases.find(c => String(c.CD_USUARIO) === String(cod)) || vaultCases[String(cod)];
+            if (achou) {
+              openCaseDetail(cod);
+              return true;
+            }
+            return false;
+          };
+
+          if (!abrirSeExistir()) {
+            let tentativas = 0;
+            const timer = setInterval(() => {
+              tentativas++;
+              if (abrirSeExistir() || tentativas > 20) {
+                clearInterval(timer);
+              }
+            }, 300);
+          }
+        }
+      }
+    }
+
+    window.addEventListener('hashchange', verificarCasoNaURL);
+
+    // Inicialização da Aplicação e Conexão Firebase
+    initFirebase();
+    render();
+    verificarCasoNaURL();
+
+    // Solicita login com usuário e senha na inicialização da sessão
+    if (!sessionStorage.getItem('hapvida_sessao_autenticada')) {
+      abrirModalOperador();
+    } else {
+      atualizarLabelOperador();
+    }
+
+    // Suporte a Arrastar e Soltar (Drag & Drop) de planilhas
+    window.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    });
+    window.addEventListener('drop', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        const file = e.dataTransfer.files[0];
+        const ext = file.name.split('.').pop().toLowerCase();
+        if (['xlsx', 'xls', 'csv'].includes(ext)) {
+          executarSubirPlanilha({ target: { files: [file] } });
+        }
+      }
+    });
+  </script>
+</body>
+</html>
