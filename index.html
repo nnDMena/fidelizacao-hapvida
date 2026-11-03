@@ -95,7 +95,7 @@
       <!-- Operador Ativo Customizável -->
       <div onclick="trocarOperadorAtivo()" title="Clique para trocar seu nome de operador" class="cursor-pointer text-right pl-2 pr-1 py-1 rounded-lg hover:bg-indigo-900/60 transition">
         <p id="lblOperadorNome" class="text-xs font-extrabold text-white leading-tight flex items-center justify-end gap-1">
-          Fernando Mena <i class="fa-solid fa-pen text-[9px] text-indigo-300"></i>
+          Fernando Henrique Pires Mena <i class="fa-solid fa-pen text-[9px] text-indigo-300"></i>
         </p>
         <p class="text-[10px] text-emerald-400 font-bold flex items-center justify-end gap-1">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Operador Ativo
@@ -119,14 +119,14 @@
         <p class="text-xs text-slate-500 mt-0.5">Sincronização <strong>em tempo real na Nuvem</strong> para até 30 pessoas conectadas.</p>
       </div>
 
-      <!-- FILTRO EXCLUSIVO POR MÉDICO NA PRIMEIRA ESTEIRA -->
+      <!-- FILTRO EXCLUSIVO POR GERENTE MÉDICO NA PRIMEIRA ESTEIRA -->
       <div class="flex items-center gap-2 bg-indigo-50/70 border border-indigo-200 px-3 py-1.5 rounded-xl shadow-2xs">
         <label for="filterMedico" class="text-xs font-bold text-indigo-950 flex items-center gap-1.5 shrink-0">
-          <i class="fa-solid fa-user-doctor text-indigo-600 text-xs"></i> Filtrar Médico:
+          <i class="fa-solid fa-user-doctor text-indigo-600 text-xs"></i> Filtrar Gerente Médico:
         </label>
         <select id="filterMedico" onchange="render()" 
           class="bg-white border border-indigo-300 rounded-lg text-xs font-bold text-slate-800 py-1 px-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-2xs">
-          <option value="">Todos os Médicos (Geral)</option>
+          <option value="">Todos os Gerentes Médicos (Geral)</option>
         </select>
         <button id="btnLimparFiltroMed" onclick="limparFiltroMedico()" title="Limpar filtro de médico" class="hidden text-slate-400 hover:text-rose-600 text-xs px-1">
           <i class="fa-solid fa-circle-xmark"></i>
@@ -424,7 +424,7 @@
                   <i class="fa-solid fa-user-doctor"></i>
                 </div>
                 <div>
-                  <span class="text-[10px] font-extrabold uppercase text-indigo-300 tracking-wider">Médico Responsável</span>
+                  <span class="text-[10px] font-extrabold uppercase text-indigo-300 tracking-wider">Gerente Médico</span>
                   <p id="singleDetailMedResponsavel" class="text-sm font-extrabold text-white mt-0.5">-</p>
                 </div>
               </div>
@@ -440,16 +440,24 @@
                 <label class="text-[10px] font-extrabold text-violet-950 block">Médico Consultor</label>
                 <select id="editCaseMedConsultor" onchange="autoSalvarProfissionais()" class="w-full bg-white font-bold text-slate-900 text-xs px-2 py-1.5 rounded-lg border border-violet-300">
                   <option value="">Selecione...</option>
-                  <option value="Rodrigo R.">Rodrigo R.</option>
-                  <option value="Marco G.">Marco G.</option>
-                  <option value="Fernanda">Fernanda</option>
-                  <option value="Luiz F.">Luiz F.</option>
-                  <option value="Diego Bernardes">Diego Bernardes</option>
-                  <option value="Murilo Fernandes">Murilo Fernandes</option>
-                  <option value="Lorena Santana">Lorena Santana</option>
-                  <option value="Rubens Augusto">Rubens Augusto</option>
-                  <option value="Ederson">Ederson</option>
-                  <option value="Diego">Diego</option>
+                  <option value="Vinicius Nunes Azevedo">Vinicius Nunes Azevedo</option>
+                  <option value="Marco Antonio Pereira Guerra">Marco Antonio Pereira Guerra</option>
+                  <option value="Ederson Evaristo">Ederson Evaristo</option>
+                  <option value="Tania Ranchandani">Tania Ranchandani</option>
+                  <option value="Rodrigo Rodrigues">Rodrigo Rodrigues</option>
+                  <option value="Paula Orlandini Pertsew">Paula Orlandini Pertsew</option>
+                  <option value="Mauricio Cunha Guimaraes">Mauricio Cunha Guimaraes</option>
+                  <option value="Luiz Fernando Pavan Schwarz">Luiz Fernando Pavan Schwarz</option>
+                  <option value="Fernanda Sertorio Bartolli">Fernanda Sertorio Bartolli</option>
+                  <option value="Caroline Perin">Caroline Perin</option>
+                  <option value="Diego Godoi Bernardes da Silva">Diego Godoi Bernardes da Silva</option>
+                  <option value="Lorena de Souza Santana">Lorena de Souza Santana</option>
+                  <option value="Marcela Usberti Gutierre">Marcela Usberti Gutierre</option>
+                  <option value="Amanda Regina Marques Lira">Amanda Regina Marques Lira</option>
+                  <option value="João Henrique de Souza">João Henrique de Souza</option>
+                  <option value="Murilo Adolfo Fernandes">Murilo Adolfo Fernandes</option>
+                  <option value="Rubens Augusto Zapponi Nathan">Rubens Augusto Zapponi Nathan</option>
+                  <option value="Talita Costa Freire de Oliveira">Talita Costa Freire de Oliveira</option>
                 </select>
                 <label class="text-[9.5px] font-bold text-violet-900 block mt-1">Observação:</label>
                 <textarea id="editCaseObsMedConsultor" onchange="autoSalvarProfissionais()" rows="3" placeholder="Observações do Médico Consultor..." class="w-full text-xs p-2 rounded-lg border border-violet-300 bg-white focus:outline-none focus:ring-1 focus:ring-violet-400"></textarea>
@@ -460,33 +468,34 @@
                 <label class="text-[10px] font-extrabold text-sky-950 block">Enfermagem</label>
                 <select id="editCaseEnf" onchange="autoSalvarProfissionais()" class="w-full bg-white font-bold text-slate-900 text-xs px-2 py-1.5 rounded-lg border border-sky-300">
                   <option value="">Selecione...</option>
-                  <option value="Enf. Valéria">Enf. Valéria</option>
-                  <option value="Enf. Gilsa">Enf. Gilsa</option>
-                  <option value="Enf. Natalia">Enf. Natalia</option>
-                  <option value="Enf. Fatima">Enf. Fatima</option>
-                  <option value="Enf. Gabrielly">Enf. Gabrielly</option>
-                  <option value="Enf. Nice">Enf. Nice</option>
-                  <option value="Enf. Jaqueline">Enf. Jaqueline</option>
+                  <option value="Gabrielly Oliveira Costa">Gabrielly Oliveira Costa</option>
+                  <option value="Jaqueline Rocha Nascimento Sousa">Jaqueline Rocha Nascimento Sousa</option>
+                  <option value="Natália Santos do Carmo">Natália Santos do Carmo</option>
+                  <option value="Claudionice Aparecida Silva">Claudionice Aparecida Silva</option>
+                  <option value="Mauricio de Almeida Gomes">Mauricio de Almeida Gomes</option>
                 </select>
                 <label class="text-[9.5px] font-bold text-sky-900 block mt-1">Observação:</label>
                 <textarea id="editCaseObsEnf" onchange="autoSalvarProfissionais()" rows="3" placeholder="Observações da Enfermagem..." class="w-full text-xs p-2 rounded-lg border border-sky-300 bg-white focus:outline-none focus:ring-1 focus:ring-sky-400"></textarea>
               </div>
 
-              <!-- ADM -->
+              <!-- Administrativo -->
               <div class="p-3 rounded-xl bg-slate-100 border-2 border-slate-300 shadow-2xs space-y-2">
-                <label class="text-[10px] font-extrabold text-slate-900 block">ADM</label>
+                <label class="text-[10px] font-extrabold text-slate-900 block">Administrativo</label>
                 <select id="editCaseAdm" onchange="autoSalvarProfissionais()" class="w-full bg-white font-bold text-slate-900 text-xs px-2 py-1.5 rounded-lg border border-slate-300">
                   <option value="">Selecione...</option>
-                  <option value="Ana (Chris)">Ana (Chris)</option>
-                  <option value="Luciene">Luciene</option>
-                  <option value="Vivi">Vivi</option>
-                  <option value="Jose">Jose</option>
-                  <option value="William">William</option>
-                  <option value="Henrique">Henrique</option>
-                  <option value="Vitor Hugo">Vitor Hugo</option>
+                  <option value="Anna Carolina de Souza Hanna">Anna Carolina de Souza Hanna</option>
+                  <option value="Willian Lima Fogaça">Willian Lima Fogaça</option>
+                  <option value="Luciene de Paulo Borges">Luciene de Paulo Borges</option>
+                  <option value="Jose Alailton Reinaldo da Silva">Jose Alailton Reinaldo da Silva</option>
+                  <option value="Larissa Araujo Dos Santos">Larissa Araujo Dos Santos</option>
+                  <option value="Henrique Dos Santos Mozer">Henrique Dos Santos Mozer</option>
+                  <option value="Viviane Maconego Pereira Flauzino">Viviane Maconego Pereira Flauzino</option>
+                  <option value="Christiane Aparecida Balthazar">Christiane Aparecida Balthazar</option>
+                  <option value="Fernando Henrique Pires Mena">Fernando Henrique Pires Mena</option>
+                  <option value="Vitor Hugo de Almeida">Vitor Hugo de Almeida</option>
                 </select>
                 <label class="text-[9.5px] font-bold text-slate-700 block mt-1">Observação:</label>
-                <textarea id="editCaseObsAdm" onchange="autoSalvarProfissionais()" rows="3" placeholder="Observações do ADM..." class="w-full text-xs p-2 rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-1 focus:ring-slate-400"></textarea>
+                <textarea id="editCaseObsAdm" onchange="autoSalvarProfissionais()" rows="3" placeholder="Observações do Administrativo..." class="w-full text-xs p-2 rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-1 focus:ring-slate-400"></textarea>
               </div>
             </div>
           </div>
@@ -658,39 +667,41 @@
     // ==========================================
     const SENHA_MESTRE = 'fidelizacao';
 
-    // Lista exclusiva de usuários sem repetição
+    // Lista exclusiva de usuários para login
     const LISTA_OPERADORES_UNICA = [
-      "Fernando Mena",
-      "Rodrigo R.",
-      "Fernanda",
-      "Luiz F.",
-      "Diego Bernardes",
-      "João Henrique",
-      "Murilo Fernandes",
-      "Lorena Santana",
-      "Marcela Gutierre",
-      "Mauricio Guimarães",
-      "Ederson",
-      "Diego",
-      "Tania",
-      "Paula Pertsew",
-      "Enf. Gilsa",
-      "Enf. Natalia",
-      "Larissa",
-      "Amanda",
-      "Enf. Fatima",
-      "Enf. Gabrielly",
-      "Enf. Valéria",
-      "Enf. Nice",
-      "Enf. Maurício",
-      "Enf. Jaqueline",
-      "Ana (Chris)",
-      "Luciene",
-      "Vivi",
-      "Jose",
-      "William",
-      "Henrique",
-      "Vitor Hugo"
+      "Talita Costa Freire de Oliveira",
+      "Rubens Augusto Zapponi Nathan",
+      "Diego Godoi Bernardes da Silva",
+      "Lorena de Souza Santana",
+      "Marcela Usberti Gutierre",
+      "Amanda Regina Marques Lira",
+      "João Henrique de Souza",
+      "Murilo Adolfo Fernandes",
+      "Vinicius Nunes Azevedo",
+      "Marco Antonio Pereira Guerra",
+      "Ederson Evaristo",
+      "Tania Ranchandani",
+      "Rodrigo Rodrigues",
+      "Paula Orlandini Pertsew",
+      "Mauricio Cunha Guimaraes",
+      "Luiz Fernando Pavan Schwarz",
+      "Fernanda Sertorio Bartolli",
+      "Caroline Perin",
+      "Gabrielly Oliveira Costa",
+      "Jaqueline Rocha Nascimento Sousa",
+      "Natália Santos do Carmo",
+      "Claudionice Aparecida Silva",
+      "Mauricio de Almeida Gomes",
+      "Anna Carolina de Souza Hanna",
+      "Willian Lima Fogaça",
+      "Luciene de Paulo Borges",
+      "Jose Alailton Reinaldo da Silva",
+      "Larissa Araujo Dos Santos",
+      "Henrique Dos Santos Mozer",
+      "Viviane Maconego Pereira Flauzino",
+      "Christiane Aparecida Balthazar",
+      "Fernando Henrique Pires Mena",
+      "Vitor Hugo de Almeida"
     ];
 
     let operadorAtual = localStorage.getItem('hapvida_operador_ativo') || '';
@@ -1935,10 +1946,10 @@
       txt += `• *Qual Pacote:* ${qualPacote}\n`;
       txt += `• *Prestador Pacote:* ${prestadorPacote}\n`;
       txt += `\n👥 *EQUIPE DESIGNADA*\n`;
-      txt += `• *Médico Resp.:* ${medResponsavel}\n`;
+      txt += `• *Gerente Médico:* ${medResponsavel}\n`;
       if (medConsultor) txt += `• *Médico Consultor:* ${medConsultor}${obsMedConsultor ? ` (Obs: ${obsMedConsultor})` : ''}\n`;
       if (enf) txt += `• *Enfermagem:* ${enf}${obsEnf ? ` (Obs: ${obsEnf})` : ''}\n`;
-      if (adm) txt += `• *ADM:* ${adm}${obsAdm ? ` (Obs: ${obsAdm})` : ''}\n`;
+      if (adm) txt += `• *Administrativo:* ${adm}${obsAdm ? ` (Obs: ${obsAdm})` : ''}\n`;
 
       if (currentCase.ULTIMO_DESFECHO) {
         txt += `\n🏁 *Último Desfecho:* ${currentCase.ULTIMO_DESFECHO}\n`;
