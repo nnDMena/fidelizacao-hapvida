@@ -384,25 +384,15 @@
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
-              <div class="sm:col-span-6">
-                <label for="editCaseStatusOrcamento" class="text-[10px] font-extrabold uppercase text-slate-600 tracking-wider block mb-1.5">Status Orçamento:</label>
-                <select id="editCaseStatusOrcamento" onchange="autoSalvarProfissionais()" class="w-full bg-white font-bold text-slate-800 text-xs px-3 py-2.5 rounded-xl border border-slate-300">
-                  <option value="">Selecione o status...</option>
-                  <option value="SEM OPME">SEM OPME</option>
-                  <option value="COM OPME, SEM ORÇAM.">COM OPME, SEM ORÇAM.</option>
-                  <option value="COM OPME, LECOM ABERTO">COM OPME, LECOM ABERTO</option>
-                  <option value="ORÇAMENTO LECOM">ORÇAMENTO LECOM</option>
-                  <option value="ORÇAMENTO SIGO">ORÇAMENTO SIGO</option>
-                  <option value="MEDICAMENTO">MEDICAMENTO</option>
-                  <option value="PACOTE (SEM ORÇAM.)">PACOTE (SEM ORÇAM.)</option>
-                  <option value="A INICAR">A INICAR</option>
-                </select>
-              </div>
-              <div class="sm:col-span-3">
+              <div class="sm:col-span-4">
                 <label for="editCaseValorInicial" class="text-[10px] font-extrabold uppercase text-slate-600 tracking-wider block mb-1.5">Valor Inicial:</label>
                 <input type="text" id="editCaseValorInicial" oninput="autoSalvarProfissionais()" placeholder="Ex: R$ 8.500,00" class="w-full bg-white font-bold text-slate-800 text-xs px-3 py-2.5 rounded-xl border border-slate-300">
               </div>
-              <div class="sm:col-span-3">
+              <div class="sm:col-span-4">
+                <label for="editCaseMenorValor" class="text-[10px] font-extrabold uppercase text-slate-600 tracking-wider block mb-1.5">Menor Valor:</label>
+                <input type="text" id="editCaseMenorValor" oninput="autoSalvarProfissionais()" placeholder="Ex: R$ 3.200,00" class="w-full bg-white font-bold text-slate-800 text-xs px-3 py-2.5 rounded-xl border border-slate-300">
+              </div>
+              <div class="sm:col-span-4">
                 <label for="editCaseValorPacote" class="text-[10px] font-extrabold uppercase text-emerald-800 tracking-wider block mb-1.5">Valor Pacote:</label>
                 <input type="text" id="editCaseValorPacote" oninput="autoSalvarProfissionais()" placeholder="Ex: R$ 2.900,00" class="w-full bg-white font-extrabold text-emerald-700 text-xs px-3 py-2.5 rounded-xl border-2 border-emerald-400">
               </div>
@@ -1243,6 +1233,9 @@
       VALOR_INICIAL: [
         'valorinicial', 'vlinicial', 'valorsolicitado', 'vlestimado', 'valor'
       ],
+      MENOR_VALOR: [
+        'menorvalor', 'vlmenor', 'valormenor', 'menororcamento', 'menor'
+      ],
       'QUAL PACOTE?': [
         'qualpacote', 'qualpacote?', 'pacote', 'nmpacote', 'codpacote', 'descricaopacote'
       ],
@@ -1482,6 +1475,7 @@
               UF: getVal('UF', salvoNoCofre.UF || '-'),
               STATUS_ORCAMENTO: getVal('STATUS_ORCAMENTO', salvoNoCofre.STATUS_ORCAMENTO || ''),
               VALOR_INICIAL: getVal('VALOR_INICIAL', salvoNoCofre.VALOR_INICIAL || ''),
+              MENOR_VALOR: getVal('MENOR_VALOR', salvoNoCofre.MENOR_VALOR || ''),
               'QUAL PACOTE?': getVal('QUAL PACOTE?', salvoNoCofre['QUAL PACOTE?'] || ''),
               'VALOR PACOTE': getVal('VALOR PACOTE', salvoNoCofre['VALOR PACOTE'] || ''),
               PRESTADOR_PACOTE: salvoNoCofre.PRESTADOR_PACOTE || '',
@@ -1554,6 +1548,7 @@
           'OBS_ADM': c.OBS_ADM || '',
           'STATUS_ORCAMENTO': c.STATUS_ORCAMENTO || '',
           'VALOR_INICIAL': c.VALOR_INICIAL || '',
+          'MENOR_VALOR': c.MENOR_VALOR || '',
           'VALOR_PACOTE': c['VALOR PACOTE'] || '',
           'QUAL_PACOTE': c['QUAL PACOTE?'] || '',
           'PRESTADOR_PACOTE': c.PRESTADOR_PACOTE || '',
@@ -1732,8 +1727,8 @@
       document.getElementById('singleDetailBase').innerText = baseVal;
       document.getElementById('singleDetailMedResponsavel').innerText = currentCase.GERENTE_MEDICO ? 'Dr(a). ' + currentCase.GERENTE_MEDICO : 'Não Atribuído';
       
-      document.getElementById('editCaseStatusOrcamento').value = currentCase.STATUS_ORCAMENTO || '';
       document.getElementById('editCaseValorInicial').value = currentCase.VALOR_INICIAL || '';
+      document.getElementById('editCaseMenorValor').value = currentCase.MENOR_VALOR || '';
       document.getElementById('editCaseValorPacote').value = currentCase['VALOR PACOTE'] || '';
       document.getElementById('editCaseQualPacote').value = currentCase['QUAL PACOTE?'] || '';
       document.getElementById('editCasePrestadorPacote').value = currentCase.PRESTADOR_PACOTE || '';
@@ -1811,8 +1806,8 @@
 
     function autoSalvarProfissionais() {
       if (!currentCase) return;
-      currentCase.STATUS_ORCAMENTO = document.getElementById('editCaseStatusOrcamento').value;
       currentCase.VALOR_INICIAL = document.getElementById('editCaseValorInicial').value;
+      currentCase.MENOR_VALOR = document.getElementById('editCaseMenorValor').value;
       currentCase['VALOR PACOTE'] = document.getElementById('editCaseValorPacote').value;
       currentCase['QUAL PACOTE?'] = document.getElementById('editCaseQualPacote').value;
       currentCase.PRESTADOR_PACOTE = document.getElementById('editCasePrestadorPacote').value;
@@ -1901,8 +1896,8 @@
       }
 
       // Coleta dados dos inputs em tempo real para garantir que pegou o que foi preenchido
-      const statusOrcamento = document.getElementById('editCaseStatusOrcamento')?.value || currentCase.STATUS_ORCAMENTO || 'Não informado';
       const valorInicial = document.getElementById('editCaseValorInicial')?.value || currentCase.VALOR_INICIAL || 'Não informado';
+      const menorValor = document.getElementById('editCaseMenorValor')?.value || currentCase.MENOR_VALOR || 'Não informado';
       const valorPacote = document.getElementById('editCaseValorPacote')?.value || currentCase['VALOR PACOTE'] || 'Não informado';
       const qualPacote = document.getElementById('editCaseQualPacote')?.value || currentCase['QUAL PACOTE?'] || 'Não informado';
       const prestadorPacote = document.getElementById('editCasePrestadorPacote')?.value || currentCase.PRESTADOR_PACOTE || 'Não informado';
@@ -1934,8 +1929,8 @@
       txt += `• *Local:* ${currentCase.CIDADE || '-'} - ${currentCase.UF || '-'}\n`;
       txt += `• *Solicitante:* ${currentCase.NM_SOLICITANTE || '-'}\n`;
       txt += `\n💰 *ORÇAMENTO & PACOTE NEGOCIADO*\n`;
-      txt += `• *Status Orçamento:* ${statusOrcamento}\n`;
       txt += `• *Valor Inicial:* ${valorInicial}\n`;
+      txt += `• *Menor Valor:* ${menorValor}\n`;
       txt += `• *Valor Pacote:* ${valorPacote}\n`;
       txt += `• *Qual Pacote:* ${qualPacote}\n`;
       txt += `• *Prestador Pacote:* ${prestadorPacote}\n`;
