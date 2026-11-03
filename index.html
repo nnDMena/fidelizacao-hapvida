@@ -116,7 +116,7 @@
           Esteira Operacional de Fidelização Rede Credenciada
           <span id="badgeTotalTop" class="text-[11px] font-extrabold text-indigo-600 px-2 py-0.5 bg-indigo-50 rounded-md border border-indigo-200/60">0 Casos na Esteira</span>
         </h1>
-        <p class="text-xs text-slate-500 mt-0.5">Sincronização <strong>em tempo real na Nuvem</strong> para até 30 pessoas conectadas.</p>
+        <p class="text-xs text-slate-500 mt-0.5">Sincronização <strong>em tempo real na Nuvem</strong>.</p>
       </div>
 
       <!-- FILTRO EXCLUSIVO POR GERENTE MÉDICO NA PRIMEIRA ESTEIRA -->
@@ -503,21 +503,6 @@
 
         <!-- RIGHT COLUMN -->
         <div class="lg:col-span-5 space-y-5">
-          <div class="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-3">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-2">
-              <h3 class="text-xs font-extrabold uppercase tracking-wider text-indigo-900 flex items-center gap-2">
-                <i class="fa-solid fa-comment-medical text-indigo-600"></i> Registrar Andamento no Histórico
-              </h3>
-              <span class="text-[10px] font-bold text-slate-400">Gravado em Nuvem</span>
-            </div>
-            <div class="flex gap-2">
-              <input type="text" id="inputAndamentoRapido" placeholder="Digite uma evolução/observação permanente..." class="flex-1 p-2.5 text-xs bg-slate-50 border border-slate-300 rounded-xl">
-              <button onclick="registrarAndamentoImutavel()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition shrink-0">
-                + Gravar
-              </button>
-            </div>
-          </div>
-
           <div class="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-3.5">
             <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
               <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-800 flex items-center gap-2">
@@ -859,7 +844,7 @@
 
         if (banner) banner.classList.add('hidden');
         if (badge) badge.className = 'text-[10px] bg-emerald-900/90 text-emerald-300 font-bold px-2 py-0.5 rounded-full border border-emerald-700/60 flex items-center gap-1';
-        if (label) label.innerText = 'Nuvem Conectada (30 Operadores)';
+        if (label) label.innerText = 'Nuvem Conectada';
 
         iniciarOuvintesTempoReal();
       } catch (err) {
@@ -1803,6 +1788,7 @@
     function registrarAndamentoImutavel() {
       if (!currentCase) return;
       const input = document.getElementById('inputAndamentoRapido');
+      if (!input) return;
       const texto = input.value.trim();
       if (!texto) return;
 
