@@ -24,29 +24,6 @@
 </head>
 <body class="min-h-screen md:h-screen flex flex-col md:overflow-hidden text-slate-800 antialiased bg-slate-100">
 
-  <!-- MARCA D'ÁGUA DINÂMICA FORENSE (LGPD) -->
-  <div id="watermarkOverlay" class="pointer-events-none fixed inset-0 z-[9990] transition-opacity"></div>
-
-  <!-- CORTINA ANTI-SNIPPING (DESFOQUE EM PERDA DE FOCO) -->
-  <div id="antiSnippingCurtain" onclick="fecharCortinaAntiSnipping()" class="hidden fixed inset-0 z-[99999] bg-slate-950/75 backdrop-blur-xl flex-col items-center justify-center text-white text-center p-6 select-none cursor-pointer transition-all duration-150">
-    <div class="bg-slate-900/95 border border-slate-700/80 rounded-3xl p-6 sm:p-8 max-w-sm shadow-2xl space-y-3.5 transform transition-all scale-100" onclick="event.stopPropagation(); fecharCortinaAntiSnipping();">
-      <div class="w-14 h-14 mx-auto rounded-2xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-rose-400 text-2xl shadow-inner animate-pulse">
-        <i class="fa-solid fa-shield-halved"></i>
-      </div>
-      <div class="space-y-1">
-        <h3 class="text-base sm:text-lg font-black text-white tracking-tight">Conteúdo Protegido</h3>
-        <p class="text-xs text-slate-300 leading-relaxed">
-          A visualização foi ocultada preventivamente para garantir a segurança dos dados confidenciais do paciente (LGPD).
-        </p>
-      </div>
-      <div class="pt-2">
-        <button type="button" onclick="fecharCortinaAntiSnipping()" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black transition shadow-md active:scale-95 cursor-pointer">
-          <i class="fa-solid fa-arrow-pointer"></i> Clique para Continuar
-        </button>
-      </div>
-    </div>
-  </div>
-
   <!-- BANNER DE STATUS DO FIREBASE / MULTI-USUÁRIO -->
   <div id="firebase-status-banner" class="bg-amber-500 text-slate-950 px-3 sm:px-4 py-1.5 text-xs font-bold flex flex-wrap items-center justify-between gap-1.5 shrink-0 border-b border-amber-600">
     <div class="flex items-center gap-1.5 sm:gap-2">
@@ -926,9 +903,6 @@
         lbl.innerHTML = `${nomeExibido} <i class="fa-solid fa-pen text-[9px] text-indigo-300"></i>`;
       }
       atualizarPermissoesOperador();
-      if (typeof atualizarMarcaDagua === 'function') {
-        atualizarMarcaDagua();
-      }
     }
 
     // ==========================================
@@ -2727,104 +2701,6 @@
         }
       }
     });
-    // ==========================================
-    // SEGURANÇA CORPORATIVA: MARCA D'ÁGUA DINÂMICA & ANTI-SNIPPING
-    // ==========================================
-    let antiSnippingTimer = null;
-    let isFilePickerOpen = false;
-
-    function atualizarMarcaDagua() {
-      const overlay = document.getElementById('watermarkOverlay');
-      if (!overlay) return;
-
-      const nomeOperador = (operadorAtual && operadorAtual !== 'Anônimo') ? operadorAtual : 'OPERADOR AUTORIZADO';
-      const now = new Date();
-      const dia = String(now.getDate()).padStart(2, '0');
-      const mes = String(now.getMonth() + 1).padStart(2, '0');
-      const ano = now.getFullYear();
-      const hora = String(now.getHours()).padStart(2, '0');
-      const min = String(now.getMinutes()).padStart(2, '0');
-      const seg = String(now.getSeconds()).padStart(2, '0');
-      const carimbo = `${dia}/${mes}/${ano} ${hora}:${min}:${seg}`;
-
-      try {
-        const canvas = document.createElement('canvas');
-        canvas.width = 440;
-        canvas.height = 220;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-
-        ctx.rotate(-22 * Math.PI / 180);
-        ctx.font = 'bold 12.5px system-ui, -apple-system, sans-serif';
-        ctx.fillStyle = 'rgba(71, 85, 105, 0.085)';
-        ctx.fillText(`🔒 ${nomeOperador}`, -30, 110);
-        
-        ctx.font = 'bold 10px system-ui, -apple-system, sans-serif';
-        ctx.fillStyle = 'rgba(71, 85, 105, 0.075)';
-        ctx.fillText(`${carimbo} • CONFIDENCIAL LGPD`, -30, 128);
-
-        overlay.style.backgroundImage = `url(${canvas.toDataURL('image/png')})`;
-        overlay.style.backgroundRepeat = 'repeat';
-      } catch (err) {
-        console.error('Erro ao gerar marca dágua:', err);
-      }
-    }
-
-    function fecharCortinaAntiSnipping() {
-      const curtain = document.getElementById('antiSnippingCurtain');
-      if (curtain) {
-        curtain.classList.add('hidden');
-        curtain.classList.remove('flex');
-      }
-      try { window.focus(); } catch (_) {}
-    }
-
-    function abrirCortinaAntiSnipping() {
-      if (isFilePickerOpen) return;
-      const curtain = document.getElementById('antiSnippingCurtain');
-      if (curtain) {
-        curtain.classList.remove('hidden');
-        curtain.classList.add('flex');
-      }
-    }
-
-    // Anti-Snipping: desfoque imediato ao perder o foco (Win+Shift+S, Snipping Tool, troca de app)
-    window.addEventListener('blur', () => {
-      antiSnippingTimer = setTimeout(() => {
-        abrirCortinaAntiSnipping();
-      }, 100);
-    });
-
-    // Restaura visualização ao voltar para a janela
-    window.addEventListener('focus', () => {
-      if (antiSnippingTimer) clearTimeout(antiSnippingTimer);
-      isFilePickerOpen = false;
-      fecharCortinaAntiSnipping();
-    });
-
-    // Intercepta tecla PrintScreen do teclado
-    window.addEventListener('keyup', (e) => {
-      if (e.key === 'PrintScreen' || e.keyCode === 44) {
-        abrirCortinaAntiSnipping();
-        try {
-          if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText('');
-          }
-        } catch (_) {}
-      }
-    });
-
-    // Evita acionar a cortina anti-snipping ao abrir a janela de seleção de arquivo
-    document.querySelectorAll('input[type="file"]').forEach(input => {
-      input.addEventListener('click', () => {
-        isFilePickerOpen = true;
-        setTimeout(() => { isFilePickerOpen = false; }, 30000);
-      });
-    });
-
-    // Inicia a marca d'água e atualiza a cada 10 segundos
-    atualizarMarcaDagua();
-    setInterval(atualizarMarcaDagua, 10000);
   </script>
 </body>
 </html>
