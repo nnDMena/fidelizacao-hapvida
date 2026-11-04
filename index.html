@@ -165,14 +165,14 @@
           <span id="badge-count-regular" class="text-xs font-extrabold text-sky-700">0</span>
           <span class="text-[9px] sm:text-[10px] font-semibold text-sky-600 uppercase tracking-wider">Regular</span>
         </div>
-        <div onclick="setView('historico')" class="cursor-pointer hover:bg-emerald-100/80 transition px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-emerald-50 border border-emerald-300 flex flex-col items-center min-w-[70px] sm:min-w-[85px] shrink-0" title="Clique para ver o Cofre de Histórico Permanente">
+        <div onclick="setView('finalizados')" class="cursor-pointer hover:bg-emerald-100/80 transition px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-emerald-50 border border-emerald-300 flex flex-col items-center min-w-[70px] sm:min-w-[85px] shrink-0" title="Clique para ver os Casos Finalizados">
           <span id="kpi-concluidas" class="text-xs font-extrabold text-emerald-700">0</span>
-          <span class="text-[9px] sm:text-[10px] font-extrabold text-emerald-700 uppercase tracking-wider flex items-center gap-1"><i class="fa-solid fa-lock text-[8px]"></i> Histórico</span>
+          <span class="text-[9px] sm:text-[10px] font-extrabold text-emerald-700 uppercase tracking-wider flex items-center gap-1"><i class="fa-solid fa-circle-check text-[8px]"></i> Finalizados</span>
         </div>
       </div>
 
       <!-- Segmented View Switcher (100% responsivo) -->
-      <div class="w-full sm:w-auto flex items-center justify-between sm:justify-start bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-semibold overflow-x-auto scrollbar-none">
+      <div class="w-full sm:w-auto flex items-center justify-between sm:justify-start bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-semibold overflow-x-auto scrollbar-none gap-0.5 sm:gap-1">
         <button onclick="setView('kanban')" id="btn-view-kanban" class="flex-1 sm:flex-none justify-center px-2 sm:px-3 py-1.5 rounded-lg bg-white text-indigo-700 shadow-xs flex items-center gap-1 transition text-[11px] sm:text-xs">
           <i class="fa-solid fa-table-columns text-indigo-600"></i> Kanban
         </button>
@@ -182,8 +182,11 @@
         <button onclick="setView('fichas')" id="btn-view-fichas" class="flex-1 sm:flex-none justify-center px-2 sm:px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 flex items-center gap-1 transition text-[11px] sm:text-xs">
           <i class="fa-solid fa-address-card"></i> Fichas
         </button>
-        <button onclick="setView('historico')" id="btn-view-historico" class="flex-1 sm:flex-none justify-center px-2 sm:px-3 py-1.5 rounded-lg text-emerald-800 hover:text-emerald-950 flex items-center gap-1 transition text-[11px] sm:text-xs">
-          <i class="fa-solid fa-shield-halved text-emerald-600"></i> Histórico
+        <button onclick="setView('finalizados')" id="btn-view-finalizados" class="flex-1 sm:flex-none justify-center px-2 sm:px-3 py-1.5 rounded-lg text-emerald-800 hover:text-emerald-950 flex items-center gap-1.5 transition text-[11px] sm:text-xs">
+          <i class="fa-solid fa-circle-check text-emerald-600"></i> Finalizados <span id="tab-count-finalizados" class="text-[9.5px] font-black bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded-full">0</span>
+        </button>
+        <button onclick="setView('historico')" id="btn-view-historico" class="flex-1 sm:flex-none justify-center px-2 sm:px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 flex items-center gap-1 transition text-[11px] sm:text-xs">
+          <i class="fa-solid fa-shield-halved text-indigo-600"></i> Histórico
         </button>
       </div>
     </div>
@@ -249,7 +252,49 @@
       <!-- 3. FICHAS VIEW -->
       <div id="view-fichas" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-3.5"></div>
 
-      <!-- 4. HISTÓRICO BLINDADO VIEW -->
+      <!-- 4. CASOS FINALIZADOS VIEW -->
+      <div id="view-finalizados" class="hidden space-y-4">
+        <div class="bg-gradient-to-r from-emerald-950 via-teal-900 to-slate-900 text-white p-3.5 sm:p-4 rounded-2xl shadow-xs flex flex-wrap items-center justify-between gap-3 sm:gap-4">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-300 text-base sm:text-lg shrink-0">
+              <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <div>
+              <h2 class="text-xs sm:text-sm font-extrabold flex items-center gap-2 flex-wrap">
+                Casos Finalizados
+                <span class="text-[9px] sm:text-[10px] bg-emerald-500 text-slate-950 font-black px-2 py-0.5 rounded-full uppercase">Deliberação Concluída</span>
+              </h2>
+              <p class="text-[11px] sm:text-xs text-emerald-200/90 mt-0.5">Guias que tiveram o parecer técnico emitido e foram devidamente finalizadas.</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <button onclick="verificarSenhaEExecutar('baixar_base')" class="w-full sm:w-auto justify-center bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs px-3.5 py-2 rounded-xl flex items-center gap-2 shadow-sm transition">
+              <i class="fa-solid fa-file-excel"></i> Exportar Base (.xlsx)
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
+          <div class="overflow-x-auto w-full">
+            <table class="w-full text-left border-collapse text-xs whitespace-nowrap sm:whitespace-normal min-w-[750px] sm:min-w-0">
+              <thead>
+                <tr class="bg-slate-50 text-slate-500 uppercase tracking-wider font-bold border-b border-slate-200/80 text-[10.5px] sm:text-[11px]">
+                  <th class="py-2.5 sm:py-3 px-3 sm:px-4">Cód. Utente</th>
+                  <th class="py-2.5 sm:py-3 px-3 sm:px-4">Beneficiário</th>
+                  <th class="py-2.5 sm:py-3 px-3 sm:px-4">Procedimento</th>
+                  <th class="py-2.5 sm:py-3 px-3 sm:px-4">Assumiu o Caso</th>
+                  <th class="py-2.5 sm:py-3 px-3 sm:px-4">Desfecho &amp; Parecer</th>
+                  <th class="py-2.5 sm:py-3 px-3 sm:px-4 text-center">Prazos</th>
+                  <th class="py-2.5 sm:py-3 px-3 sm:px-4 text-right">Ação</th>
+                </tr>
+              </thead>
+              <tbody id="finalizados-tbody" class="divide-y divide-slate-100 text-slate-700"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. HISTÓRICO BLINDADO VIEW -->
       <div id="view-historico" class="hidden space-y-4">
         <div class="bg-gradient-to-r from-emerald-950 via-teal-900 to-indigo-950 text-white p-3.5 sm:p-4 rounded-2xl shadow-xs flex flex-wrap items-center justify-between gap-3 sm:gap-4">
           <div class="flex items-center gap-3">
@@ -437,7 +482,7 @@
               </span>
             </div>
 
-            <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-indigo-900 text-white p-3 sm:p-3.5 rounded-xl border border-indigo-900/80 flex items-center justify-between flex-wrap gap-2">
+            <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-indigo-900 text-white p-3 sm:p-3.5 rounded-xl border border-indigo-900/80 flex items-center justify-between flex-wrap gap-3">
               <div class="flex items-center gap-2.5 sm:gap-3">
                 <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-indigo-600/60 border border-indigo-400/30 flex items-center justify-center text-indigo-200 text-sm sm:text-base shrink-0 shadow-inner">
                   <i class="fa-solid fa-user-doctor"></i>
@@ -447,6 +492,22 @@
                   <p id="singleDetailMedResponsavel" class="text-xs sm:text-sm font-extrabold text-white mt-0.5">-</p>
                 </div>
               </div>
+
+              <!-- LISTA: ASSUMIU O CASO (Ao lado do Gerente Médico) -->
+              <div class="flex-1 min-w-[240px] max-w-md bg-white/10 hover:bg-white/15 p-2 rounded-xl border border-white/20 transition">
+                <div class="flex items-center justify-between gap-1 mb-1">
+                  <label for="editCaseAssumiuPor" class="text-[9.5px] sm:text-[10px] font-extrabold uppercase text-amber-300 tracking-wider flex items-center gap-1">
+                    <i class="fa-solid fa-user-check text-amber-400"></i> Assumiu o Caso
+                  </label>
+                  <button type="button" onclick="assumirCasoEuMesmo()" class="text-[9.5px] font-bold bg-amber-400/25 hover:bg-amber-400/40 text-amber-200 px-2 py-0.5 rounded transition cursor-pointer" title="Preencher com o meu usuário logado">
+                    <i class="fa-solid fa-hand"></i> Assumir eu
+                  </button>
+                </div>
+                <select id="editCaseAssumiuPor" onchange="autoSalvarProfissionais()" class="w-full bg-slate-900 text-white font-bold text-xs px-2.5 py-1.5 rounded-lg border border-indigo-400/60 focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer">
+                  <option value="">Selecione quem assumiu o caso...</option>
+                </select>
+              </div>
+
               <div class="text-right">
                 <span class="text-[9.5px] sm:text-[10px] text-indigo-300/80 font-medium block">Base / Regional:</span>
                 <span id="singleDetailBase" class="text-[11px] sm:text-xs font-bold text-indigo-100 block">-</span>
@@ -1234,6 +1295,8 @@
         'diaspermanencia', 'permanencia', 'aging'
       ],
       DIAS_SETOR: [
+        'dtentradaplanilha', 'dt_entrada_planilha', 'dataentradaplanilha', 'data_entrada_planilha',
+        'dtentrada', 'dataentrada', 'dt_entrada', 'data_entrada', 'entrada',
         'diassetor', 'prazosetor', 'temposetor', 'slasetor', 'setordias', 'diasnosetor',
         'diasetore', 'agingsetor', 'setoraging', 'prazodosetor', 'diasdosetor', 'setor', 'tempodesetor'
       ],
@@ -1314,6 +1377,46 @@
         'obsadm', 'obsadmplanilha', 'pareceradm', 'observacaoadm', 'analiseadm'
       ]
     };
+
+    function calcularDiasDeDataOuNumero(valCell) {
+      if (valCell === null || valCell === undefined || String(valCell).trim() === '') return 0;
+      if (valCell instanceof Date) {
+        const diffTime = Math.max(0, new Date() - valCell);
+        return Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      }
+      if (typeof valCell === 'number' && valCell > 35000 && valCell < 65000) {
+        const dataExcel = new Date((valCell - 25569) * 86400 * 1000);
+        const diffTime = Math.max(0, new Date() - dataExcel);
+        return Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      }
+      const str = String(valCell).trim();
+      const matchBR = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+      if (matchBR) {
+        const dia = parseInt(matchBR[1], 10);
+        const mes = parseInt(matchBR[2], 10) - 1;
+        let ano = parseInt(matchBR[3], 10);
+        if (ano < 100) ano += 2000;
+        const d = new Date(ano, mes, dia);
+        if (!isNaN(d.getTime())) {
+          const diffTime = Math.max(0, new Date() - d);
+          return Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        }
+      }
+      const matchISO = str.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+      if (matchISO) {
+        const ano = parseInt(matchISO[1], 10);
+        const mes = parseInt(matchISO[2], 10) - 1;
+        const dia = parseInt(matchISO[3], 10);
+        const d = new Date(ano, mes, dia);
+        if (!isNaN(d.getTime())) {
+          const diffTime = Math.max(0, new Date() - d);
+          return Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        }
+      }
+      const parsed = parseInt(str.replace(/[^0-9-]/g, ''), 10);
+      if (!isNaN(parsed)) return parsed;
+      return 0;
+    }
 
     function executarSubirPlanilha(event) {
       const file = (event && event.target && event.target.files) ? event.target.files[0] : null;
@@ -1450,18 +1553,21 @@
             if (mapeamentoColunas.NM_USUARIO === undefined) mapeamentoColunas.NM_USUARIO = 1;
           }
 
-          // Refinamento de Prazos: 1ª coluna de dias = Prazo Principal (DIAS_AUTORIZACAO), 2ª coluna = Prazo Setor (DIAS_SETOR)
+          // Refinamento de Prazos: 1ª coluna de dias = Prazo Principal (DIAS_AUTORIZACAO), 2ª coluna = Prazo Setor (DIAS_SETOR / DT_ENTRADA_PLANILHA)
           const headerRow = matrixFinal[indiceCabecalho] || [];
           const colunasDeDias = [];
 
           headerRow.forEach((cell, colIdx) => {
             const norm = normalizarTexto(cell);
             if (!norm) return;
-            const isSetor = norm.includes('setor') && (norm.includes('dia') || norm.includes('prazo') || norm.includes('tempo') || norm.includes('sla') || norm.includes('aging'));
-            const isDiaGeral = norm === 'dias' || norm === 'prazo' || norm === 'sla' || norm === 'aging' ||
+            const isDtEntrada = norm.includes('dtentrada') || norm.includes('dataentrada') || norm.includes('dt_entrada') || norm.includes('entradaplanilha') || norm === 'dtentradaplanilha';
+            const isSetor = isDtEntrada || (norm.includes('setor') && (norm.includes('dia') || norm.includes('prazo') || norm.includes('tempo') || norm.includes('sla') || norm.includes('aging')));
+            const isDiaGeral = !isDtEntrada && (norm === 'dias' || norm === 'prazo' || norm === 'sla' || norm === 'aging' ||
                                norm.includes('diasautorizacao') || norm.includes('diascorridos') || norm.includes('prazoprincipal') ||
-                               norm.startsWith('dia') || norm.startsWith('prazo');
-            if (isSetor) {
+                               norm.startsWith('dia') || norm.startsWith('prazo'));
+            if (isDtEntrada) {
+              mapeamentoColunas.DIAS_SETOR = colIdx;
+            } else if (isSetor && mapeamentoColunas.DIAS_SETOR === undefined) {
               mapeamentoColunas.DIAS_SETOR = colIdx;
             } else if (isDiaGeral) {
               colunasDeDias.push(colIdx);
@@ -1512,26 +1618,12 @@
 
             let diasSla = 0;
             if (mapeamentoColunas.DIAS_AUTORIZACAO !== undefined && row[mapeamentoColunas.DIAS_AUTORIZACAO] !== undefined) {
-              const valCell = row[mapeamentoColunas.DIAS_AUTORIZACAO];
-              if (valCell instanceof Date) {
-                const diffTime = Math.max(0, new Date() - valCell);
-                diasSla = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-              } else if (valCell !== null && valCell !== undefined && String(valCell).trim() !== '') {
-                const parsed = parseInt(String(valCell).replace(/[^0-9-]/g, ''), 10);
-                if (!isNaN(parsed)) diasSla = parsed;
-              }
+              diasSla = calcularDiasDeDataOuNumero(row[mapeamentoColunas.DIAS_AUTORIZACAO]);
             }
 
             let diasSetor = null;
             if (mapeamentoColunas.DIAS_SETOR !== undefined && row[mapeamentoColunas.DIAS_SETOR] !== undefined) {
-              const valCell = row[mapeamentoColunas.DIAS_SETOR];
-              if (valCell instanceof Date) {
-                const diffTime = Math.max(0, new Date() - valCell);
-                diasSetor = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-              } else if (valCell !== null && valCell !== undefined && String(valCell).trim() !== '') {
-                const parsed = parseInt(String(valCell).replace(/[^0-9-]/g, ''), 10);
-                if (!isNaN(parsed)) diasSetor = parsed;
-              }
+              diasSetor = calcularDiasDeDataOuNumero(row[mapeamentoColunas.DIAS_SETOR]);
             }
 
             const obsMedPlan = getVal('OBS_MEDICO');
@@ -1550,6 +1642,7 @@
               NM_USUARIO: nmUsuario,
               DIAS_AUTORIZACAO: diasSla,
               DIAS_SETOR: diasSetor !== null ? diasSetor : (salvoNoCofre.DIAS_SETOR !== undefined ? salvoNoCofre.DIAS_SETOR : null),
+              ASSUMIU_POR: salvoNoCofre.ASSUMIU_POR || '',
               BASE: getVal('BASE', salvoNoCofre.BASE || 'NDI'),
               TIPO_PENDENCIA: getVal('TIPO_PENDENCIA', salvoNoCofre.TIPO_PENDENCIA || '69'),
               GERENTE_MEDICO: getVal('GERENTE_MEDICO', salvoNoCofre.GERENTE_MEDICO || ''),
@@ -1635,6 +1728,7 @@
           'DIAS_AUTORIZACAO': c.DIAS_AUTORIZACAO || 0,
           'DIAS_SETOR': c.DIAS_SETOR !== undefined && c.DIAS_SETOR !== null ? c.DIAS_SETOR : '',
           'GERENTE_MEDICO': c.GERENTE_MEDICO || '',
+          'ASSUMIU_POR': c.ASSUMIU_POR || '',
           'MEDICO_CONSULTOR': c.MEDICO_CONSULTOR || '',
           'STATUS_MED_CONSULTOR': c.STATUS_MED_CONSULTOR || '',
           'OBS_MED_CONSULTOR': c.OBS_MED_CONSULTOR || '',
@@ -1749,12 +1843,16 @@
 
     function setView(view) {
       currentView = view;
-      ['kanban', 'lista', 'fichas', 'historico'].forEach(v => {
-        document.getElementById('view-' + v).classList.add('hidden');
-        document.getElementById('btn-view-' + v).className = 'px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 flex items-center gap-1.5 transition';
+      ['kanban', 'lista', 'fichas', 'finalizados', 'historico'].forEach(v => {
+        const el = document.getElementById('view-' + v);
+        const btn = document.getElementById('btn-view-' + v);
+        if (el) el.classList.add('hidden');
+        if (btn) btn.className = 'flex-1 sm:flex-none justify-center px-2 sm:px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 flex items-center gap-1 transition text-[11px] sm:text-xs';
       });
-      document.getElementById('view-' + view).classList.remove('hidden');
-      document.getElementById('btn-view-' + view).className = 'px-3 py-1.5 rounded-lg bg-white text-indigo-700 shadow-xs flex items-center gap-1.5 font-bold transition';
+      const elAtivo = document.getElementById('view-' + view);
+      const btnAtivo = document.getElementById('btn-view-' + view);
+      if (elAtivo) elAtivo.classList.remove('hidden');
+      if (btnAtivo) btnAtivo.className = 'flex-1 sm:flex-none justify-center px-2 sm:px-3 py-1.5 rounded-lg bg-white text-indigo-700 shadow-xs flex items-center gap-1 font-bold transition text-[11px] sm:text-xs';
       render();
     }
 
@@ -1806,6 +1904,25 @@
       }).sort((a, b) => (b.DIAS_AUTORIZACAO || 0) - (a.DIAS_AUTORIZACAO || 0));
     }
 
+    function popularSelectAssumiuCaso() {
+      const select = document.getElementById('editCaseAssumiuPor');
+      if (!select) return;
+      const valAtual = select.value;
+      select.innerHTML = '<option value="">Selecione quem assumiu o caso...</option>' +
+        LISTA_OPERADORES_UNICA.map(nome => `<option value="${nome}">${nome}</option>`).join('');
+      if (valAtual) select.value = valAtual;
+    }
+
+    function assumirCasoEuMesmo() {
+      if (!currentCase) return;
+      const select = document.getElementById('editCaseAssumiuPor');
+      if (!select) return;
+      if (operadorAtual && operadorAtual !== 'Anônimo') {
+        select.value = operadorAtual;
+      }
+      autoSalvarProfissionais();
+    }
+
     function openCaseDetail(cod) {
       currentCase = activeCases.find(c => String(c.CD_USUARIO) === String(cod)) || vaultCases[String(cod)];
       if (!currentCase) return;
@@ -1835,6 +1952,10 @@
       document.getElementById('labelBaseTop').innerText = baseVal;
       document.getElementById('singleDetailBase').innerText = baseVal;
       document.getElementById('singleDetailMedResponsavel').innerText = currentCase.GERENTE_MEDICO ? 'Dr(a). ' + currentCase.GERENTE_MEDICO : 'Não Atribuído';
+      popularSelectAssumiuCaso();
+      if (document.getElementById('editCaseAssumiuPor')) {
+        document.getElementById('editCaseAssumiuPor').value = currentCase.ASSUMIU_POR || '';
+      }
       
       document.getElementById('editCaseValorInicial').value = currentCase.VALOR_INICIAL || '';
       document.getElementById('editCaseMenorValor').value = currentCase.MENOR_VALOR || '';
@@ -1947,6 +2068,8 @@
 
       currentCase.ADM = document.getElementById('editCaseAdm').value;
       currentCase.OBS_ADM = document.getElementById('editCaseObsAdm').value;
+
+      currentCase.ASSUMIU_POR = document.getElementById('editCaseAssumiuPor')?.value || '';
       
       const idx = activeCases.findIndex(c => String(c.CD_USUARIO) === String(currentCase.CD_USUARIO));
       if (idx !== -1) activeCases[idx] = { ...currentCase };
@@ -2137,6 +2260,7 @@
       txt += `• *Prestador Pacote:* ${prestadorPacote}\n`;
       txt += `\n👥 *EQUIPE DESIGNADA*\n`;
       txt += `• *Gerente Médico:* ${medResponsavel}\n`;
+      if (currentCase.ASSUMIU_POR) txt += `• *Assumiu o Caso:* ${currentCase.ASSUMIU_POR}\n`;
       if (medConsultor) txt += `• *Médico Consultor:* ${medConsultor}${obsMedConsultor ? ` (Obs: ${obsMedConsultor})` : ''}\n`;
       if (enf) txt += `• *Enfermagem:* ${enf}${obsEnf ? ` (Obs: ${obsEnf})` : ''}\n`;
       if (adm) txt += `• *Administrativo:* ${adm}${obsAdm ? ` (Obs: ${obsAdm})` : ''}\n`;
@@ -2203,8 +2327,11 @@
           <div class="text-[10.5px] text-slate-400 truncate flex items-center gap-1">
             <i class="fa-solid fa-hospital text-[10px]"></i> ${c.NM_PRESTADOR || '-'}
           </div>
-          <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
-            <span class="text-indigo-600 font-bold bg-indigo-50 px-2 py-0.5 rounded-md">${c.GERENTE_MEDICO ? 'Dr(a). ' + c.GERENTE_MEDICO : 'Sem Resp.'}</span>
+          <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] flex-wrap gap-1">
+            <div class="flex items-center gap-1 flex-wrap">
+              <span class="text-indigo-600 font-bold bg-indigo-50 px-2 py-0.5 rounded-md">${c.GERENTE_MEDICO ? 'Dr(a). ' + c.GERENTE_MEDICO : 'Sem Resp.'}</span>
+              ${c.ASSUMIU_POR ? `<span class="inline-flex items-center gap-1 text-[9.5px] font-extrabold bg-amber-50 text-amber-800 border border-amber-200 px-1.5 py-0.5 rounded-md" title="Assumiu o Caso: ${c.ASSUMIU_POR}"><i class="fa-solid fa-user-check text-amber-600 text-[8.5px]"></i> ${c.ASSUMIU_POR.split(' ')[0]}</span>` : ''}
+            </div>
             <span class="font-bold text-indigo-600">Abrir ➔</span>
           </div>
         </div>
@@ -2237,6 +2364,55 @@
       document.getElementById('view-fichas').innerHTML = cases.length ? cases.map(buildCard).join('') : `<div class="col-span-3">${emptyMsg('Nenhum caso carregado.')}</div>`;
 
       const q = ((document.getElementById('searchInputMobile')?.value || document.getElementById('searchInput')?.value) || '').toLowerCase();
+      
+      // 1. Renderizar Casos Finalizados
+      const listaFinalizados = Object.values(vaultCases).filter(c => {
+        const isFin = c.STATUS_COFRE === 'CONCLUÍDO' || (c.ULTIMO_DESFECHO && c.ULTIMO_DESFECHO.trim() !== '');
+        if (!isFin) return false;
+        return !q ||
+          (c.NM_USUARIO && c.NM_USUARIO.toLowerCase().includes(q)) ||
+          (c.CD_USUARIO && c.CD_USUARIO.toLowerCase().includes(q)) ||
+          (c.PROCEDIMENTO_AGRUPADO && c.PROCEDIMENTO_AGRUPADO.toLowerCase().includes(q)) ||
+          (c.ASSUMIU_POR && c.ASSUMIU_POR.toLowerCase().includes(q)) ||
+          (c.ULTIMO_DESFECHO && c.ULTIMO_DESFECHO.toLowerCase().includes(q));
+      });
+
+      const countFinalizadosTotal = Object.values(vaultCases).filter(c => c.STATUS_COFRE === 'CONCLUÍDO' || (c.ULTIMO_DESFECHO && c.ULTIMO_DESFECHO.trim() !== '')).length;
+      const badgeTabFin = document.getElementById('tab-count-finalizados');
+      if (badgeTabFin) badgeTabFin.innerText = countFinalizadosTotal;
+      const kpiFin = document.getElementById('kpi-concluidas');
+      if (kpiFin) kpiFin.innerText = countFinalizadosTotal;
+
+      const tbodyFin = document.getElementById('finalizados-tbody');
+      if (tbodyFin) {
+        tbodyFin.innerHTML = listaFinalizados.length ? listaFinalizados.map(c => {
+          const logs = historyLog[c.CD_USUARIO] || [];
+          const ultimoLog = logs[0] ? `${logs[0].text} (${logs[0].date})` : (c.ULTIMO_DESFECHO || 'Sem parecer final');
+          const temSetor = c.DIAS_SETOR !== undefined && c.DIAS_SETOR !== null && c.DIAS_SETOR !== '';
+          return `
+            <tr onclick="openCaseDetail('${c.CD_USUARIO}')" class="hover:bg-emerald-50/50 cursor-pointer transition">
+              <td class="py-3 px-4 font-mono font-bold text-slate-800">${c.CD_USUARIO}</td>
+              <td class="py-3 px-4 font-bold text-slate-900">${c.NM_USUARIO}</td>
+              <td class="py-3 px-4 text-slate-600 truncate max-w-xs">${c.PROCEDIMENTO_AGRUPADO || '-'}</td>
+              <td class="py-3 px-4 text-xs">
+                ${c.ASSUMIU_POR ? `<span class="inline-flex items-center gap-1 font-extrabold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md"><i class="fa-solid fa-user-check text-amber-600 text-[9px]"></i> ${c.ASSUMIU_POR}</span>` : `<span class="text-slate-400 font-medium">${c.GERENTE_MEDICO || '-'}</span>`}
+              </td>
+              <td class="py-3 px-4 text-slate-700 truncate max-w-sm">
+                <span class="font-bold text-emerald-800">${c.ULTIMO_DESFECHO || ultimoLog}</span>
+              </td>
+              <td class="py-3 px-4 text-center">
+                <div class="inline-flex items-center gap-1 justify-center">
+                  <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full ${c.DIAS_AUTORIZACAO > 10 ? 'bg-rose-100 text-rose-700' : (c.DIAS_AUTORIZACAO >= 7 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800')}">${c.DIAS_AUTORIZACAO || 0}d</span>
+                  ${temSetor ? `<span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">${c.DIAS_SETOR}d</span>` : ''}
+                </div>
+              </td>
+              <td class="py-3 px-4 text-right font-bold text-emerald-700">Ver Ficha ➔</td>
+            </tr>
+          `;
+        }).join('') : `<tr><td colspan="7" class="py-8 text-center text-slate-400 italic">Nenhum caso finalizado até o momento.</td></tr>`;
+      }
+
+      // 2. Renderizar Histórico Completo (Cofre)
       const listaCofre = Object.values(vaultCases).filter(c => {
         return !q ||
           (c.NM_USUARIO && c.NM_USUARIO.toLowerCase().includes(q)) ||
@@ -2303,6 +2479,7 @@
 
     // Inicialização da Aplicação e Conexão Firebase
     initFirebase();
+    popularSelectAssumiuCaso();
     render();
     verificarCasoNaURL();
     atualizarLabelOperador();
