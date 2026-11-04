@@ -59,43 +59,46 @@
 
     <!-- Actions & User Profile & Planilha Upload -->
     <div class="flex items-center space-x-2">
-      <!-- Botão Subir Planilha do Dia -->
-      <button onclick="solicitarSubirPlanilha()" class="text-[11px] bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-3 py-1.5 rounded-lg border border-emerald-500 shadow-sm flex items-center gap-1.5 transition active:scale-[0.98]" title="Carregar planilha do dia e enviar para todos">
-        <i class="fa-solid fa-cloud-arrow-up text-xs"></i>
-        <span>Subir Planilha</span>
-      </button>
-      <input type="file" id="inputPlanilhaDia" accept=".xlsx, .xls, .csv" class="hidden" onchange="executarSubirPlanilha(event)">
+      <!-- BOTÕES DE GESTÃO E ADMINISTRAÇÃO (EXCLUSIVO FERNANDO MENA E VITOR HUGO) -->
+      <div id="containerBotoesAdmin" class="hidden items-center space-x-2">
+        <!-- Botão Subir Planilha do Dia -->
+        <button onclick="solicitarSubirPlanilha()" class="text-[11px] bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-3 py-1.5 rounded-lg border border-emerald-500 shadow-sm flex items-center gap-1.5 transition active:scale-[0.98]" title="Carregar planilha do dia e enviar para todos">
+          <i class="fa-solid fa-cloud-arrow-up text-xs"></i>
+          <span>Subir Planilha</span>
+        </button>
+        <input type="file" id="inputPlanilhaDia" accept=".xlsx, .xls, .csv" class="hidden" onchange="executarSubirPlanilha(event)">
 
-      <!-- Botão Exportar Planilha Base do Histórico -->
-      <button onclick="verificarSenhaEExecutar('baixar_base')" title="Baixar Planilha Base completa com todo o Histórico acumulado (.xlsx)"
-        class="text-[11px] bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold px-3 py-1.5 rounded-lg border border-amber-400 shadow-sm flex items-center gap-1.5 transition active:scale-[0.98]">
-        <i class="fa-solid fa-download text-xs"></i>
-        <span class="hidden lg:inline">Baixar Base</span>
-      </button>
+        <!-- Botão Exportar Planilha Base do Histórico -->
+        <button onclick="verificarSenhaEExecutar('baixar_base')" title="Baixar Planilha Base completa com todo o Histórico acumulado (.xlsx)"
+          class="text-[11px] bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold px-3 py-1.5 rounded-lg border border-amber-400 shadow-sm flex items-center gap-1.5 transition active:scale-[0.98]">
+          <i class="fa-solid fa-download text-xs"></i>
+          <span class="hidden lg:inline">Baixar Base</span>
+        </button>
 
-      <!-- Botão Importar / Sincronizar Base de Histórico -->
-      <button onclick="solicitarRestaurarBase()" class="text-[11px] bg-indigo-800 hover:bg-indigo-700 text-indigo-100 font-bold px-2.5 py-1.5 rounded-lg border border-indigo-600 flex items-center gap-1.5 transition" title="Importar/Mesclar uma Planilha Base de Histórico na Nuvem">
-        <i class="fa-solid fa-file-import text-xs text-amber-300"></i>
-        <span class="hidden xl:inline">Restaurar</span>
-      </button>
-      <input type="file" id="inputRestaurarBase" accept=".xlsx, .xls" class="hidden" onchange="executarRestaurarBase(event)">
+        <!-- Botão Importar / Sincronizar Base de Histórico -->
+        <button onclick="solicitarRestaurarBase()" class="text-[11px] bg-indigo-800 hover:bg-indigo-700 text-indigo-100 font-bold px-2.5 py-1.5 rounded-lg border border-indigo-600 flex items-center gap-1.5 transition" title="Importar/Mesclar uma Planilha Base de Histórico na Nuvem">
+          <i class="fa-solid fa-file-import text-xs text-amber-300"></i>
+          <span class="hidden xl:inline">Restaurar</span>
+        </button>
+        <input type="file" id="inputRestaurarBase" accept=".xlsx, .xls" class="hidden" onchange="executarRestaurarBase(event)">
 
-      <!-- Limpar esteira do dia -->
-      <button onclick="verificarSenhaEExecutar('limpar_fila')" title="Limpar apenas os casos ativos da esteira na Nuvem" 
-        class="text-[11px] bg-indigo-950/80 hover:bg-rose-900 text-indigo-200 hover:text-white px-2.5 py-1.5 rounded-lg border border-indigo-800/80 flex items-center gap-1.5 transition">
-        <i class="fa-solid fa-broom text-[10px]"></i> <span class="hidden sm:inline">Limpar Fila</span>
-      </button>
+        <!-- Limpar esteira do dia -->
+        <button onclick="verificarSenhaEExecutar('limpar_fila')" title="Limpar apenas os casos ativos da esteira na Nuvem" 
+          class="text-[11px] bg-indigo-950/80 hover:bg-rose-900 text-indigo-200 hover:text-white px-2.5 py-1.5 rounded-lg border border-indigo-800/80 flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-broom text-[10px]"></i> <span class="hidden sm:inline">Limpar Fila</span>
+        </button>
 
-      <!-- Limpar Todo o Histórico do Cofre -->
-      <button onclick="verificarSenhaEExecutar('limpar_todo_historico')" title="Apaga permanentemente todo o cofre de histórico na Nuvem" 
-        class="text-[11px] bg-rose-700 hover:bg-rose-800 text-white font-extrabold px-2.5 py-1.5 rounded-lg border border-rose-500 flex items-center gap-1.5 transition shadow-sm">
-        <i class="fa-solid fa-triangle-exclamation text-[10px]"></i> <span class="hidden xl:inline">Zerar</span>
-      </button>
+        <!-- Limpar Todo o Histórico do Cofre -->
+        <button onclick="verificarSenhaEExecutar('limpar_todo_historico')" title="Apaga permanentemente todo o cofre de histórico na Nuvem" 
+          class="text-[11px] bg-rose-700 hover:bg-rose-800 text-white font-extrabold px-2.5 py-1.5 rounded-lg border border-rose-500 flex items-center gap-1.5 transition shadow-sm">
+          <i class="fa-solid fa-triangle-exclamation text-[10px]"></i> <span class="hidden xl:inline">Zerar</span>
+        </button>
+      </div>
 
       <!-- Operador Ativo Customizável -->
       <div onclick="trocarOperadorAtivo()" title="Clique para trocar seu nome de operador" class="cursor-pointer text-right pl-2 pr-1 py-1 rounded-lg hover:bg-indigo-900/60 transition">
         <p id="lblOperadorNome" class="text-xs font-extrabold text-white leading-tight flex items-center justify-end gap-1">
-          Fernando Henrique Pires Mena <i class="fa-solid fa-pen text-[9px] text-indigo-300"></i>
+          Selecionar Operador <i class="fa-solid fa-pen text-[9px] text-indigo-300"></i>
         </p>
         <p class="text-[10px] text-emerald-400 font-bold flex items-center justify-end gap-1">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Operador Ativo
@@ -249,7 +252,7 @@
             </div>
           </div>
           <div class="flex items-center gap-2">
-            <button onclick="verificarSenhaEExecutar('baixar_base')" class="bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs px-4 py-2 rounded-xl flex items-center gap-2 shadow-sm transition">
+            <button id="btnExportarCofre" onclick="verificarSenhaEExecutar('baixar_base')" class="hidden bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs px-4 py-2 rounded-xl items-center gap-2 shadow-sm transition">
               <i class="fa-solid fa-file-excel"></i> Exportar Planilha Base (.xlsx)
             </button>
           </div>
@@ -785,12 +788,53 @@
       abrirModalOperador();
     }
 
+    const OPERADORES_ADMINISTRADORES = [
+      "Fernando Henrique Pires Mena",
+      "Vitor Hugo de Almeida"
+    ];
+
+    function isOperadorAdmin() {
+      if (!operadorAtual) return false;
+      const op = operadorAtual.trim().toLowerCase();
+      return OPERADORES_ADMINISTRADORES.some(admin => {
+        const adm = admin.toLowerCase();
+        return op === adm || (adm.includes('fernando') && op.includes('fernando')) || (adm.includes('vitor hugo') && op.includes('vitor hugo'));
+      });
+    }
+
+    function atualizarPermissoesOperador() {
+      const containerAdmin = document.getElementById('containerBotoesAdmin');
+      const btnExportarCofre = document.getElementById('btnExportarCofre');
+      const ehAdmin = isOperadorAdmin();
+
+      if (containerAdmin) {
+        if (ehAdmin) {
+          containerAdmin.classList.remove('hidden');
+          containerAdmin.classList.add('flex');
+        } else {
+          containerAdmin.classList.add('hidden');
+          containerAdmin.classList.remove('flex');
+        }
+      }
+
+      if (btnExportarCofre) {
+        if (ehAdmin) {
+          btnExportarCofre.classList.remove('hidden');
+          btnExportarCofre.classList.add('flex');
+        } else {
+          btnExportarCofre.classList.add('hidden');
+          btnExportarCofre.classList.remove('flex');
+        }
+      }
+    }
+
     function atualizarLabelOperador() {
       const lbl = document.getElementById('lblOperadorNome');
       if (lbl) {
         const nomeExibido = operadorAtual || 'Selecionar Operador';
         lbl.innerHTML = `${nomeExibido} <i class="fa-solid fa-pen text-[9px] text-indigo-300"></i>`;
       }
+      atualizarPermissoesOperador();
     }
 
     // ==========================================
@@ -1001,6 +1045,10 @@
     }
 
     function solicitarSubirPlanilha() {
+      if (!isOperadorAdmin()) {
+        alert('🔒 Acesso Restrito\nApenas Fernando Mena e Vitor Hugo possuem permissão para subir planilhas.');
+        return;
+      }
       const senhaInformada = prompt('🔒 Acesso Restrito\nDigite a senha para subir uma nova planilha:');
       if (senhaInformada === null) return;
       if (senhaInformada !== SENHA_MESTRE && senhaInformada !== 'hapvida2026') {
@@ -1012,6 +1060,10 @@
     }
 
     function solicitarRestaurarBase() {
+      if (!isOperadorAdmin()) {
+        alert('🔒 Acesso Restrito\nApenas Fernando Mena e Vitor Hugo possuem permissão para restaurar a base.');
+        return;
+      }
       const senhaInformada = prompt('🔒 Acesso Restrito\nDigite a senha para restaurar/mesclar a base:');
       if (senhaInformada === null) return;
       if (senhaInformada !== SENHA_MESTRE && senhaInformada !== 'hapvida2026') {
@@ -1023,6 +1075,11 @@
     }
 
     function verificarSenhaEExecutar(acao, event = null) {
+      if (!isOperadorAdmin()) {
+        alert('🔒 Acesso Restrito\nApenas Fernando Mena e Vitor Hugo possuem permissão para esta operação.');
+        if (event && event.target) event.target.value = '';
+        return;
+      }
       const senhaInformada = prompt('🔒 Acesso Restrito\nDigite a senha de autorização para prosseguir:');
       if (senhaInformada === null) return;
       
@@ -2182,12 +2239,11 @@
     initFirebase();
     render();
     verificarCasoNaURL();
+    atualizarLabelOperador();
 
     // Solicita login com usuário e senha na inicialização da sessão
     if (!sessionStorage.getItem('hapvida_sessao_autenticada')) {
       abrirModalOperador();
-    } else {
-      atualizarLabelOperador();
     }
 
     // Suporte a Arrastar e Soltar (Drag & Drop) de planilhas
@@ -2202,6 +2258,10 @@
         const file = e.dataTransfer.files[0];
         const ext = file.name.split('.').pop().toLowerCase();
         if (['xlsx', 'xls', 'csv'].includes(ext)) {
+          if (!isOperadorAdmin()) {
+            alert('🔒 Acesso Restrito\nApenas os administradores (Fernando Mena e Vitor Hugo) têm permissão para carregar planilhas.');
+            return;
+          }
           const senha = prompt('🔒 Acesso Restrito\nDigite a senha para carregar esta planilha:');
           if (senha === null) return;
           if (senha !== SENHA_MESTRE && senha !== 'hapvida2026') {
