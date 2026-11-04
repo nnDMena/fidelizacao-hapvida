@@ -9,9 +9,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <!-- FIREBASE SDK (COMPAT PARA TEMPO REAL EM MULTI-USUÁRIO) -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <!-- SUPABASE JS SDK (TEMPO REAL MULTI-USUÁRIO) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     body { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f8fafc; }
@@ -24,13 +23,13 @@
 </head>
 <body class="min-h-screen md:h-screen flex flex-col md:overflow-hidden text-slate-800 antialiased bg-slate-100">
 
-  <!-- BANNER DE STATUS DO FIREBASE / MULTI-USUÁRIO -->
-  <div id="firebase-status-banner" class="bg-amber-500 text-slate-950 px-3 sm:px-4 py-1.5 text-xs font-bold flex flex-wrap items-center justify-between gap-1.5 shrink-0 border-b border-amber-600">
+  <!-- BANNER DE STATUS DO SUPABASE / MULTI-USUÁRIO -->
+  <div id="cloud-status-banner" class="bg-amber-500 text-slate-950 px-3 sm:px-4 py-1.5 text-xs font-bold flex flex-wrap items-center justify-between gap-1.5 shrink-0 border-b border-amber-600 hidden">
     <div class="flex items-center gap-1.5 sm:gap-2">
       <i class="fa-solid fa-triangle-exclamation"></i>
-      <span id="firebase-status-text" class="text-[11px] sm:text-xs">Modo Local (Offline): Configure o Firebase para sincronizar com todos em tempo real.</span>
+      <span id="cloud-status-text" class="text-[11px] sm:text-xs">Modo Local (Offline): Configure o Supabase para sincronizar com todos em tempo real.</span>
     </div>
-    <button onclick="abrirConfigFirebase()" class="bg-slate-950 text-white px-2 py-0.5 rounded text-[10.5px] sm:text-[11px] font-extrabold hover:bg-slate-800 transition">
+    <button onclick="abrirConfigNuvem()" class="bg-slate-950 text-white px-2 py-0.5 rounded text-[10.5px] sm:text-[11px] font-extrabold hover:bg-slate-800 transition">
       ⚙️ Configurar
     </button>
   </div>
@@ -44,8 +43,8 @@
       </div>
       <div class="flex items-center gap-1.5 sm:gap-2">
         <span class="font-bold text-xs sm:text-sm tracking-tight text-white truncate max-w-[160px] xs:max-w-[220px] sm:max-w-none">Fidelização <span class="hidden sm:inline">Rede Credenciada -</span> Hapvida NDI</span>
-        <span id="cloud-sync-badge" class="text-[9px] sm:text-[10px] bg-slate-800 text-slate-300 font-bold px-2 py-0.5 rounded-full border border-slate-700 flex items-center gap-1 shrink-0">
-          <i class="fa-solid fa-cloud text-[8px] sm:text-[9px]"></i> <span id="cloud-sync-label">Local</span>
+        <span id="cloud-sync-badge" onclick="abrirConfigNuvem()" class="text-[9px] sm:text-[10px] bg-slate-800 text-slate-300 font-bold px-2 py-0.5 rounded-full border border-slate-700 flex items-center gap-1 shrink-0 cursor-pointer hover:opacity-80 transition" title="Clique para ver o status da conexão em Nuvem">
+          <i class="fa-solid fa-bolt text-[8px] sm:text-[9px]"></i> <span id="cloud-sync-label">Local</span>
         </span>
       </div>
     </div>
@@ -710,40 +709,42 @@
     </div>
   </div>
 
-  <!-- MODAL CONFIGURAÇÃO FIREBASE -->
-  <div id="modal-firebase" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs hidden items-center justify-center p-3 sm:p-4 z-50 overflow-y-auto">
+  <!-- MODAL CONFIGURAÇÃO SUPABASE -->
+  <div id="modal-nuvem" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs hidden items-center justify-center p-3 sm:p-4 z-50 overflow-y-auto">
     <div class="bg-white rounded-2xl max-w-lg w-full p-4.5 sm:p-6 shadow-2xl border border-slate-200 space-y-4 my-auto">
       <div class="flex items-center justify-between border-b border-slate-100 pb-3">
         <div class="flex items-center gap-2">
-          <i class="fa-solid fa-cloud text-amber-500 text-lg"></i>
-          <h2 class="text-sm font-extrabold text-slate-900">Conectar com Firebase Firestore</h2>
+          <i class="fa-solid fa-bolt text-emerald-600 text-lg"></i>
+          <h2 class="text-sm font-extrabold text-slate-900">Conectar com Nuvem Supabase (Tempo Real)</h2>
         </div>
-        <button onclick="fecharConfigFirebase()" class="text-slate-400 hover:text-slate-700 text-sm">
+        <button onclick="fecharConfigNuvem()" class="text-slate-400 hover:text-slate-700 text-sm">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
       <p class="text-xs text-slate-600 leading-relaxed">
-        Cole abaixo o objeto <code>firebaseConfig</code> do seu projeto no console do Firebase (<a href="https://console.firebase.google.com" target="_blank" class="text-indigo-600 underline font-semibold">console.firebase.google.com</a>) para que os 30 computadores compartilhem o mesmo painel em tempo real:
+        Configurações do projeto Supabase para que todas as estações de trabalho sincronizem as ações, observações e desfechos simultaneamente:
       </p>
 
-      <textarea id="inputFirebaseConfigJson" rows="8" placeholder='{
-  "apiKey": "AIzaSy...",
-  "authDomain": "seu-projeto.firebaseapp.com",
-  "projectId": "seu-projeto",
-  "storageBucket": "seu-projeto.appspot.com",
-  "messagingSenderId": "...",
-  "appId": "..."
-}' class="w-full text-xs font-mono p-3 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+      <div class="space-y-3">
+        <div>
+          <label class="block text-[11px] font-bold text-slate-700 mb-1">Project URL</label>
+          <input type="text" id="inputSupabaseUrl" placeholder="https://seu-projeto.supabase.co" class="w-full text-xs font-mono p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold text-slate-700 mb-1">Anon / Public API Key</label>
+          <textarea id="inputSupabaseKey" rows="3" placeholder="eyJhbGci..." class="w-full text-xs font-mono p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none"></textarea>
+        </div>
+      </div>
 
       <div class="flex items-center justify-between pt-2">
-        <button onclick="limparCredenciaisFirebase()" class="text-xs text-rose-600 hover:text-rose-800 font-bold">
+        <button onclick="limparCredenciaisNuvem()" class="text-xs text-rose-600 hover:text-rose-800 font-bold">
           Voltar ao Modo Local
         </button>
         <div class="flex gap-2">
-          <button onclick="fecharConfigFirebase()" class="px-4 py-2 text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition">
+          <button onclick="fecharConfigNuvem()" class="px-4 py-2 text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition">
             Cancelar
           </button>
-          <button onclick="salvarConfigFirebase()" class="px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition shadow-xs">
+          <button onclick="salvarConfigNuvem()" class="px-4 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition shadow-xs">
             Salvar e Conectar
           </button>
         </div>
@@ -934,27 +935,20 @@
     }
 
     // ==========================================
-    // CONFIGURAÇÃO DO FIREBASE (EM NUVEM)
+    // CONFIGURAÇÃO DO SUPABASE (EM NUVEM)
     // ==========================================
-    // 💡 DICA: Você também pode colar seu objeto de configuração direto aqui dentro da variável DEFAULT_FIREBASE_CONFIG
-    // para que já venha configurado automaticamente para todas as 30 pessoas que abrirem o link!
-    const DEFAULT_FIREBASE_CONFIG = {
-      apiKey: "AIzaSyBa7gV76Iv7hhtjZ8sbXSmHWusIbDovatw",
-      authDomain: "fidelizacao-hapvida.firebaseapp.com",
-      projectId: "fidelizacao-hapvida",
-      storageBucket: "fidelizacao-hapvida.firebasestorage.app",
-      messagingSenderId: "845593683861",
-      appId: "1:845593683861:web:51184b2e92b87e6ce8389c",
-      measurementId: "G-40N1M0ND2C"
+    const DEFAULT_SUPABASE_CONFIG = {
+      url: "https://fqetzdaansqqbgvavrrg.supabase.co",
+      anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxZXR6ZGFhbnNxZ2JndmF2cnJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM4MDM1ODksImV4cCI6MjEwOTM3OTU4OX0.m6Qvh3RNxdpuoUA79FVJaCAHWwnPem3PpBBwAaIpUyI"
     };
 
-    let db = null;
+    let supabaseClient = null;
     let isCloudConnected = false;
 
     const STORAGE_KEY = 'hapvida_fidelizacao_ativa_v4';
     const HISTORY_KEY = 'hapvida_fidelizacao_hist_v4';
     const VAULT_CASES_KEY = 'hapvida_fidelizacao_vault_cases_v4';
-    const FIREBASE_CONFIG_KEY = 'hapvida_firebase_config_v1';
+    const SUPABASE_CONFIG_KEY = 'hapvida_supabase_config_v1';
 
     let activeCases = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
     let historyLog = JSON.parse(localStorage.getItem(HISTORY_KEY)) || {};
@@ -962,129 +956,185 @@
     let currentCase = null;
     let currentView = 'kanban';
 
-    function initFirebase() {
-      const savedConfig = localStorage.getItem(FIREBASE_CONFIG_KEY);
-      let config = DEFAULT_FIREBASE_CONFIG;
+    async function initSupabase() {
+      const savedConfig = localStorage.getItem(SUPABASE_CONFIG_KEY);
+      let config = DEFAULT_SUPABASE_CONFIG;
       if (savedConfig) {
         try { config = JSON.parse(savedConfig); } catch (e) { console.error('Erro config salva:', e); }
       }
 
-      const banner = document.getElementById('firebase-status-banner');
+      const banner = document.getElementById('cloud-status-banner');
       const badge = document.getElementById('cloud-sync-badge');
       const label = document.getElementById('cloud-sync-label');
 
-      if (!config || !config.projectId || config.apiKey === 'SUA_API_KEY_AQUI') {
+      if (!config || !config.url || !config.anonKey) {
         isCloudConnected = false;
         if (banner) banner.classList.remove('hidden');
-        if (badge) badge.className = 'text-[10px] bg-slate-800 text-slate-300 font-bold px-2 py-0.5 rounded-full border border-slate-700 flex items-center gap-1';
+        if (badge) badge.className = 'text-[9px] sm:text-[10px] bg-slate-800 text-slate-300 font-bold px-2 py-0.5 rounded-full border border-slate-700 flex items-center gap-1 shrink-0';
         if (label) label.innerText = 'Local (Offline)';
         return;
       }
 
       try {
-        if (!firebase.apps.length) {
-          firebase.initializeApp(config);
+        if (!window.supabase) {
+          throw new Error('Biblioteca Supabase ainda não foi carregada no navegador.');
         }
-        db = firebase.firestore();
+        supabaseClient = window.supabase.createClient(config.url, config.anonKey);
         isCloudConnected = true;
 
         if (banner) banner.classList.add('hidden');
-        if (badge) badge.className = 'text-[10px] bg-emerald-900/90 text-emerald-300 font-bold px-2 py-0.5 rounded-full border border-emerald-700/60 flex items-center gap-1';
-        if (label) label.innerText = 'Nuvem Conectada';
+        if (badge) badge.className = 'text-[9px] sm:text-[10px] bg-emerald-900/90 text-emerald-300 font-bold px-2 py-0.5 rounded-full border border-emerald-700/60 flex items-center gap-1 shrink-0';
+        if (label) label.innerText = 'Supabase Conectado';
 
+        await carregarDadosIniciaisNuvem();
         iniciarOuvintesTempoReal();
       } catch (err) {
-        console.error('Falha ao conectar no Firebase:', err);
+        console.error('Falha ao conectar no Supabase:', err);
         isCloudConnected = false;
         if (banner) {
           banner.classList.remove('hidden');
-          document.getElementById('firebase-status-text').innerText = 'Erro ao conectar ao Firebase: ' + err.message;
+          const txt = document.getElementById('cloud-status-text');
+          if (txt) txt.innerText = 'Aviso Nuvem: ' + err.message;
         }
       }
     }
 
+    // Compatibilidade com chamadas
+    const initFirebase = initSupabase;
+    const abrirConfigFirebase = abrirConfigNuvem;
+    const fecharConfigFirebase = fecharConfigNuvem;
+
+    async function carregarDadosIniciaisNuvem() {
+      if (!supabaseClient) return;
+      try {
+        // 1. Casos Ativos
+        const { data: atvData, error: atvErr } = await supabaseClient.from('casos_ativos').select('dados');
+        if (!atvErr && atvData && atvData.length > 0) {
+          activeCases = atvData.map(r => r.dados);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(activeCases));
+          render();
+        }
+
+        // 2. Cofre de Casos
+        const { data: vltData, error: vltErr } = await supabaseClient.from('cofre_casos').select('cd_usuario, dados');
+        if (!vltErr && vltData) {
+          vltData.forEach(r => {
+            vaultCases[r.cd_usuario] = r.dados;
+          });
+          localStorage.setItem(VAULT_CASES_KEY, JSON.stringify(vaultCases));
+          render();
+        }
+
+        // 3. Cofre Logs
+        const { data: logData, error: logErr } = await supabaseClient.from('cofre_logs').select('cd_usuario, itens');
+        if (!logErr && logData) {
+          logData.forEach(r => {
+            historyLog[r.cd_usuario] = r.itens || [];
+          });
+          localStorage.setItem(HISTORY_KEY, JSON.stringify(historyLog));
+          if (currentCase) renderSingleTimeline();
+        }
+      } catch (err) {
+        console.warn('Erro ao carregar dados do Supabase:', err);
+      }
+    }
+
     // ==========================================
-    // SINCRONIZAÇÃO EM TEMPO REAL (FIRESTORE)
+    // SINCRONIZAÇÃO EM TEMPO REAL (SUPABASE REALTIME)
     // ==========================================
     function iniciarOuvintesTempoReal() {
-      if (!db) return;
+      if (!supabaseClient) return;
 
       // 1. Escutar Casos Ativos em Tempo Real
-      db.collection('casos_ativos').onSnapshot((snapshot) => {
-        const novos = [];
-        snapshot.forEach(doc => {
-          novos.push(doc.data());
-        });
-        activeCases = novos;
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(activeCases));
-        render();
-
-        // Se o caso atual estiver aberto, atualiza seus dados
-        if (currentCase) {
-          const atualizado = activeCases.find(c => String(c.CD_USUARIO) === String(currentCase.CD_USUARIO));
-          if (atualizado) currentCase = atualizado;
-        }
-      }, (err) => console.error('Erro sync casos_ativos:', err));
+      supabaseClient
+        .channel('canal_casos_ativos')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'casos_ativos' }, (payload) => {
+          if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+            const caso = payload.new.dados;
+            if (!caso || !caso.CD_USUARIO) return;
+            const idx = activeCases.findIndex(c => String(c.CD_USUARIO) === String(caso.CD_USUARIO));
+            if (idx !== -1) {
+              activeCases[idx] = caso;
+            } else {
+              activeCases.push(caso);
+            }
+            if (currentCase && String(currentCase.CD_USUARIO) === String(caso.CD_USUARIO)) {
+              currentCase = caso;
+            }
+          } else if (payload.eventType === 'DELETE') {
+            const cd = payload.old.cd_usuario;
+            activeCases = activeCases.filter(c => String(c.CD_USUARIO) !== String(cd));
+            if (currentCase && String(currentCase.CD_USUARIO) === String(cd)) {
+              closeCaseDetail();
+            }
+          }
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(activeCases));
+          render();
+        })
+        .subscribe();
 
       // 2. Escutar Cofre de Casos Arquivados
-      db.collection('cofre_casos').onSnapshot((snapshot) => {
-        const novoVault = {};
-        snapshot.forEach(doc => {
-          novoVault[doc.id] = doc.data();
-        });
-        vaultCases = novoVault;
-        localStorage.setItem(VAULT_CASES_KEY, JSON.stringify(vaultCases));
-        render();
-      }, (err) => console.error('Erro sync cofre_casos:', err));
+      supabaseClient
+        .channel('canal_cofre_casos')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'cofre_casos' }, (payload) => {
+          if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+            const cd = payload.new.cd_usuario;
+            vaultCases[cd] = payload.new.dados;
+            localStorage.setItem(VAULT_CASES_KEY, JSON.stringify(vaultCases));
+            render();
+          }
+        })
+        .subscribe();
 
       // 3. Escutar Linhas do Tempo / Logs
-      db.collection('cofre_logs').onSnapshot((snapshot) => {
-        const novosLogs = {};
-        snapshot.forEach(doc => {
-          novosLogs[doc.id] = doc.data().itens || [];
-        });
-        historyLog = novosLogs;
-        localStorage.setItem(HISTORY_KEY, JSON.stringify(historyLog));
-        if (currentCase) renderSingleTimeline();
-      }, (err) => console.error('Erro sync cofre_logs:', err));
+      supabaseClient
+        .channel('canal_cofre_logs')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'cofre_logs' }, (payload) => {
+          if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+            const cd = payload.new.cd_usuario;
+            historyLog[cd] = payload.new.itens || [];
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(historyLog));
+            if (currentCase && String(currentCase.CD_USUARIO) === String(cd)) {
+              renderSingleTimeline();
+            }
+          }
+        })
+        .subscribe();
     }
 
-    function abrirConfigFirebase() {
-      const saved = localStorage.getItem(FIREBASE_CONFIG_KEY) || (DEFAULT_FIREBASE_CONFIG ? JSON.stringify(DEFAULT_FIREBASE_CONFIG, null, 2) : '');
-      document.getElementById('inputFirebaseConfigJson').value = saved;
-      document.getElementById('modal-firebase').classList.remove('hidden');
-      document.getElementById('modal-firebase').classList.add('flex');
-    }
-
-    function fecharConfigFirebase() {
-      document.getElementById('modal-firebase').classList.add('hidden');
-      document.getElementById('modal-firebase').classList.remove('flex');
-    }
-
-    function salvarConfigFirebase() {
-      const raw = document.getElementById('inputFirebaseConfigJson').value.trim();
-      try {
-        let objStr = raw;
-        if (objStr.includes('const firebaseConfig =')) {
-          objStr = objStr.replace('const firebaseConfig =', '').replace(/;$/, '').trim();
-        }
-        // Permitir formato JS com chaves sem aspas
-        const parsed = Function('"use strict";return (' + objStr + ')')();
-        if (!parsed.projectId || !parsed.apiKey) {
-          throw new Error('A configuração deve conter ao menos apiKey e projectId.');
-        }
-        localStorage.setItem(FIREBASE_CONFIG_KEY, JSON.stringify(parsed));
-        fecharConfigFirebase();
-        alert('Configuração salva com sucesso! Recarregando aplicação...');
-        location.reload();
-      } catch (err) {
-        alert('Erro ao interpretar configuração: ' + err.message + '\n\nCertifique-se de colar o JSON válido das credenciais do Firebase.');
+    function abrirConfigNuvem() {
+      const saved = localStorage.getItem(SUPABASE_CONFIG_KEY);
+      let cfg = DEFAULT_SUPABASE_CONFIG;
+      if (saved) {
+        try { cfg = JSON.parse(saved); } catch (e) {}
       }
+      document.getElementById('inputSupabaseUrl').value = cfg.url || '';
+      document.getElementById('inputSupabaseKey').value = cfg.anonKey || '';
+      document.getElementById('modal-nuvem').classList.remove('hidden');
+      document.getElementById('modal-nuvem').classList.add('flex');
     }
 
-    function limparCredenciaisFirebase() {
+    function fecharConfigNuvem() {
+      document.getElementById('modal-nuvem').classList.add('hidden');
+      document.getElementById('modal-nuvem').classList.remove('flex');
+    }
+
+    function salvarConfigNuvem() {
+      const url = document.getElementById('inputSupabaseUrl').value.trim();
+      const anonKey = document.getElementById('inputSupabaseKey').value.trim();
+      if (!url || !anonKey) {
+        alert('Preencha a URL e a Anon Key do Supabase.');
+        return;
+      }
+      localStorage.setItem(SUPABASE_CONFIG_KEY, JSON.stringify({ url, anonKey }));
+      fecharConfigNuvem();
+      alert('Configuração do Supabase salva com sucesso! Recarregando aplicação...');
+      location.reload();
+    }
+
+    function limparCredenciaisNuvem() {
       if (confirm('Deseja desconectar da Nuvem e voltar ao modo Local?')) {
-        localStorage.removeItem(FIREBASE_CONFIG_KEY);
+        localStorage.removeItem(SUPABASE_CONFIG_KEY);
         location.reload();
       }
     }
@@ -1099,32 +1149,36 @@
     function syncToVault(caso) {
       if (!caso || !caso.CD_USUARIO) return;
       const cod = String(caso.CD_USUARIO).trim();
-      const docId = sanitizeDocId(cod);
       const payload = {
         ...caso,
         ULTIMA_ATUALIZACAO: new Date().toLocaleString('pt-BR')
       };
       vaultCases[cod] = payload;
 
-      if (isCloudConnected && db) {
-        db.collection('cofre_casos').doc(docId).set(payload, { merge: true }).catch(e => console.error(e));
+      if (isCloudConnected && supabaseClient) {
+        supabaseClient.from('cofre_casos').upsert({
+          cd_usuario: cod,
+          dados: payload,
+          updated_at: new Date().toISOString()
+        }).then(({ error }) => { if (error) console.error('Erro sync cofre_casos:', error); });
       }
     }
 
     function addImmutableLog(codUsuario, author, date, text) {
       if (!codUsuario || !text || !String(text).trim()) return;
       const cod = String(codUsuario).trim();
-      const docId = sanitizeDocId(cod);
       if (!historyLog[cod]) historyLog[cod] = [];
       const cleanText = String(text).trim();
       const jaExiste = historyLog[cod].some(l => l.text === cleanText && l.author === author);
       if (!jaExiste) {
         const item = { author, date, text: cleanText };
         historyLog[cod].unshift(item);
-        if (isCloudConnected && db) {
-          db.collection('cofre_logs').doc(docId).set({
-            itens: firebase.firestore.FieldValue.arrayUnion(item)
-          }, { merge: true }).catch(e => console.error(e));
+        if (isCloudConnected && supabaseClient) {
+          supabaseClient.from('cofre_logs').upsert({
+            cd_usuario: cod,
+            itens: historyLog[cod],
+            updated_at: new Date().toISOString()
+          }).then(({ error }) => { if (error) console.error('Erro sync cofre_logs:', error); });
         }
       }
     }
@@ -1176,15 +1230,12 @@
       }
     }
 
-    function executarLimparFila() {
+    async function executarLimparFila() {
       if (confirm('Deseja limpar apenas a fila de trabalho do dia para TODOS os usuários?\n\n🔒 O Histórico e o Cofre permanecerão salvos na Nuvem.')) {
-        if (isCloudConnected && db) {
-          const batch = db.batch();
-          activeCases.forEach(c => {
-            const ref = db.collection('casos_ativos').doc(sanitizeDocId(c.CD_USUARIO));
-            batch.delete(ref);
-          });
-          batch.commit().catch(e => console.error(e));
+        if (isCloudConnected && supabaseClient) {
+          try {
+            await supabaseClient.from('casos_ativos').delete().neq('cd_usuario', '_none_');
+          } catch (e) { console.error('Erro ao limpar fila no Supabase:', e); }
         }
         activeCases = [];
         currentCase = null;
@@ -1195,7 +1246,7 @@
       }
     }
 
-    function executarZerarCofreHistorico() {
+    async function executarZerarCofreHistorico() {
       const confirmacao1 = confirm('⚠️ ATENÇÃO MÁXIMA!\n\nVocê está prestes a APAGAR PERMANENTEMENTE todo o Cofre de Histórico na Nuvem para todas as 30 pessoas.\n\nDeseja realmente continuar?');
       if (!confirmacao1) return;
 
@@ -1205,16 +1256,16 @@
         return;
       }
 
-      if (isCloudConnected && db) {
-        // Limpar coleções no Firestore
-        const limparColecao = async (colName) => {
-          const snap = await db.collection(colName).get();
-          const batch = db.batch();
-          snap.forEach(d => batch.delete(d.ref));
-          await batch.commit();
-        };
-        Promise.all([limparColecao('casos_ativos'), limparColecao('cofre_casos'), limparColecao('cofre_logs')])
-          .catch(e => console.error('Erro ao limpar nuvem:', e));
+      if (isCloudConnected && supabaseClient) {
+        try {
+          await Promise.all([
+            supabaseClient.from('casos_ativos').delete().neq('cd_usuario', '_none_'),
+            supabaseClient.from('cofre_casos').delete().neq('cd_usuario', '_none_'),
+            supabaseClient.from('cofre_logs').delete().neq('cd_usuario', '_none_')
+          ]);
+        } catch (e) {
+          console.error('Erro ao limpar nuvem:', e);
+        }
       }
 
       activeCases = [];
@@ -1718,13 +1769,14 @@
           }
 
           // Se estiver conectado na Nuvem, sincroniza em lote para todos os 30 usuários
-          if (isCloudConnected && db) {
-            const batch = db.batch();
-            novosCasos.forEach(c => {
-              const ref = db.collection('casos_ativos').doc(sanitizeDocId(c.CD_USUARIO));
-              batch.set(ref, c, { merge: true });
-            });
-            await batch.commit();
+          if (isCloudConnected && supabaseClient) {
+            const rows = novosCasos.map(c => ({
+              cd_usuario: String(c.CD_USUARIO).trim(),
+              dados: c,
+              updated_at: new Date().toISOString()
+            }));
+            const { error: upsertErr } = await supabaseClient.from('casos_ativos').upsert(rows);
+            if (upsertErr) console.error('Erro ao subir casos no Supabase:', upsertErr);
           }
 
           activeCases = novosCasos;
@@ -1847,8 +1899,12 @@
                 'VALOR PACOTE': r.VALOR_PACOTE || r['VALOR PACOTE'] || '',
                 'QUAL PACOTE?': r.QUAL_PACOTE || r['QUAL PACOTE?'] || ''
               };
-              if (isCloudConnected && db) {
-                db.collection('cofre_casos').doc(sanitizeDocId(cod)).set(vaultCases[cod], { merge: true });
+              if (isCloudConnected && supabaseClient) {
+                supabaseClient.from('cofre_casos').upsert({
+                  cd_usuario: cod,
+                  dados: vaultCases[cod],
+                  updated_at: new Date().toISOString()
+                }).then(({ error }) => { if (error) console.error(error); });
               }
               casosImportados++;
             });
@@ -2283,9 +2339,13 @@
       const idx = activeCases.findIndex(c => String(c.CD_USUARIO) === String(currentCase.CD_USUARIO));
       if (idx !== -1) activeCases[idx] = { ...currentCase };
       
-      // Salva no Firestore instantaneamente para que os outros 29 vejam
-      if (isCloudConnected && db) {
-        db.collection('casos_ativos').doc(sanitizeDocId(currentCase.CD_USUARIO)).set(currentCase, { merge: true });
+      // Salva no Supabase instantaneamente para que os outros 29 vejam
+      if (isCloudConnected && supabaseClient) {
+        supabaseClient.from('casos_ativos').upsert({
+          cd_usuario: String(currentCase.CD_USUARIO).trim(),
+          dados: currentCase,
+          updated_at: new Date().toISOString()
+        }).then(({ error }) => { if (error) console.error('Erro save caso ativo:', error); });
       }
 
       syncToVault(currentCase);
@@ -2321,8 +2381,10 @@
       syncToVault(currentCase);
 
       // Remove de casos_ativos na Nuvem
-      if (isCloudConnected && db) {
-        db.collection('casos_ativos').doc(sanitizeDocId(currentCase.CD_USUARIO)).delete().catch(e => console.error(e));
+      if (isCloudConnected && supabaseClient) {
+        supabaseClient.from('casos_ativos').delete().eq('cd_usuario', String(currentCase.CD_USUARIO).trim()).then(({ error }) => {
+          if (error) console.error('Erro ao remover de casos_ativos:', error);
+        });
       }
 
       activeCases = activeCases.filter(c => String(c.CD_USUARIO) !== String(currentCase.CD_USUARIO));
@@ -2718,8 +2780,8 @@
 
     window.addEventListener('hashchange', verificarCasoNaURL);
 
-    // Inicialização da Aplicação e Conexão Firebase
-    initFirebase();
+    // Inicialização da Aplicação e Conexão Supabase
+    initSupabase();
     popularSelectAssumiuCaso();
     render();
     verificarCasoNaURL();
