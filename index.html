@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
@@ -895,6 +895,59 @@
         </div>
       </div>
 
+      <!-- DIAGNÓSTICO E SCRIPT SQL DAS TABELAS -->
+      <div class="bg-indigo-50/70 border border-indigo-200/80 rounded-xl p-3 space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-indigo-950 flex items-center gap-1.5">
+            <i class="fa-solid fa-stethoscope text-indigo-600"></i> Diagnóstico de Conexão
+          </span>
+          <button onclick="testarConexaoSupabase()" class="text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg shadow-2xs transition flex items-center gap-1 cursor-pointer">
+            <i class="fa-solid fa-bolt"></i> Testar Conexão Agora
+          </button>
+        </div>
+        <p id="diagConexaoResultado" class="text-[11px] text-slate-700 hidden"></p>
+
+        <details class="text-[11px] text-slate-700 mt-2">
+          <summary class="font-bold text-indigo-700 cursor-pointer hover:underline">
+            📋 Ver / Copiar Script SQL das Tabelas (para rodar no SQL Editor do Supabase)
+          </summary>
+          <div class="mt-2 bg-slate-900 text-slate-100 p-2.5 rounded-lg font-mono text-[10px] overflow-x-auto relative">
+            <button onclick="copiarScriptSqlSupabase()" class="absolute top-2 right-2 bg-slate-700 hover:bg-slate-600 text-white px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer">
+              Copiar SQL
+            </button>
+            <pre id="preScriptSqlSupabase">create table if not exists casos_ativos (
+  cd_usuario text primary key,
+  dados jsonb not null,
+  updated_at timestamptz default now()
+);
+
+create table if not exists cofre_casos (
+  cd_usuario text primary key,
+  dados jsonb not null,
+  updated_at timestamptz default now()
+);
+
+create table if not exists cofre_logs (
+  cd_usuario text primary key,
+  itens jsonb default '[]'::jsonb,
+  updated_at timestamptz default now()
+);
+
+alter publication supabase_realtime add table casos_ativos;
+alter publication supabase_realtime add table cofre_casos;
+alter publication supabase_realtime add table cofre_logs;
+
+alter table casos_ativos enable row level security;
+alter table cofre_casos enable row level security;
+alter table cofre_logs enable row level security;
+
+create policy "Acesso livre casos_ativos" on casos_ativos for all using (true) with check (true);
+create policy "Acesso livre cofre_casos" on cofre_casos for all using (true) with check (true);
+create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with check (true);</pre>
+          </div>
+        </details>
+      </div>
+
       <div class="flex items-center justify-between pt-2">
         <button onclick="limparCredenciaisNuvem()" class="text-xs text-rose-600 hover:text-rose-800 font-bold">
           Voltar ao Modo Local
@@ -1115,7 +1168,7 @@
     // CONFIGURAÇÃO DO SUPABASE (EM NUVEM)
     // ==========================================
     const DEFAULT_SUPABASE_CONFIG = {
-      url: "https://fqetzdaansqqbgvavrrg.supabase.co",
+      url: "https://fqetzdaansqgbgvavrrg.supabase.co",
       anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxZXR6ZGFhbnNxZ2JndmF2cnJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM4MDM1ODksImV4cCI6MjEwOTM3OTU4OX0.m6Qvh3RNxdpuoUA79FVJaCAHWwnPem3PpBBwAaIpUyI"
     };
 
@@ -1137,7 +1190,14 @@
       const savedConfig = localStorage.getItem(SUPABASE_CONFIG_KEY);
       let config = DEFAULT_SUPABASE_CONFIG;
       if (savedConfig) {
-        try { config = JSON.parse(savedConfig); } catch (e) { console.error('Erro config salva:', e); }
+        try {
+          config = JSON.parse(savedConfig);
+          // Auto-correção caso o navegador tenha gravado a URL com o erro de digitação antigo ('qq')
+          if (config && config.url && config.url.includes('fqetzdaansqqbgvavrrg')) {
+            config.url = config.url.replace('fqetzdaansqqbgvavrrg', 'fqetzdaansqgbgvavrrg');
+            localStorage.setItem(SUPABASE_CONFIG_KEY, JSON.stringify(config));
+          }
+        } catch (e) { console.error('Erro config salva:', e); }
       }
 
       const banner = document.getElementById('cloud-status-banner');
@@ -1157,11 +1217,6 @@
           throw new Error('Biblioteca Supabase ainda não foi carregada no navegador.');
         }
         supabaseClient = window.supabase.createClient(config.url, config.anonKey);
-        isCloudConnected = true;
-
-        if (banner) banner.classList.add('hidden');
-        if (badge) badge.className = 'text-[9px] sm:text-[10px] bg-emerald-900/90 text-emerald-300 font-bold px-2 py-0.5 rounded-full border border-emerald-700/60 flex items-center gap-1 shrink-0';
-        if (label) label.innerText = 'Supabase Conectado';
 
         await carregarDadosIniciaisNuvem();
         iniciarOuvintesTempoReal();
@@ -1173,6 +1228,8 @@
           const txt = document.getElementById('cloud-status-text');
           if (txt) txt.innerText = 'Aviso Nuvem: ' + err.message;
         }
+        if (badge) badge.className = 'text-[9px] sm:text-[10px] bg-rose-900 text-rose-200 font-bold px-2 py-0.5 rounded-full border border-rose-700 flex items-center gap-1 shrink-0';
+        if (label) label.innerText = 'Erro Conexão';
       }
     }
 
@@ -1183,10 +1240,30 @@
 
     async function carregarDadosIniciaisNuvem() {
       if (!supabaseClient) return;
+      const banner = document.getElementById('cloud-status-banner');
+      const badge = document.getElementById('cloud-sync-badge');
+      const label = document.getElementById('cloud-sync-label');
+
       try {
         // 1. Casos Ativos
         const { data: atvData, error: atvErr } = await supabaseClient.from('casos_ativos').select('dados');
-        if (!atvErr && atvData && atvData.length > 0) {
+        if (atvErr) {
+          console.error('Erro ao consultar casos_ativos no Supabase:', atvErr);
+          if (atvErr.code === 'PGRST205' || (atvErr.message && atvErr.message.includes('schema cache'))) {
+            isCloudConnected = false;
+            if (badge) badge.className = 'text-[9px] sm:text-[10px] bg-amber-500 text-slate-950 font-black px-2 py-0.5 rounded-full border border-amber-400 flex items-center gap-1 shrink-0 cursor-pointer animate-pulse';
+            if (label) label.innerText = '⚠️ Criar Tabelas Supabase';
+            if (banner) {
+              banner.classList.remove('hidden');
+              const txt = document.getElementById('cloud-status-text');
+              if (txt) txt.innerHTML = '<strong>Atenção:</strong> As tabelas ainda não foram criadas no seu painel do Supabase. <button onclick="abrirConfigNuvem()" class="underline ml-1 font-bold">Clique aqui para ver o comando SQL</button>.';
+            }
+            return;
+          }
+          throw atvErr;
+        }
+
+        if (atvData && atvData.length > 0) {
           activeCases = atvData.map(r => r.dados);
           localStorage.setItem(STORAGE_KEY, JSON.stringify(activeCases));
           render();
@@ -1211,8 +1288,23 @@
           localStorage.setItem(HISTORY_KEY, JSON.stringify(historyLog));
           if (currentCase) renderSingleTimeline();
         }
+
+        // Conexão bem-sucedida!
+        isCloudConnected = true;
+        if (banner) banner.classList.add('hidden');
+        if (badge) badge.className = 'text-[9px] sm:text-[10px] bg-emerald-900/90 text-emerald-300 font-bold px-2 py-0.5 rounded-full border border-emerald-700/60 flex items-center gap-1 shrink-0';
+        if (label) label.innerText = '⚡ Supabase Conectado';
+
       } catch (err) {
         console.warn('Erro ao carregar dados do Supabase:', err);
+        isCloudConnected = false;
+        if (badge) badge.className = 'text-[9px] sm:text-[10px] bg-rose-900 text-rose-200 font-bold px-2 py-0.5 rounded-full border border-rose-700 flex items-center gap-1 shrink-0';
+        if (label) label.innerText = 'Erro Supabase';
+        if (banner) {
+          banner.classList.remove('hidden');
+          const txt = document.getElementById('cloud-status-text');
+          if (txt) txt.innerText = 'Aviso Nuvem: ' + (err.message || err);
+        }
       }
     }
 
@@ -1314,6 +1406,69 @@
       fecharConfigNuvem();
       alert('Configuração do Supabase salva com sucesso! Recarregando aplicação...');
       location.reload();
+    }
+
+    async function testarConexaoSupabase() {
+      const urlInput = document.getElementById('inputSupabaseUrl').value.trim();
+      const keyInput = document.getElementById('inputSupabaseKey').value.trim();
+      const resEl = document.getElementById('diagConexaoResultado');
+      if (resEl) {
+        resEl.classList.remove('hidden');
+        resEl.innerHTML = '<span class="text-indigo-600 font-bold"><i class="fa-solid fa-spinner fa-spin"></i> Testando conexão e tabelas no Supabase...</span>';
+      }
+
+      if (!urlInput || !keyInput) {
+        alert('Preencha a URL e a Anon Key antes de testar.');
+        if (resEl) resEl.innerHTML = '<span class="text-rose-600 font-bold">Preencha a URL e a Anon Key acima.</span>';
+        return;
+      }
+
+      try {
+        let testClient = window.supabase ? window.supabase.createClient(urlInput, keyInput) : null;
+        if (!testClient) {
+          throw new Error('SDK do Supabase não carregado no navegador.');
+        }
+
+        // Testar tabela casos_ativos
+        const { data, error } = await testClient.from('casos_ativos').select('cd_usuario').limit(1);
+        if (error) {
+          console.error('Erro teste Supabase:', error);
+          if (error.code === 'PGRST205' || (error.message && error.message.includes('schema cache'))) {
+            const msg = '⚠️ O Supabase respondeu, mas a tabela "casos_ativos" NÃO existe no seu banco!\n\nVocê precisa abrir o painel do Supabase > SQL Editor > colar o script SQL abaixo e clicar em "Run".';
+            if (resEl) resEl.innerHTML = '<span class="text-amber-700 font-bold">⚠️ Banco conectado, porém as tabelas ainda NÃO foram criadas no Supabase (Erro PGRST205). Veja o script SQL abaixo.</span>';
+            alert(msg);
+            return;
+          }
+          const msg = '❌ Erro de comunicação com o Supabase: ' + error.message;
+          if (resEl) resEl.innerHTML = '<span class="text-rose-600 font-bold">' + msg + '</span>';
+          alert(msg);
+          return;
+        }
+
+        // Testar cofre_casos e cofre_logs
+        await testClient.from('cofre_casos').select('cd_usuario').limit(1);
+        await testClient.from('cofre_logs').select('cd_usuario').limit(1);
+
+        const okMsg = '✅ Conexão e tabelas testadas com 100% de sucesso! O banco em nuvem está pronto para sincronizar em tempo real.';
+        if (resEl) resEl.innerHTML = '<span class="text-emerald-700 font-bold">' + okMsg + '</span>';
+        alert(okMsg);
+      } catch (err) {
+        console.error('Falha geral teste Supabase:', err);
+        const errMsg = '❌ Falha de conexão: ' + (err.message || err);
+        if (resEl) resEl.innerHTML = '<span class="text-rose-600 font-bold">' + errMsg + '</span>';
+        alert(errMsg);
+      }
+    }
+
+    function copiarScriptSqlSupabase() {
+      const pre = document.getElementById('preScriptSqlSupabase');
+      if (pre) {
+        navigator.clipboard.writeText(pre.innerText).then(() => {
+          alert('📋 Script SQL copiado com sucesso! Agora vá no Supabase > SQL Editor > Cole e clique em Run.');
+        }).catch(() => {
+          alert('Selecione e copie o texto SQL manualmente.');
+        });
+      }
     }
 
     function limparCredenciaisNuvem() {
