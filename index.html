@@ -15,54 +15,56 @@
 
   <style>
     body { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f8fafc; }
-    .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+    .scrollbar-thin::-webkit-scrollbar { width: 5px; height: 5px; }
     .scrollbar-thin::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 9999px; }
     .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+    .scrollbar-none::-webkit-scrollbar { display: none; }
+    .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
-<body class="h-screen flex flex-col overflow-hidden text-slate-800 antialiased bg-slate-100">
+<body class="min-h-screen md:h-screen flex flex-col md:overflow-hidden text-slate-800 antialiased bg-slate-100">
 
   <!-- BANNER DE STATUS DO FIREBASE / MULTI-USUÁRIO -->
-  <div id="firebase-status-banner" class="bg-amber-500 text-slate-950 px-4 py-1.5 text-xs font-bold flex items-center justify-between shrink-0 border-b border-amber-600">
-    <div class="flex items-center gap-2">
+  <div id="firebase-status-banner" class="bg-amber-500 text-slate-950 px-3 sm:px-4 py-1.5 text-xs font-bold flex flex-wrap items-center justify-between gap-1.5 shrink-0 border-b border-amber-600">
+    <div class="flex items-center gap-1.5 sm:gap-2">
       <i class="fa-solid fa-triangle-exclamation"></i>
-      <span id="firebase-status-text">Modo Local (Offline): Configure as credenciais do Firebase para sincronizar com as 30 pessoas simultaneamente.</span>
+      <span id="firebase-status-text" class="text-[11px] sm:text-xs">Modo Local (Offline): Configure o Firebase para sincronizar com todos em tempo real.</span>
     </div>
-    <button onclick="abrirConfigFirebase()" class="bg-slate-950 text-white px-2.5 py-0.5 rounded text-[11px] font-extrabold hover:bg-slate-800 transition">
-      ⚙️ Configurar Firebase
+    <button onclick="abrirConfigFirebase()" class="bg-slate-950 text-white px-2 py-0.5 rounded text-[10.5px] sm:text-[11px] font-extrabold hover:bg-slate-800 transition">
+      ⚙️ Configurar
     </button>
   </div>
 
   <!-- TOP TEAMS HEADER -->
-  <header class="bg-[#1e1b4b] border-b border-indigo-950 text-white px-5 py-2.5 flex items-center justify-between shadow-xs shrink-0">
-    <div class="flex items-center space-x-3">
-      <div class="bg-white px-2.5 py-1 rounded-xl flex items-center gap-1.5 shadow-xs border border-indigo-200/40">
+  <header class="bg-[#1e1b4b] border-b border-indigo-950 text-white px-3 sm:px-5 py-2 sm:py-2.5 flex flex-wrap items-center justify-between gap-2 shadow-xs shrink-0">
+    <div class="flex items-center space-x-2 sm:space-x-3">
+      <div class="bg-white px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-xl flex items-center gap-1.5 shadow-xs border border-indigo-200/40 shrink-0">
         <div class="w-4 h-4 rounded-full bg-gradient-to-tr from-amber-500 to-rose-500 flex items-center justify-center text-[10px] text-white font-black">H</div>
-        <span class="font-extrabold text-xs text-indigo-950 tracking-tight">Hapvida <span class="text-blue-600">NDI</span></span>
+        <span class="font-extrabold text-[11px] sm:text-xs text-indigo-950 tracking-tight">Hapvida <span class="text-blue-600">NDI</span></span>
       </div>
-      <div class="flex items-center gap-2">
-        <span class="font-bold text-sm tracking-tight text-white">Fidelização Rede Credenciada - Hapvida NDI</span>
-        <span id="cloud-sync-badge" class="text-[10px] bg-slate-800 text-slate-300 font-bold px-2 py-0.5 rounded-full border border-slate-700 flex items-center gap-1">
-          <i class="fa-solid fa-cloud text-[9px]"></i> <span id="cloud-sync-label">Local</span>
+      <div class="flex items-center gap-1.5 sm:gap-2">
+        <span class="font-bold text-xs sm:text-sm tracking-tight text-white truncate max-w-[160px] xs:max-w-[220px] sm:max-w-none">Fidelização <span class="hidden sm:inline">Rede Credenciada -</span> Hapvida NDI</span>
+        <span id="cloud-sync-badge" class="text-[9px] sm:text-[10px] bg-slate-800 text-slate-300 font-bold px-2 py-0.5 rounded-full border border-slate-700 flex items-center gap-1 shrink-0">
+          <i class="fa-solid fa-cloud text-[8px] sm:text-[9px]"></i> <span id="cloud-sync-label">Local</span>
         </span>
       </div>
     </div>
 
-    <!-- Global Search -->
+    <!-- Global Search Desktop -->
     <div class="hidden md:flex items-center w-1/4 max-w-sm">
       <div class="relative w-full">
         <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-2.5 text-indigo-300 text-xs"></i>
-        <input type="text" id="searchInput" oninput="render()" placeholder="Pesquisar utente, guia, procedimento ou prestador..." 
+        <input type="text" id="searchInput" oninput="sincronizarBusca(this.value)" placeholder="Pesquisar utente, guia, procedimento..." 
           class="w-full pl-9 pr-4 py-1.5 text-xs bg-indigo-950/60 border border-indigo-800/80 rounded-lg text-white placeholder-indigo-300/60 focus:outline-none focus:ring-1 focus:ring-indigo-400">
       </div>
     </div>
 
     <!-- Actions & User Profile & Planilha Upload -->
-    <div class="flex items-center space-x-2">
+    <div class="flex items-center space-x-1.5 sm:space-x-2 ml-auto sm:ml-0">
       <!-- BOTÕES DE GESTÃO E ADMINISTRAÇÃO (EXCLUSIVO FERNANDO MENA E VITOR HUGO) -->
-      <div id="containerBotoesAdmin" class="hidden items-center space-x-2">
+      <div id="containerBotoesAdmin" class="hidden items-center flex-wrap gap-1 sm:space-x-2">
         <!-- Botão Subir Planilha do Dia -->
-        <button onclick="solicitarSubirPlanilha()" class="text-[11px] bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-3 py-1.5 rounded-lg border border-emerald-500 shadow-sm flex items-center gap-1.5 transition active:scale-[0.98]" title="Carregar planilha do dia e enviar para todos">
+        <button onclick="solicitarSubirPlanilha()" class="text-[10px] sm:text-[11px] bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-emerald-500 shadow-sm flex items-center gap-1 transition active:scale-[0.98]" title="Carregar planilha do dia e enviar para todos">
           <i class="fa-solid fa-cloud-arrow-up text-xs"></i>
           <span>Subir Planilha</span>
         </button>
@@ -70,13 +72,13 @@
 
         <!-- Botão Exportar Planilha Base do Histórico -->
         <button onclick="verificarSenhaEExecutar('baixar_base')" title="Baixar Planilha Base completa com todo o Histórico acumulado (.xlsx)"
-          class="text-[11px] bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold px-3 py-1.5 rounded-lg border border-amber-400 shadow-sm flex items-center gap-1.5 transition active:scale-[0.98]">
+          class="text-[10px] sm:text-[11px] bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-amber-400 shadow-sm flex items-center gap-1 transition active:scale-[0.98]">
           <i class="fa-solid fa-download text-xs"></i>
-          <span class="hidden lg:inline">Baixar Base</span>
+          <span class="hidden md:inline">Baixar Base</span>
         </button>
 
         <!-- Botão Importar / Sincronizar Base de Histórico -->
-        <button onclick="solicitarRestaurarBase()" class="text-[11px] bg-indigo-800 hover:bg-indigo-700 text-indigo-100 font-bold px-2.5 py-1.5 rounded-lg border border-indigo-600 flex items-center gap-1.5 transition" title="Importar/Mesclar uma Planilha Base de Histórico na Nuvem">
+        <button onclick="solicitarRestaurarBase()" class="text-[10px] sm:text-[11px] bg-indigo-800 hover:bg-indigo-700 text-indigo-100 font-bold px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg border border-indigo-600 flex items-center gap-1 transition" title="Importar/Mesclar uma Planilha Base de Histórico na Nuvem">
           <i class="fa-solid fa-file-import text-xs text-amber-300"></i>
           <span class="hidden xl:inline">Restaurar</span>
         </button>
@@ -84,23 +86,23 @@
 
         <!-- Limpar esteira do dia -->
         <button onclick="verificarSenhaEExecutar('limpar_fila')" title="Limpar apenas os casos ativos da esteira na Nuvem" 
-          class="text-[11px] bg-indigo-950/80 hover:bg-rose-900 text-indigo-200 hover:text-white px-2.5 py-1.5 rounded-lg border border-indigo-800/80 flex items-center gap-1.5 transition">
+          class="text-[10px] sm:text-[11px] bg-indigo-950/80 hover:bg-rose-900 text-indigo-200 hover:text-white px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg border border-indigo-800/80 flex items-center gap-1 transition">
           <i class="fa-solid fa-broom text-[10px]"></i> <span class="hidden sm:inline">Limpar Fila</span>
         </button>
 
         <!-- Limpar Todo o Histórico do Cofre -->
         <button onclick="verificarSenhaEExecutar('limpar_todo_historico')" title="Apaga permanentemente todo o cofre de histórico na Nuvem" 
-          class="text-[11px] bg-rose-700 hover:bg-rose-800 text-white font-extrabold px-2.5 py-1.5 rounded-lg border border-rose-500 flex items-center gap-1.5 transition shadow-sm">
+          class="text-[10px] sm:text-[11px] bg-rose-700 hover:bg-rose-800 text-white font-extrabold px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg border border-rose-500 flex items-center gap-1 transition shadow-sm">
           <i class="fa-solid fa-triangle-exclamation text-[10px]"></i> <span class="hidden xl:inline">Zerar</span>
         </button>
       </div>
 
       <!-- Operador Ativo Customizável -->
-      <div onclick="trocarOperadorAtivo()" title="Clique para trocar seu nome de operador" class="cursor-pointer text-right pl-2 pr-1 py-1 rounded-lg hover:bg-indigo-900/60 transition">
-        <p id="lblOperadorNome" class="text-xs font-extrabold text-white leading-tight flex items-center justify-end gap-1">
-          Selecionar Operador <i class="fa-solid fa-pen text-[9px] text-indigo-300"></i>
+      <div onclick="trocarOperadorAtivo()" title="Clique para trocar seu nome de operador" class="cursor-pointer text-right pl-1.5 sm:pl-2 pr-1 py-0.5 sm:py-1 rounded-lg hover:bg-indigo-900/60 transition shrink-0">
+        <p id="lblOperadorNome" class="text-[11px] sm:text-xs font-extrabold text-white leading-tight flex items-center justify-end gap-1">
+          Selecionar Operador <i class="fa-solid fa-pen text-[8px] sm:text-[9px] text-indigo-300"></i>
         </p>
-        <p class="text-[10px] text-emerald-400 font-bold flex items-center justify-end gap-1">
+        <p class="text-[9px] sm:text-[10px] text-emerald-400 font-bold flex items-center justify-end gap-1">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Operador Ativo
         </p>
       </div>
@@ -113,22 +115,31 @@
   <div id="screen-main" class="flex-1 flex flex-col overflow-hidden">
     
     <!-- SUB-BAR: CONTROLES, KPIS E VISTAS -->
-    <div class="bg-white border-b border-slate-200/80 px-5 py-3 flex flex-wrap items-center justify-between gap-4 shrink-0 shadow-xs">
-      <div>
-        <h1 class="text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
-          Esteira Operacional de Fidelização Rede Credenciada
-          <span id="badgeTotalTop" class="text-[11px] font-extrabold text-indigo-600 px-2 py-0.5 bg-indigo-50 rounded-md border border-indigo-200/60">0 Casos na Esteira</span>
+    <div class="bg-white border-b border-slate-200/80 px-3 sm:px-5 py-2.5 sm:py-3 flex flex-wrap items-center justify-between gap-2.5 sm:gap-4 shrink-0 shadow-xs">
+      <div class="w-full sm:w-auto">
+        <h1 class="text-sm sm:text-base font-bold text-slate-900 tracking-tight flex items-center gap-2 flex-wrap">
+          Esteira Operacional Fidelização
+          <span id="badgeTotalTop" class="text-[10px] sm:text-[11px] font-extrabold text-indigo-600 px-2 py-0.5 bg-indigo-50 rounded-md border border-indigo-200/60">0 Casos</span>
         </h1>
-        <p class="text-xs text-slate-500 mt-0.5">Sincronização <strong>em tempo real na Nuvem</strong>.</p>
+        <p class="text-[11px] sm:text-xs text-slate-500 mt-0.5">Sincronização <strong>em tempo real na Nuvem</strong>.</p>
+      </div>
+
+      <!-- Barra de Pesquisa Mobile -->
+      <div class="w-full md:hidden">
+        <div class="relative w-full">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+          <input type="text" id="searchInputMobile" oninput="sincronizarBusca(this.value)" placeholder="Pesquisar utente, procedimento, prestador..." 
+            class="w-full pl-8 pr-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-2xs">
+        </div>
       </div>
 
       <!-- FILTRO EXCLUSIVO POR GERENTE MÉDICO NA PRIMEIRA ESTEIRA -->
-      <div class="flex items-center gap-2 bg-indigo-50/70 border border-indigo-200 px-3 py-1.5 rounded-xl shadow-2xs">
+      <div class="w-full sm:w-auto flex items-center gap-2 bg-indigo-50/70 border border-indigo-200 px-2.5 sm:px-3 py-1.5 rounded-xl shadow-2xs">
         <label for="filterMedico" class="text-xs font-bold text-indigo-950 flex items-center gap-1.5 shrink-0">
-          <i class="fa-solid fa-user-doctor text-indigo-600 text-xs"></i> Filtrar Gerente Médico:
+          <i class="fa-solid fa-user-doctor text-indigo-600 text-xs"></i> <span class="hidden sm:inline">Filtrar</span> Gerente Médico:
         </label>
         <select id="filterMedico" onchange="render()" 
-          class="bg-white border border-indigo-300 rounded-lg text-xs font-bold text-slate-800 py-1 px-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-2xs">
+          class="w-full sm:w-auto bg-white border border-indigo-300 rounded-lg text-xs font-bold text-slate-800 py-1 px-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-2xs">
           <option value="">Todos os Gerentes Médicos (Geral)</option>
         </select>
         <button id="btnLimparFiltroMed" onclick="limparFiltroMedico()" title="Limpar filtro de médico" class="hidden text-slate-400 hover:text-rose-600 text-xs px-1">
@@ -136,143 +147,147 @@
         </button>
       </div>
 
-      <!-- KPI Pills -->
-      <div class="flex items-center gap-2 flex-wrap">
-        <div class="px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col items-center min-w-[65px]">
+      <!-- KPI Pills (Scroll suave no celular) -->
+      <div class="w-full sm:w-auto flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+        <div class="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col items-center min-w-[58px] sm:min-w-[65px] shrink-0">
           <span id="kpi-total" class="text-xs font-extrabold text-slate-700">0</span>
-          <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Ativas</span>
+          <span class="text-[9px] sm:text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Ativas</span>
         </div>
-        <div class="px-3 py-1.5 rounded-xl bg-rose-50 border border-rose-200/70 flex flex-col items-center min-w-[65px]">
+        <div class="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-rose-50 border border-rose-200/70 flex flex-col items-center min-w-[58px] sm:min-w-[65px] shrink-0">
           <span id="badge-count-critico" class="text-xs font-extrabold text-rose-700">0</span>
-          <span class="text-[10px] font-semibold text-rose-500 uppercase tracking-wider">Crítico (&gt;10d)</span>
+          <span class="text-[9px] sm:text-[10px] font-semibold text-rose-500 uppercase tracking-wider">Crítico</span>
         </div>
-        <div class="px-3 py-1.5 rounded-xl bg-amber-50 border border-amber-200/70 flex flex-col items-center min-w-[65px]">
+        <div class="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-amber-50 border border-amber-200/70 flex flex-col items-center min-w-[58px] sm:min-w-[65px] shrink-0">
           <span id="badge-count-atencao" class="text-xs font-extrabold text-amber-700">0</span>
-          <span class="text-[10px] font-semibold text-amber-600 uppercase tracking-wider">Atenção</span>
+          <span class="text-[9px] sm:text-[10px] font-semibold text-amber-600 uppercase tracking-wider">Atenção</span>
         </div>
-        <div class="px-3 py-1.5 rounded-xl bg-sky-50 border border-sky-200/70 flex flex-col items-center min-w-[65px]">
+        <div class="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-sky-50 border border-sky-200/70 flex flex-col items-center min-w-[58px] sm:min-w-[65px] shrink-0">
           <span id="badge-count-regular" class="text-xs font-extrabold text-sky-700">0</span>
-          <span class="text-[10px] font-semibold text-sky-600 uppercase tracking-wider">Regular</span>
+          <span class="text-[9px] sm:text-[10px] font-semibold text-sky-600 uppercase tracking-wider">Regular</span>
         </div>
-        <div onclick="setView('historico')" class="cursor-pointer hover:bg-emerald-100/80 transition px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-300 flex flex-col items-center min-w-[85px]" title="Clique para ver o Cofre de Histórico Permanente">
+        <div onclick="setView('historico')" class="cursor-pointer hover:bg-emerald-100/80 transition px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-emerald-50 border border-emerald-300 flex flex-col items-center min-w-[70px] sm:min-w-[85px] shrink-0" title="Clique para ver o Cofre de Histórico Permanente">
           <span id="kpi-concluidas" class="text-xs font-extrabold text-emerald-700">0</span>
-          <span class="text-[10px] font-extrabold text-emerald-700 uppercase tracking-wider flex items-center gap-1"><i class="fa-solid fa-lock text-[9px]"></i> Histórico</span>
+          <span class="text-[9px] sm:text-[10px] font-extrabold text-emerald-700 uppercase tracking-wider flex items-center gap-1"><i class="fa-solid fa-lock text-[8px]"></i> Histórico</span>
         </div>
       </div>
 
-      <!-- Segmented View Switcher -->
-      <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-semibold">
-        <button onclick="setView('kanban')" id="btn-view-kanban" class="px-3 py-1.5 rounded-lg bg-white text-indigo-700 shadow-xs flex items-center gap-1.5 transition">
+      <!-- Segmented View Switcher (100% responsivo) -->
+      <div class="w-full sm:w-auto flex items-center justify-between sm:justify-start bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-semibold overflow-x-auto scrollbar-none">
+        <button onclick="setView('kanban')" id="btn-view-kanban" class="flex-1 sm:flex-none justify-center px-2 sm:px-3 py-1.5 rounded-lg bg-white text-indigo-700 shadow-xs flex items-center gap-1 transition text-[11px] sm:text-xs">
           <i class="fa-solid fa-table-columns text-indigo-600"></i> Kanban
         </button>
-        <button onclick="setView('lista')" id="btn-view-lista" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 flex items-center gap-1.5 transition">
+        <button onclick="setView('lista')" id="btn-view-lista" class="flex-1 sm:flex-none justify-center px-2 sm:px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 flex items-center gap-1 transition text-[11px] sm:text-xs">
           <i class="fa-solid fa-list-ul"></i> Lista
         </button>
-        <button onclick="setView('fichas')" id="btn-view-fichas" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 flex items-center gap-1.5 transition">
+        <button onclick="setView('fichas')" id="btn-view-fichas" class="flex-1 sm:flex-none justify-center px-2 sm:px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 flex items-center gap-1 transition text-[11px] sm:text-xs">
           <i class="fa-solid fa-address-card"></i> Fichas
         </button>
-        <button onclick="setView('historico')" id="btn-view-historico" class="px-3 py-1.5 rounded-lg text-emerald-800 hover:text-emerald-950 flex items-center gap-1.5 transition">
-          <i class="fa-solid fa-shield-halved text-emerald-600"></i> Histórico Geral
+        <button onclick="setView('historico')" id="btn-view-historico" class="flex-1 sm:flex-none justify-center px-2 sm:px-3 py-1.5 rounded-lg text-emerald-800 hover:text-emerald-950 flex items-center gap-1 transition text-[11px] sm:text-xs">
+          <i class="fa-solid fa-shield-halved text-emerald-600"></i> Histórico
         </button>
       </div>
     </div>
 
     <!-- MAIN VIEWS CONTAINER -->
-    <main class="flex-1 overflow-auto p-4 scrollbar-thin">
+    <main class="flex-1 overflow-auto p-2.5 sm:p-4 scrollbar-thin">
       
-      <!-- 1. KANBAN VIEW -->
-      <div id="view-kanban" class="grid grid-cols-1 md:grid-cols-3 gap-4 h-full min-h-[550px]">
+      <!-- 1. KANBAN VIEW (3 Colunas adaptadas ao celular) -->
+      <div id="view-kanban" class="grid grid-cols-1 md:grid-cols-3 gap-3.5 sm:gap-4 md:h-full">
         <div class="bg-rose-50/40 border border-rose-200/70 rounded-2xl flex flex-col overflow-hidden shadow-xs">
-          <div class="bg-white/80 backdrop-blur-xs border-b border-rose-200/60 px-4 py-3 flex items-center justify-between">
+          <div class="bg-white/80 backdrop-blur-xs border-b border-rose-200/60 px-3.5 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between">
             <div class="flex items-center gap-2">
               <span class="w-2.5 h-2.5 rounded-full bg-rose-500 ring-4 ring-rose-100"></span>
               <span class="text-xs font-bold text-rose-900">Prazo Crítico (&gt;10 dias)</span>
             </div>
-            <span id="col-count-critico" class="text-[11px] bg-rose-100 text-rose-700 font-extrabold px-2 py-0.5 rounded-md">0</span>
+            <span id="col-count-critico" class="text-[10px] sm:text-[11px] bg-rose-100 text-rose-700 font-extrabold px-2 py-0.5 rounded-md">0</span>
           </div>
-          <div id="col-critico" class="p-3 flex-1 overflow-y-auto space-y-2.5 scrollbar-thin"></div>
+          <div id="col-critico" class="p-2.5 sm:p-3 flex-1 overflow-y-auto space-y-2.5 scrollbar-thin max-h-[500px] md:max-h-none"></div>
         </div>
 
         <div class="bg-amber-50/40 border border-amber-200/70 rounded-2xl flex flex-col overflow-hidden shadow-xs">
-          <div class="bg-white/80 backdrop-blur-xs border-b border-amber-200/60 px-4 py-3 flex items-center justify-between">
+          <div class="bg-white/80 backdrop-blur-xs border-b border-amber-200/60 px-3.5 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between">
             <div class="flex items-center gap-2">
               <span class="w-2.5 h-2.5 rounded-full bg-amber-500 ring-4 ring-amber-100"></span>
               <span class="text-xs font-bold text-amber-900">Em Atenção (7 a 10 dias)</span>
             </div>
-            <span id="col-count-atencao" class="text-[11px] bg-amber-100 text-amber-800 font-extrabold px-2 py-0.5 rounded-md">0</span>
+            <span id="col-count-atencao" class="text-[10px] sm:text-[11px] bg-amber-100 text-amber-800 font-extrabold px-2 py-0.5 rounded-md">0</span>
           </div>
-          <div id="col-atencao" class="p-3 flex-1 overflow-y-auto space-y-2.5 scrollbar-thin"></div>
+          <div id="col-atencao" class="p-2.5 sm:p-3 flex-1 overflow-y-auto space-y-2.5 scrollbar-thin max-h-[500px] md:max-h-none"></div>
         </div>
 
         <div class="bg-emerald-50/30 border border-emerald-200/70 rounded-2xl flex flex-col overflow-hidden shadow-xs">
-          <div class="bg-white/80 backdrop-blur-xs border-b border-emerald-200/60 px-4 py-3 flex items-center justify-between">
+          <div class="bg-white/80 backdrop-blur-xs border-b border-emerald-200/60 px-3.5 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between">
             <div class="flex items-center gap-2">
               <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-4 ring-emerald-100"></span>
               <span class="text-xs font-bold text-emerald-900">Regular (&le;6 dias)</span>
             </div>
-            <span id="col-count-regular" class="text-[11px] bg-emerald-100 text-emerald-800 font-extrabold px-2 py-0.5 rounded-md">0</span>
+            <span id="col-count-regular" class="text-[10px] sm:text-[11px] bg-emerald-100 text-emerald-800 font-extrabold px-2 py-0.5 rounded-md">0</span>
           </div>
-          <div id="col-regular" class="p-3 flex-1 overflow-y-auto space-y-2.5 scrollbar-thin"></div>
+          <div id="col-regular" class="p-2.5 sm:p-3 flex-1 overflow-y-auto space-y-2.5 scrollbar-thin max-h-[500px] md:max-h-none"></div>
         </div>
       </div>
 
-      <!-- 2. LIST VIEW -->
+      <!-- 2. LIST VIEW (Rolável horizontalmente no celular) -->
       <div id="view-lista" class="hidden bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
-        <table class="w-full text-left border-collapse text-xs">
-          <thead>
-            <tr class="bg-slate-50 text-slate-500 uppercase tracking-wider font-bold border-b border-slate-200/80 text-[11px]">
-              <th class="py-3 px-4">Cód. Utente</th>
-              <th class="py-3 px-4">Beneficiário</th>
-              <th class="py-3 px-4">Procedimento / TUSS</th>
-              <th class="py-3 px-4">Prestador Solicitante</th>
-              <th class="py-3 px-4 text-center">Prazo Decorrido</th>
-              <th class="py-3 px-4 text-right">Ação</th>
-            </tr>
-          </thead>
-          <tbody id="lista-tbody" class="divide-y divide-slate-100 text-slate-700"></tbody>
-        </table>
+        <div class="overflow-x-auto w-full">
+          <table class="w-full text-left border-collapse text-xs whitespace-nowrap sm:whitespace-normal min-w-[600px] sm:min-w-0">
+            <thead>
+              <tr class="bg-slate-50 text-slate-500 uppercase tracking-wider font-bold border-b border-slate-200/80 text-[10.5px] sm:text-[11px]">
+                <th class="py-2.5 sm:py-3 px-3 sm:px-4">Cód. Utente</th>
+                <th class="py-2.5 sm:py-3 px-3 sm:px-4">Beneficiário</th>
+                <th class="py-2.5 sm:py-3 px-3 sm:px-4">Procedimento / TUSS</th>
+                <th class="py-2.5 sm:py-3 px-3 sm:px-4">Prestador Solicitante</th>
+                <th class="py-2.5 sm:py-3 px-3 sm:px-4 text-center">Prazo Decorrido</th>
+                <th class="py-2.5 sm:py-3 px-3 sm:px-4 text-right">Ação</th>
+              </tr>
+            </thead>
+            <tbody id="lista-tbody" class="divide-y divide-slate-100 text-slate-700"></tbody>
+          </table>
+        </div>
       </div>
 
       <!-- 3. FICHAS VIEW -->
-      <div id="view-fichas" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5"></div>
+      <div id="view-fichas" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-3.5"></div>
 
       <!-- 4. HISTÓRICO BLINDADO VIEW -->
       <div id="view-historico" class="hidden space-y-4">
-        <div class="bg-gradient-to-r from-emerald-950 via-teal-900 to-indigo-950 text-white p-4 rounded-2xl shadow-xs flex flex-wrap items-center justify-between gap-4">
+        <div class="bg-gradient-to-r from-emerald-950 via-teal-900 to-indigo-950 text-white p-3.5 sm:p-4 rounded-2xl shadow-xs flex flex-wrap items-center justify-between gap-3 sm:gap-4">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-300 text-lg">
+            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-300 text-base sm:text-lg shrink-0">
               <i class="fa-solid fa-vault"></i>
             </div>
             <div>
-              <h2 class="text-sm font-extrabold flex items-center gap-2">
+              <h2 class="text-xs sm:text-sm font-extrabold flex items-center gap-2 flex-wrap">
                 Cofre de Histórico Permanente na Nuvem
-                <span class="text-[10px] bg-emerald-500 text-slate-950 font-black px-2 py-0.5 rounded-full uppercase">Protegido &amp; Compartilhado</span>
+                <span class="text-[9px] sm:text-[10px] bg-emerald-500 text-slate-950 font-black px-2 py-0.5 rounded-full uppercase">Protegido &amp; Compartilhado</span>
               </h2>
-              <p class="text-xs text-emerald-200/90 mt-0.5">Todos os casos trabalhados, pareceres, pacotes e finalizações compartilhados entre a equipe.</p>
+              <p class="text-[11px] sm:text-xs text-emerald-200/90 mt-0.5">Todos os casos trabalhados, pareceres, pacotes e finalizações compartilhados.</p>
             </div>
           </div>
-          <div class="flex items-center gap-2">
-            <button id="btnExportarCofre" onclick="verificarSenhaEExecutar('baixar_base')" class="hidden bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs px-4 py-2 rounded-xl items-center gap-2 shadow-sm transition">
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <button id="btnExportarCofre" onclick="verificarSenhaEExecutar('baixar_base')" class="hidden w-full sm:w-auto justify-center bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs px-3.5 py-2 rounded-xl items-center gap-2 shadow-sm transition">
               <i class="fa-solid fa-file-excel"></i> Exportar Planilha Base (.xlsx)
             </button>
           </div>
         </div>
 
         <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
-          <table class="w-full text-left border-collapse text-xs">
-            <thead>
-              <tr class="bg-slate-50 text-slate-500 uppercase tracking-wider font-bold border-b border-slate-200/80 text-[11px]">
-                <th class="py-3 px-4">Status no Cofre</th>
-                <th class="py-3 px-4">Cód. Utente</th>
-                <th class="py-3 px-4">Beneficiário</th>
-                <th class="py-3 px-4">Procedimento</th>
-                <th class="py-3 px-4">Equipe / Orçamento</th>
-                <th class="py-3 px-4">Último Desfecho / Parecer</th>
-                <th class="py-3 px-4 text-right">Consulta</th>
-              </tr>
-            </thead>
-            <tbody id="historico-tbody" class="divide-y divide-slate-100 text-slate-700"></tbody>
-          </table>
+          <div class="overflow-x-auto w-full">
+            <table class="w-full text-left border-collapse text-xs whitespace-nowrap sm:whitespace-normal min-w-[700px] sm:min-w-0">
+              <thead>
+                <tr class="bg-slate-50 text-slate-500 uppercase tracking-wider font-bold border-b border-slate-200/80 text-[10.5px] sm:text-[11px]">
+                  <th class="py-2.5 sm:py-3 px-3 sm:px-4">Status no Cofre</th>
+                  <th class="py-2.5 sm:py-3 px-3 sm:px-4">Cód. Utente</th>
+                  <th class="py-2.5 sm:py-3 px-3 sm:px-4">Beneficiário</th>
+                  <th class="py-2.5 sm:py-3 px-3 sm:px-4">Procedimento</th>
+                  <th class="py-2.5 sm:py-3 px-3 sm:px-4">Equipe / Orçamento</th>
+                  <th class="py-2.5 sm:py-3 px-3 sm:px-4">Último Desfecho / Parecer</th>
+                  <th class="py-2.5 sm:py-3 px-3 sm:px-4 text-right">Consulta</th>
+                </tr>
+              </thead>
+              <tbody id="historico-tbody" class="divide-y divide-slate-100 text-slate-700"></tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -282,71 +297,71 @@
   <!-- ======================================================== -->
   <!-- TELA 2: TELA DEDICADA EXCLUSIVA DO CASO                  -->
   <!-- ======================================================== -->
-  <div id="screen-case-detail" class="hidden flex-1 flex flex-col overflow-hidden bg-slate-100">
-    <div class="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between shadow-xs shrink-0">
-      <div class="flex items-center gap-3">
-        <button onclick="closeCaseDetail()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3.5 py-2 rounded-xl flex items-center gap-2 transition border border-slate-200">
-          <i class="fa-solid fa-arrow-left"></i> Voltar à Esteira
+  <div id="screen-case-detail" class="hidden flex-1 flex flex-col min-h-0 overflow-y-auto md:overflow-hidden bg-slate-100">
+    <div class="bg-white border-b border-slate-200 px-3 sm:px-6 py-2.5 sm:py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs shrink-0">
+      <div class="flex items-center gap-2.5 sm:gap-3">
+        <button onclick="closeCaseDetail()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3 py-2 rounded-xl flex items-center gap-1.5 transition border border-slate-200 shrink-0">
+          <i class="fa-solid fa-arrow-left"></i> <span class="hidden xs:inline">Voltar</span>
         </button>
         <div>
-          <div class="flex items-center gap-2 flex-wrap">
-            <h2 id="singleDetailCode" class="text-sm font-extrabold text-slate-900 tracking-tight">-</h2>
-            <span id="singleDetailSLA" class="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-700">0 dias</span>
-            <span id="singleDetailTipoPendencia" class="text-[10.5px] font-extrabold px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-800 border border-purple-300 flex items-center gap-1">
-              <i class="fa-solid fa-hashtag text-[9.5px]"></i> <span id="labelTipoPendencia">-</span>
+          <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+            <h2 id="singleDetailCode" class="text-xs sm:text-sm font-extrabold text-slate-900 tracking-tight">-</h2>
+            <span id="singleDetailSLA" class="text-[9.5px] sm:text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700">0 dias</span>
+            <span id="singleDetailTipoPendencia" class="text-[9.5px] sm:text-[10.5px] font-extrabold px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 border border-purple-300 flex items-center gap-1">
+              <i class="fa-solid fa-hashtag text-[8.5px]"></i> <span id="labelTipoPendencia">-</span>
             </span>
-            <span id="singleDetailBaseTopBadge" class="text-[10.5px] font-extrabold px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-800 border border-sky-300 flex items-center gap-1">
-              <i class="fa-solid fa-map-pin text-[9.5px]"></i> <span id="labelBaseTop">-</span>
+            <span id="singleDetailBaseTopBadge" class="text-[9.5px] sm:text-[10.5px] font-extrabold px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 border border-sky-300 flex items-center gap-1">
+              <i class="fa-solid fa-map-pin text-[8.5px]"></i> <span id="labelBaseTop">-</span>
             </span>
           </div>
-          <p id="singleDetailBeneficiaryHeader" class="text-xs text-slate-500 font-medium">-</p>
+          <p id="singleDetailBeneficiaryHeader" class="text-[11px] sm:text-xs text-slate-500 font-medium truncate max-w-[200px] xs:max-w-[260px] sm:max-w-none">-</p>
         </div>
       </div>
 
-      <div class="flex items-center gap-2">
-        <button onclick="copiarFichaCasoAtual()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold text-xs px-3.5 py-2 rounded-xl flex items-center gap-2 transition shadow-xs">
+      <div class="flex items-center gap-2 w-full sm:w-auto">
+        <button onclick="copiarFichaCasoAtual()" class="w-full sm:w-auto justify-center bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold text-xs px-3.5 py-2 rounded-xl flex items-center gap-2 transition shadow-xs active:scale-[0.98]">
           <i class="fa-solid fa-copy text-indigo-600"></i> Copiar Ficha para Teams / WhatsApp
         </button>
       </div>
     </div>
 
     <!-- DEDICATED MAIN 2-COLUMN VIEW -->
-    <div class="flex-1 overflow-auto p-6 scrollbar-thin">
-      <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+    <div class="flex-1 overflow-auto p-3 sm:p-6 scrollbar-thin">
+      <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start">
         
         <!-- LEFT COLUMN -->
-        <div class="lg:col-span-7 bg-white rounded-2xl border border-slate-200/90 p-6 shadow-xs space-y-5">
+        <div class="lg:col-span-7 bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-6 shadow-xs space-y-4 sm:space-y-5">
           <div class="flex items-center justify-between border-b border-slate-100 pb-3">
             <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-400 flex items-center gap-2">
               <i class="fa-solid fa-file-invoice-dollar text-indigo-600"></i> Informações Cadastrais da Guia
             </h3>
-            <span class="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200 flex items-center gap-1">
-              <i class="fa-solid fa-cloud-arrow-up text-[10px]"></i> Sincronizado na Nuvem
+            <span class="text-[10.5px] sm:text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 sm:px-2.5 py-0.5 rounded-md border border-emerald-200 flex items-center gap-1">
+              <i class="fa-solid fa-cloud-arrow-up text-[9px] sm:text-[10px]"></i> Sincronizado na Nuvem
             </span>
           </div>
 
-          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
-            <div class="flex items-center justify-between">
+          <div class="bg-slate-50 p-3.5 sm:p-4 rounded-xl border border-slate-200/80">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
-                <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Beneficiário</span>
-                <p id="singleDetailName" class="text-sm font-bold text-slate-900 mt-0.5">-</p>
+                <span class="text-[9.5px] sm:text-[10px] font-bold uppercase text-slate-400 tracking-wider">Beneficiário</span>
+                <p id="singleDetailName" class="text-sm font-bold text-slate-900 mt-0.5 leading-snug">-</p>
               </div>
-              <span id="singleDetailBaseBadge" class="text-xs font-extrabold px-3 py-1 rounded-lg bg-indigo-100 text-indigo-800 border border-indigo-200 flex items-center gap-1.5 shadow-2xs">
+              <span id="singleDetailBaseBadge" class="self-start sm:self-auto text-xs font-extrabold px-3 py-1 rounded-lg bg-indigo-100 text-indigo-800 border border-indigo-200 flex items-center gap-1.5 shadow-2xs">
                 <i class="fa-solid fa-map-location-dot text-indigo-600"></i> <span id="labelBaseCard">-</span>
               </span>
             </div>
             
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3 pt-3 border-t border-slate-200/60 text-xs">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 mt-3 pt-3 border-t border-slate-200/60 text-xs">
               <div>
-                <span class="text-[10px] font-bold uppercase text-slate-400">Código Utente / Carteira</span>
+                <span class="text-[9.5px] sm:text-[10px] font-bold uppercase text-slate-400">Código Utente / Carteira</span>
                 <p id="singleDetailUserCode" class="font-mono font-bold text-indigo-700 mt-0.5">-</p>
               </div>
               <div>
-                <span class="text-[10px] font-bold uppercase text-slate-400">Plano / Contrato</span>
+                <span class="text-[9.5px] sm:text-[10px] font-bold uppercase text-slate-400">Plano / Contrato</span>
                 <p id="singleDetailPlan" class="font-semibold text-slate-700 mt-0.5">-</p>
               </div>
               <div>
-                <span class="text-[10px] font-bold uppercase text-slate-400">Base da Operadora</span>
+                <span class="text-[9.5px] sm:text-[10px] font-bold uppercase text-slate-400">Base da Operadora</span>
                 <p id="singleDetailBaseText" class="font-extrabold text-indigo-900 mt-0.5 flex items-center gap-1">
                   <i class="fa-solid fa-building-shield text-indigo-500 text-[11px]"></i> <span id="labelBaseText">-</span>
                 </p>
@@ -354,20 +369,20 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
-              <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Procedimento Cirúrgico</span>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+            <div class="bg-slate-50 p-3.5 sm:p-4 rounded-xl border border-slate-200/80">
+              <span class="text-[9.5px] sm:text-[10px] font-bold uppercase text-slate-400 tracking-wider">Procedimento Cirúrgico</span>
               <p id="singleDetailProcedure" class="text-xs font-bold text-slate-800 mt-1 leading-snug">-</p>
               <p id="singleDetailTUSS" class="text-[11px] font-mono text-slate-500 mt-1">Cód. TUSS: -</p>
             </div>
-            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80 space-y-2">
+            <div class="bg-slate-50 p-3.5 sm:p-4 rounded-xl border border-slate-200/80 space-y-2">
               <div>
-                <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Prestador Solicitante</span>
+                <span class="text-[9.5px] sm:text-[10px] font-bold uppercase text-slate-400 tracking-wider">Prestador Solicitante</span>
                 <p id="singleDetailProvider" class="text-xs font-bold text-slate-800 mt-0.5 leading-snug">-</p>
                 <p id="singleDetailCity" class="text-[11px] text-slate-500 mt-0.5"><i class="fa-solid fa-location-dot text-rose-500"></i> -</p>
               </div>
               <div class="pt-2 border-t border-slate-200/60">
-                <span class="text-[10px] font-extrabold uppercase text-indigo-900 tracking-wider flex items-center gap-1">
+                <span class="text-[9.5px] sm:text-[10px] font-extrabold uppercase text-indigo-900 tracking-wider flex items-center gap-1">
                   <i class="fa-solid fa-user-pen text-indigo-600"></i> Nome do Solicitante:
                 </span>
                 <p id="singleDetailSolicitante" class="text-xs font-extrabold text-slate-900 mt-0.5">-</p>
@@ -376,39 +391,39 @@
           </div>
 
           <!-- ORÇAMENTO & PACOTE -->
-          <div class="bg-gradient-to-br from-indigo-50/70 via-slate-50 to-violet-50/70 p-4.5 rounded-2xl border-2 border-indigo-200/90 shadow-2xs space-y-3.5">
-            <div class="flex items-center justify-between border-b border-indigo-100/80 pb-2.5">
-              <span class="text-[11px] font-extrabold uppercase text-indigo-950 tracking-wider flex items-center gap-2">
+          <div class="bg-gradient-to-br from-indigo-50/70 via-slate-50 to-violet-50/70 p-3.5 sm:p-4.5 rounded-2xl border-2 border-indigo-200/90 shadow-2xs space-y-3 sm:space-y-3.5">
+            <div class="flex items-center justify-between border-b border-indigo-100/80 pb-2 sm:pb-2.5">
+              <span class="text-[10.5px] sm:text-[11px] font-extrabold uppercase text-indigo-950 tracking-wider flex items-center gap-1.5 sm:gap-2">
                 <i class="fa-solid fa-coins text-indigo-600"></i> Orçamento &amp; Pacote Negociado
               </span>
-              <span class="text-[9.5px] font-extrabold text-indigo-700 bg-white px-2.5 py-0.5 rounded-md border border-indigo-200 shadow-2xs">
+              <span class="text-[9px] sm:text-[9.5px] font-extrabold text-indigo-700 bg-white px-2 sm:px-2.5 py-0.5 rounded-md border border-indigo-200 shadow-2xs">
                 Fidelização de Custos
               </span>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 sm:gap-3 items-end">
               <div class="sm:col-span-4">
-                <label for="editCaseValorInicial" class="text-[10px] font-extrabold uppercase text-slate-600 tracking-wider block mb-1.5">Valor Inicial:</label>
-                <input type="text" id="editCaseValorInicial" oninput="autoSalvarProfissionais()" placeholder="Ex: R$ 8.500,00" class="w-full bg-white font-bold text-slate-800 text-xs px-3 py-2.5 rounded-xl border border-slate-300">
+                <label for="editCaseValorInicial" class="text-[9.5px] sm:text-[10px] font-extrabold uppercase text-slate-600 tracking-wider block mb-1 sm:mb-1.5">Valor Inicial:</label>
+                <input type="text" id="editCaseValorInicial" oninput="autoSalvarProfissionais()" placeholder="Ex: R$ 8.500,00" class="w-full bg-white font-bold text-slate-800 text-xs px-3 py-2 sm:py-2.5 rounded-xl border border-slate-300">
               </div>
               <div class="sm:col-span-4">
-                <label for="editCaseMenorValor" class="text-[10px] font-extrabold uppercase text-slate-600 tracking-wider block mb-1.5">Menor Valor:</label>
-                <input type="text" id="editCaseMenorValor" oninput="autoSalvarProfissionais()" placeholder="Ex: R$ 3.200,00" class="w-full bg-white font-bold text-slate-800 text-xs px-3 py-2.5 rounded-xl border border-slate-300">
+                <label for="editCaseMenorValor" class="text-[9.5px] sm:text-[10px] font-extrabold uppercase text-slate-600 tracking-wider block mb-1 sm:mb-1.5">Menor Valor:</label>
+                <input type="text" id="editCaseMenorValor" oninput="autoSalvarProfissionais()" placeholder="Ex: R$ 3.200,00" class="w-full bg-white font-bold text-slate-800 text-xs px-3 py-2 sm:py-2.5 rounded-xl border border-slate-300">
               </div>
               <div class="sm:col-span-4">
-                <label for="editCaseValorPacote" class="text-[10px] font-extrabold uppercase text-emerald-800 tracking-wider block mb-1.5">Valor Pacote:</label>
-                <input type="text" id="editCaseValorPacote" oninput="autoSalvarProfissionais()" placeholder="Ex: R$ 2.900,00" class="w-full bg-white font-extrabold text-emerald-700 text-xs px-3 py-2.5 rounded-xl border-2 border-emerald-400">
+                <label for="editCaseValorPacote" class="text-[9.5px] sm:text-[10px] font-extrabold uppercase text-emerald-800 tracking-wider block mb-1 sm:mb-1.5">Valor Pacote:</label>
+                <input type="text" id="editCaseValorPacote" oninput="autoSalvarProfissionais()" placeholder="Ex: R$ 2.900,00" class="w-full bg-white font-extrabold text-emerald-700 text-xs px-3 py-2 sm:py-2.5 rounded-xl border-2 border-emerald-400">
               </div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end pt-1">
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 sm:gap-3 items-end pt-1">
               <div class="sm:col-span-7">
-                <label for="editCaseQualPacote" class="text-[10px] font-extrabold uppercase text-slate-600 tracking-wider block mb-1.5">Qual Pacote:</label>
-                <input type="text" id="editCaseQualPacote" oninput="autoSalvarProfissionais()" placeholder="Ex: 98307333 - Pacote Infiltração" class="w-full bg-white font-bold text-slate-800 text-xs px-3 py-2.5 rounded-xl border border-slate-300">
+                <label for="editCaseQualPacote" class="text-[9.5px] sm:text-[10px] font-extrabold uppercase text-slate-600 tracking-wider block mb-1 sm:mb-1.5">Qual Pacote:</label>
+                <input type="text" id="editCaseQualPacote" oninput="autoSalvarProfissionais()" placeholder="Ex: 98307333 - Pacote Infiltração" class="w-full bg-white font-bold text-slate-800 text-xs px-3 py-2 sm:py-2.5 rounded-xl border border-slate-300">
               </div>
               <div class="sm:col-span-5">
-                <label for="editCasePrestadorPacote" class="text-[10px] font-extrabold uppercase text-slate-600 tracking-wider block mb-1.5">Prestador Pacote:</label>
-                <input type="text" id="editCasePrestadorPacote" oninput="autoSalvarProfissionais()" placeholder="Ex: Hospital Albert Sabin" class="w-full bg-white font-bold text-slate-800 text-xs px-3 py-2.5 rounded-xl border border-slate-300">
+                <label for="editCasePrestadorPacote" class="text-[9.5px] sm:text-[10px] font-extrabold uppercase text-slate-600 tracking-wider block mb-1 sm:mb-1.5">Prestador Pacote:</label>
+                <input type="text" id="editCasePrestadorPacote" oninput="autoSalvarProfissionais()" placeholder="Ex: Hospital Albert Sabin" class="w-full bg-white font-bold text-slate-800 text-xs px-3 py-2 sm:py-2.5 rounded-xl border border-slate-300">
               </div>
             </div>
           </div>
@@ -416,28 +431,28 @@
           <!-- EQUIPA DESIGNADA -->
           <div class="pt-3 border-t border-slate-200 text-xs space-y-3">
             <div class="flex items-center justify-between">
-              <span class="text-[10.5px] font-extrabold uppercase text-indigo-950 tracking-wider flex items-center gap-1.5">
+              <span class="text-[10px] sm:text-[10.5px] font-extrabold uppercase text-indigo-950 tracking-wider flex items-center gap-1.5">
                 <i class="fa-solid fa-users-gear text-indigo-600 text-xs"></i> EQUIPA DESIGNADA &amp; CORPO DELIBERATIVO:
               </span>
             </div>
 
-            <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-indigo-900 text-white p-3.5 rounded-xl border border-indigo-900/80 flex items-center justify-between flex-wrap gap-2">
-              <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl bg-indigo-600/60 border border-indigo-400/30 flex items-center justify-center text-indigo-200 text-base shrink-0 shadow-inner">
+            <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-indigo-900 text-white p-3 sm:p-3.5 rounded-xl border border-indigo-900/80 flex items-center justify-between flex-wrap gap-2">
+              <div class="flex items-center gap-2.5 sm:gap-3">
+                <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-indigo-600/60 border border-indigo-400/30 flex items-center justify-center text-indigo-200 text-sm sm:text-base shrink-0 shadow-inner">
                   <i class="fa-solid fa-user-doctor"></i>
                 </div>
                 <div>
-                  <span class="text-[10px] font-extrabold uppercase text-indigo-300 tracking-wider">Gerente Médico</span>
-                  <p id="singleDetailMedResponsavel" class="text-sm font-extrabold text-white mt-0.5">-</p>
+                  <span class="text-[9.5px] sm:text-[10px] font-extrabold uppercase text-indigo-300 tracking-wider">Gerente Médico</span>
+                  <p id="singleDetailMedResponsavel" class="text-xs sm:text-sm font-extrabold text-white mt-0.5">-</p>
                 </div>
               </div>
               <div class="text-right">
-                <span class="text-[10px] text-indigo-300/80 font-medium block">Base / Regional:</span>
-                <span id="singleDetailBase" class="text-xs font-bold text-indigo-100 block">-</span>
+                <span class="text-[9.5px] sm:text-[10px] text-indigo-300/80 font-medium block">Base / Regional:</span>
+                <span id="singleDetailBase" class="text-[11px] sm:text-xs font-bold text-indigo-100 block">-</span>
               </div>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5 sm:gap-3">
               <!-- Consultor -->
               <div class="p-3 rounded-xl bg-violet-50/80 border-2 border-violet-200 shadow-2xs space-y-2">
                 <label class="text-[10px] font-extrabold text-violet-950 block">Médico Consultor</label>
@@ -505,8 +520,8 @@
         </div>
 
         <!-- RIGHT COLUMN -->
-        <div class="lg:col-span-5 space-y-5">
-          <div class="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-3.5">
+        <div class="lg:col-span-5 space-y-4 sm:space-y-5">
+          <div class="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 shadow-xs space-y-3 sm:space-y-3.5">
             <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
               <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-800 flex items-center gap-2">
                 <i class="fa-solid fa-clipboard-check text-emerald-600"></i> Parecer &amp; Desfecho Final
@@ -541,17 +556,17 @@
 
             <div>
               <label class="block text-[11px] font-bold text-slate-700 mb-1">Finalização - SIGO:</label>
-              <textarea id="singleInputNota" rows="3" placeholder="Insira aqui as informações finais..." class="w-full p-3 text-xs bg-slate-50 border border-slate-300 rounded-xl"></textarea>
+              <textarea id="singleInputNota" rows="3" placeholder="Insira aqui as informações finais..." class="w-full p-2.5 sm:p-3 text-xs bg-slate-50 border border-slate-300 rounded-xl"></textarea>
             </div>
 
             <div class="pt-1">
-              <button onclick="singleConcluirCasoOK()" class="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-sm transition">
+              <button onclick="singleConcluirCasoOK()" class="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm transition active:scale-[0.98]">
                 <i class="fa-solid fa-check-double text-sm"></i> Finalizar Guia (Arquivar no Cofre)
               </button>
             </div>
           </div>
 
-          <div class="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-3">
+          <div class="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 shadow-xs space-y-3">
             <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
               <h3 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
                 <i class="fa-solid fa-shield-halved text-emerald-600"></i> Linha do Tempo Blindada
@@ -569,10 +584,10 @@
   </div>
 
   <!-- MODAL IDENTIFICAÇÃO DE USUÁRIO / OPERADOR -->
-  <div id="modal-operador" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+  <div id="modal-operador" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-4 z-50 overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-md w-full p-4.5 sm:p-6 shadow-2xl border border-slate-200 space-y-4 my-auto">
       <div class="text-center space-y-1.5">
-        <div class="w-14 h-14 mx-auto rounded-2xl bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-600 text-2xl shadow-inner">
+        <div class="w-12 h-12 sm:w-14 sm:h-14 mx-auto rounded-2xl bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-600 text-xl sm:text-2xl shadow-inner">
           <i class="fa-solid fa-shield-halved"></i>
         </div>
         <h2 class="text-base font-extrabold text-slate-900 tracking-tight">Login de Acesso</h2>
@@ -583,7 +598,7 @@
         <div>
           <label for="selectOperadorModal" class="text-xs font-extrabold text-slate-700 block mb-1">Selecione seu nome:</label>
           <div class="relative">
-            <select id="selectOperadorModal" class="w-full bg-slate-50 border-2 border-indigo-200 rounded-xl text-xs font-extrabold text-slate-800 p-3 appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer">
+            <select id="selectOperadorModal" class="w-full bg-slate-50 border-2 border-indigo-200 rounded-xl text-xs font-extrabold text-slate-800 p-2.5 sm:p-3 appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer">
               <!-- Preenchido dinamicamente via JS -->
             </select>
             <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-indigo-600">
@@ -595,7 +610,7 @@
         <div>
           <label for="inputSenhaLogin" class="text-xs font-extrabold text-slate-700 block mb-1">Senha de Acesso:</label>
           <div class="relative">
-            <input type="password" id="inputSenhaLogin" onkeydown="if(event.key==='Enter') confirmarOperadorSelecionado()" placeholder="Digite a senha..." class="w-full bg-slate-50 border-2 border-indigo-200 rounded-xl text-xs font-bold text-slate-800 p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+            <input type="password" id="inputSenhaLogin" onkeydown="if(event.key==='Enter') confirmarOperadorSelecionado()" placeholder="Digite a senha..." class="w-full bg-slate-50 border-2 border-indigo-200 rounded-xl text-xs font-bold text-slate-800 p-2.5 sm:p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
             <button type="button" onclick="alternarVisibilidadeSenha()" class="absolute inset-y-0 right-0 flex items-center px-3.5 text-slate-400 hover:text-indigo-600 transition">
               <i id="iconeOlhoSenha" class="fa-solid fa-eye text-xs"></i>
             </button>
@@ -615,8 +630,8 @@
   </div>
 
   <!-- MODAL CONFIGURAÇÃO FIREBASE -->
-  <div id="modal-firebase" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs hidden items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+  <div id="modal-firebase" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs hidden items-center justify-center p-3 sm:p-4 z-50 overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-4.5 sm:p-6 shadow-2xl border border-slate-200 space-y-4 my-auto">
       <div class="flex items-center justify-between border-b border-slate-100 pb-3">
         <div class="flex items-center gap-2">
           <i class="fa-solid fa-cloud text-amber-500 text-lg"></i>
@@ -1049,12 +1064,6 @@
         alert('🔒 Acesso Restrito\nApenas Fernando Mena e Vitor Hugo possuem permissão para subir planilhas.');
         return;
       }
-      const senhaInformada = prompt('🔒 Acesso Restrito\nDigite a senha para subir uma nova planilha:');
-      if (senhaInformada === null) return;
-      if (senhaInformada !== SENHA_MESTRE && senhaInformada !== 'hapvida2026') {
-        alert('❌ Senha incorreta! Acesso negado.');
-        return;
-      }
       const input = document.getElementById('inputPlanilhaDia');
       if (input) input.click();
     }
@@ -1064,12 +1073,6 @@
         alert('🔒 Acesso Restrito\nApenas Fernando Mena e Vitor Hugo possuem permissão para restaurar a base.');
         return;
       }
-      const senhaInformada = prompt('🔒 Acesso Restrito\nDigite a senha para restaurar/mesclar a base:');
-      if (senhaInformada === null) return;
-      if (senhaInformada !== SENHA_MESTRE && senhaInformada !== 'hapvida2026') {
-        alert('❌ Senha incorreta! Acesso negado.');
-        return;
-      }
       const input = document.getElementById('inputRestaurarBase');
       if (input) input.click();
     }
@@ -1077,14 +1080,6 @@
     function verificarSenhaEExecutar(acao, event = null) {
       if (!isOperadorAdmin()) {
         alert('🔒 Acesso Restrito\nApenas Fernando Mena e Vitor Hugo possuem permissão para esta operação.');
-        if (event && event.target) event.target.value = '';
-        return;
-      }
-      const senhaInformada = prompt('🔒 Acesso Restrito\nDigite a senha de autorização para prosseguir:');
-      if (senhaInformada === null) return;
-      
-      if (senhaInformada !== SENHA_MESTRE && senhaInformada !== 'hapvida2026') {
-        alert('❌ Senha incorreta! Acesso negado.');
         if (event && event.target) event.target.value = '';
         return;
       }
@@ -1738,8 +1733,16 @@
       if (select) { select.value = ''; render(); }
     }
 
+    function sincronizarBusca(termo) {
+      const d = document.getElementById('searchInput');
+      const m = document.getElementById('searchInputMobile');
+      if (d && d.value !== termo) d.value = termo;
+      if (m && m.value !== termo) m.value = termo;
+      render();
+    }
+
     function getFilteredCases() {
-      const q = (document.getElementById('searchInput').value || '').toLowerCase();
+      const q = ((document.getElementById('searchInputMobile')?.value || document.getElementById('searchInput')?.value) || '').toLowerCase();
       const medSelect = document.getElementById('filterMedico');
       const medFiltro = medSelect ? medSelect.value : '';
 
@@ -2170,7 +2173,7 @@
 
       document.getElementById('view-fichas').innerHTML = cases.length ? cases.map(buildCard).join('') : `<div class="col-span-3">${emptyMsg('Nenhum caso carregado.')}</div>`;
 
-      const q = (document.getElementById('searchInput').value || '').toLowerCase();
+      const q = ((document.getElementById('searchInputMobile')?.value || document.getElementById('searchInput')?.value) || '').toLowerCase();
       const listaCofre = Object.values(vaultCases).filter(c => {
         return !q ||
           (c.NM_USUARIO && c.NM_USUARIO.toLowerCase().includes(q)) ||
@@ -2260,12 +2263,6 @@
         if (['xlsx', 'xls', 'csv'].includes(ext)) {
           if (!isOperadorAdmin()) {
             alert('🔒 Acesso Restrito\nApenas os administradores (Fernando Mena e Vitor Hugo) têm permissão para carregar planilhas.');
-            return;
-          }
-          const senha = prompt('🔒 Acesso Restrito\nDigite a senha para carregar esta planilha:');
-          if (senha === null) return;
-          if (senha !== SENHA_MESTRE && senha !== 'hapvida2026') {
-            alert('❌ Senha incorreta! Acesso negado.');
             return;
           }
           executarSubirPlanilha({ target: { files: [file] } });
