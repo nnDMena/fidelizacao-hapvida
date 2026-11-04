@@ -1213,6 +1213,13 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
       }
 
       try {
+        // Aguarda a biblioteca Supabase carregar (caso a conexão esteja lenta)
+        let tentativas = 0;
+        while (!window.supabase && tentativas < 25) {
+          await new Promise(r => setTimeout(r, 200));
+          tentativas++;
+        }
+
         if (!window.supabase) {
           throw new Error('Biblioteca Supabase ainda não foi carregada no navegador.');
         }
@@ -1267,26 +1274,52 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
           activeCases = atvData.map(r => r.dados);
           localStorage.setItem(STORAGE_KEY, JSON.stringify(activeCases));
           render();
+        } else if (activeCases && activeCases.length > 0) {
+          // A nuvem está vazia, mas o operador tem casos locais: envia para o Supabase
+          const rows = activeCases.map(c => ({
+            cd_usuario: String(c.CD_USUARIO).trim(),
+            dados: c,
+            updated_at: new Date().toISOString()
+          }));
+          supabaseClient.from('casos_ativos').upsert(rows).catch(e => console.warn('Erro seed ativos:', e));
         }
 
         // 2. Cofre de Casos
         const { data: vltData, error: vltErr } = await supabaseClient.from('cofre_casos').select('cd_usuario, dados');
-        if (!vltErr && vltData) {
+        if (!vltErr && vltData && vltData.length > 0) {
           vltData.forEach(r => {
             vaultCases[r.cd_usuario] = r.dados;
           });
           localStorage.setItem(VAULT_CASES_KEY, JSON.stringify(vaultCases));
           render();
+        } else if (Object.keys(vaultCases).length > 0) {
+          const vRows = Object.keys(vaultCases).map(k => ({
+            cd_usuario: k,
+            dados: vaultCases[k],
+            updated_at: new Date().toISOString()
+          }));
+          for (let i = 0; i < vRows.length; i += 100) {
+            supabaseClient.from('cofre_casos').upsert(vRows.slice(i, i + 100)).catch(e => console.warn('Erro seed cofre:', e));
+          }
         }
 
         // 3. Cofre Logs
         const { data: logData, error: logErr } = await supabaseClient.from('cofre_logs').select('cd_usuario, itens');
-        if (!logErr && logData) {
+        if (!logErr && logData && logData.length > 0) {
           logData.forEach(r => {
             historyLog[r.cd_usuario] = r.itens || [];
           });
           localStorage.setItem(HISTORY_KEY, JSON.stringify(historyLog));
           if (currentCase) renderSingleTimeline();
+        } else if (Object.keys(historyLog).length > 0) {
+          const lRows = Object.keys(historyLog).map(k => ({
+            cd_usuario: k,
+            itens: historyLog[k] || [],
+            updated_at: new Date().toISOString()
+          }));
+          for (let i = 0; i < lRows.length; i += 100) {
+            supabaseClient.from('cofre_logs').upsert(lRows.slice(i, i + 100)).catch(e => console.warn('Erro seed logs:', e));
+          }
         }
 
         // Conexão bem-sucedida!
