@@ -575,10 +575,13 @@
         <!-- RIGHT COLUMN -->
         <div class="lg:col-span-5 space-y-4 sm:space-y-5">
           <div class="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 shadow-xs space-y-3 sm:space-y-3.5">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+            <div class="border-b border-slate-100 pb-2.5">
               <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-800 flex items-center gap-2">
                 <i class="fa-solid fa-clipboard-check text-emerald-600"></i> Parecer &amp; Desfecho Final
               </h3>
+              <p class="text-[10px] text-slate-400 font-semibold mt-0.5 flex items-center gap-1">
+                <i class="fa-solid fa-asterisk text-[7.5px] text-amber-500"></i> Todos os campos abaixo são de preenchimento obrigatório
+              </p>
             </div>
 
             <div class="space-y-2.5">
@@ -610,6 +613,31 @@
             <div>
               <label class="block text-[11px] font-bold text-slate-700 mb-1">Finalização - SIGO:</label>
               <textarea id="singleInputNota" rows="3" placeholder="Insira aqui as informações finais..." class="w-full p-2.5 sm:p-3 text-xs bg-slate-50 border border-slate-300 rounded-xl"></textarea>
+            </div>
+
+            <div>
+              <label for="singleSelectEncaminhar" class="block text-[11px] font-bold text-slate-700 mb-1 flex items-center gap-1.5">
+                <i class="fa-solid fa-share-from-square text-indigo-600"></i> Encaminhar:
+              </label>
+              <select id="singleSelectEncaminhar" onchange="if(currentCase){currentCase.ENCAMINHAR=this.value; autoSalvarProfissionais();}" class="w-full p-2.5 text-xs bg-slate-50 border border-slate-300 rounded-xl font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer">
+                <option value="">-- Selecione o Encaminhamento --</option>
+                <option value="DEVOLVIDO ANM (p1)">DEVOLVIDO ANM (p1)</option>
+                <option value="ENVIADO FINALIZADO (p67)">ENVIADO FINALIZADO (p67)</option>
+                <option value="ENVIADO VERTICALIZAR (p67)">ENVIADO VERTICALIZAR (p67)</option>
+                <option value="ENVIADO DIRECIONAR REDE (p71)">ENVIADO DIRECIONAR REDE (p71)</option>
+                <option value="ENVIADO REDE PRÓPRIA (p18)">ENVIADO REDE PRÓPRIA (p18)</option>
+                <option value="ENVIADO JUNTA MÉDICA (p67)">ENVIADO JUNTA MÉDICA (p67)</option>
+                <option value="ENVIADO GNMED (p28)">ENVIADO GNMED (p28)</option>
+                <option value="CONSULTA AGENDADA">CONSULTA AGENDADA</option>
+                <option value="ENVIADO GNHAP (p2)">ENVIADO GNHAP (p2)</option>
+                <option value="CONGÊNERES (VIDA REPASSADA)">CONGÊNERES (VIDA REPASSADA)</option>
+                <option value="GUIA CANCELADA">GUIA CANCELADA</option>
+                <option value="ENVIADO JM (p67)">ENVIADO JM (p67)</option>
+                <option value="ENVIADO JM ORTOP (p2)">ENVIADO JM ORTOP (p2)</option>
+                <option value="ENVIADA CRED (p3)">ENVIADA CRED (p3)</option>
+                <option value="ENVIADO FINALIZADO (p1)">ENVIADO FINALIZADO (p1)</option>
+                <option value="ENVIADO ACOLHIMENTO (p75)">ENVIADO ACOLHIMENTO (p75)</option>
+              </select>
             </div>
 
             <div class="pt-1">
@@ -1375,6 +1403,9 @@
       ],
       PRAZO_FINAL_DEMANDA: [
         'prazofinaldemanda', 'prazofinal', 'prazodemanda', 'dataprazofinal', 'datalimite'
+      ],
+      ENCAMINHAR: [
+        'encaminhar', 'encaminhamento', 'destinacao', 'direcionamento'
       ]
     };
 
@@ -1672,6 +1703,7 @@
               TIPO_DEMANDA: getVal('TIPO_DEMANDA', salvoNoCofre.TIPO_DEMANDA || ''),
               PRAZO_FINAL_DEMANDA: getVal('PRAZO_FINAL_DEMANDA', salvoNoCofre.PRAZO_FINAL_DEMANDA || ''),
               OBSERVACAO: getVal('OBSERVACAO', salvoNoCofre.OBSERVACAO || ''),
+              ENCAMINHAR: getVal('ENCAMINHAR', salvoNoCofre.ENCAMINHAR || ''),
               STATUS_COFRE: salvoNoCofre.STATUS_COFRE || 'EM ANDAMENTO',
               ULTIMO_DESFECHO: salvoNoCofre.ULTIMO_DESFECHO || ''
             };
@@ -1759,6 +1791,7 @@
           'AREA': c.AREA || '',
           'MACRO_DESFECHO': c.MACRO_DESFECHO || '',
           'MICRO_DESFECHO': c.MICRO_DESFECHO || '',
+          'ENCAMINHAR': c.ENCAMINHAR || '',
           'ULTIMO_DESFECHO': c.ULTIMO_DESFECHO || '',
           'ULTIMA_ATUALIZACAO': c.ULTIMA_ATUALIZACAO || '',
           'HISTORICO_COMPLETO': resumoHistorico
@@ -1908,6 +1941,7 @@
       if (c.TIPO_DEMANDA) contextoSemantico += ` demanda especial sac nip ouvidoria liminar ${c.TIPO_DEMANDA}`;
       if (c.PRAZO_FINAL_DEMANDA) contextoSemantico += ` prazo final demanda ${c.PRAZO_FINAL_DEMANDA}`;
       if (c.OBSERVACAO) contextoSemantico += ` observacao obs nota ${c.OBSERVACAO}`;
+      if (c.ENCAMINHAR) contextoSemantico += ` encaminhar encaminhamento ${c.ENCAMINHAR}`;
 
       // Super texto abrangente com todos os campos existentes
       const superTexto = [
@@ -1924,6 +1958,7 @@
         c.GERENTE_MEDICO,
         c.ASSUMIU_POR,
         c.OBSERVACAO,
+        c.ENCAMINHAR,
         c.ENF,
         c.OBS_ENF,
         c.ADM,
@@ -2161,6 +2196,9 @@
         }
       }
       document.getElementById('singleInputNota').value = '';
+      if (document.getElementById('singleSelectEncaminhar')) {
+        document.getElementById('singleSelectEncaminhar').value = currentCase.ENCAMINHAR || '';
+      }
       renderSingleTimeline();
     }
 
@@ -2238,6 +2276,9 @@
       if (document.getElementById('editCasePrazoDemanda')) {
         currentCase.PRAZO_FINAL_DEMANDA = document.getElementById('editCasePrazoDemanda').value;
       }
+      if (document.getElementById('singleSelectEncaminhar')) {
+        currentCase.ENCAMINHAR = document.getElementById('singleSelectEncaminhar').value;
+      }
       
       const idx = activeCases.findIndex(c => String(c.CD_USUARIO) === String(currentCase.CD_USUARIO));
       if (idx !== -1) activeCases[idx] = { ...currentCase };
@@ -2257,13 +2298,15 @@
       const macroDesfecho = document.getElementById('singleSelectMacroDesfecho').value;
       const desfecho = document.getElementById('singleSelectDesfecho').value;
       const nota = document.getElementById('singleInputNota').value.trim();
+      const encaminhar = document.getElementById('singleSelectEncaminhar')?.value || '';
 
       if (!area) { alert('Selecione a Área.'); return; }
       if (!macroDesfecho) { alert('Selecione o Macro-desfecho.'); return; }
       if (!desfecho) { alert('Selecione o Microdesfecho.'); return; }
       if (!nota) { alert('Preencha a Finalização - SIGO.'); return; }
+      if (!encaminhar) { alert('Selecione o campo Encaminhar.'); return; }
 
-      const desfechoCompleto = `[${area}] ${macroDesfecho} ➔ ${desfecho}`;
+      const desfechoCompleto = `[${area}] ${macroDesfecho} ➔ ${desfecho} | Encaminhar: ${encaminhar}`;
       const now = new Date();
       const dateStr = now.toLocaleDateString('pt-BR') + ' às ' + now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
@@ -2272,6 +2315,7 @@
       currentCase.AREA = area;
       currentCase.MACRO_DESFECHO = macroDesfecho;
       currentCase.MICRO_DESFECHO = desfecho;
+      currentCase.ENCAMINHAR = encaminhar;
       currentCase.STATUS_COFRE = 'CONCLUÍDO';
       currentCase.ULTIMO_DESFECHO = `${desfechoCompleto} (${nota})`;
       syncToVault(currentCase);
@@ -2434,6 +2478,11 @@
 
       if (observacaoFinal) {
         txt += `\n💬 *OBSERVAÇÃO:*\n${observacaoFinal}\n`;
+      }
+
+      const enc = document.getElementById('singleSelectEncaminhar')?.value || currentCase.ENCAMINHAR || '';
+      if (enc) {
+        txt += `📤 *Encaminhar:* ${enc}\n`;
       }
 
       if (currentCase.ULTIMO_DESFECHO) {
