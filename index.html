@@ -54,7 +54,7 @@
     <div class="hidden md:flex items-center w-1/4 max-w-sm">
       <div class="relative w-full">
         <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-2.5 text-indigo-300 text-xs"></i>
-        <input type="text" id="searchInput" oninput="sincronizarBusca(this.value)" placeholder="Pesquisar utente, guia, procedimento..." 
+        <input type="text" id="searchInput" oninput="sincronizarBusca(this.value)" placeholder="Buscar tudo: paciente, enfermeira, adm, procedimento, SAC, NIP, equipe..." 
           class="w-full pl-9 pr-4 py-1.5 text-xs bg-indigo-950/60 border border-indigo-800/80 rounded-lg text-white placeholder-indigo-300/60 focus:outline-none focus:ring-1 focus:ring-indigo-400">
       </div>
     </div>
@@ -128,7 +128,7 @@
       <div class="w-full md:hidden">
         <div class="relative w-full">
           <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
-          <input type="text" id="searchInputMobile" oninput="sincronizarBusca(this.value)" placeholder="Pesquisar utente, procedimento, prestador..." 
+          <input type="text" id="searchInputMobile" oninput="sincronizarBusca(this.value)" placeholder="Buscar tudo: paciente, enfermeira, adm, procedimento, SAC, NIP..." 
             class="w-full pl-8 pr-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-2xs">
         </div>
       </div>
@@ -461,10 +461,10 @@
                 <p id="singleDetailCity" class="text-[11px] text-slate-500 mt-0.5"><i class="fa-solid fa-location-dot text-rose-500"></i> -</p>
               </div>
               <div class="pt-2 border-t border-slate-200/60">
-                <span class="text-[9.5px] sm:text-[10px] font-extrabold uppercase text-indigo-900 tracking-wider flex items-center gap-1">
+                <label for="editCaseSolicitante" class="text-[9.5px] sm:text-[10px] font-extrabold uppercase text-indigo-900 tracking-wider flex items-center gap-1 mb-1">
                   <i class="fa-solid fa-user-pen text-indigo-600"></i> Nome do Solicitante:
-                </span>
-                <p id="singleDetailSolicitante" class="text-xs font-extrabold text-slate-900 mt-0.5">-</p>
+                </label>
+                <input type="text" id="editCaseSolicitante" oninput="autoSalvarProfissionais()" placeholder="Nome do Solicitante..." class="w-full bg-white font-bold text-slate-900 text-xs px-2.5 py-1.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-2xs">
               </div>
             </div>
           </div>
@@ -557,69 +557,17 @@
               </div>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5 sm:gap-3">
-              <!-- Consultor -->
-              <div class="p-3 rounded-xl bg-violet-50/80 border-2 border-violet-200 shadow-2xs space-y-2">
-                <label class="text-[10px] font-extrabold text-violet-950 block">Médico Consultor</label>
-                <select id="editCaseMedConsultor" onchange="autoSalvarProfissionais()" class="w-full bg-white font-bold text-slate-900 text-xs px-2 py-1.5 rounded-lg border border-violet-300">
-                  <option value="">Selecione...</option>
-                  <option value="Vinicius Nunes Azevedo">Vinicius Nunes Azevedo</option>
-                  <option value="Marco Antonio Pereira Guerra">Marco Antonio Pereira Guerra</option>
-                  <option value="Ederson Evaristo">Ederson Evaristo</option>
-                  <option value="Tania Ranchandani">Tania Ranchandani</option>
-                  <option value="Rodrigo Rodrigues">Rodrigo Rodrigues</option>
-                  <option value="Paula Orlandini Pertsew">Paula Orlandini Pertsew</option>
-                  <option value="Mauricio Cunha Guimaraes">Mauricio Cunha Guimaraes</option>
-                  <option value="Luiz Fernando Pavan Schwarz">Luiz Fernando Pavan Schwarz</option>
-                  <option value="Fernanda Sertorio Bartolli">Fernanda Sertorio Bartolli</option>
-                  <option value="Caroline Perin">Caroline Perin</option>
-                  <option value="Diego Godoi Bernardes da Silva">Diego Godoi Bernardes da Silva</option>
-                  <option value="Lorena de Souza Santana">Lorena de Souza Santana</option>
-                  <option value="Marcela Usberti Gutierre">Marcela Usberti Gutierre</option>
-                  <option value="Amanda Regina Marques Lira">Amanda Regina Marques Lira</option>
-                  <option value="João Henrique de Souza">João Henrique de Souza</option>
-                  <option value="Murilo Adolfo Fernandes">Murilo Adolfo Fernandes</option>
-                  <option value="Rubens Augusto Zapponi Nathan">Rubens Augusto Zapponi Nathan</option>
-                  <option value="Talita Costa Freire de Oliveira">Talita Costa Freire de Oliveira</option>
-                </select>
-                <label class="text-[9.5px] font-bold text-violet-900 block mt-1">Observação:</label>
-                <textarea id="editCaseObsMedConsultor" oninput="autoSalvarProfissionais()" onchange="autoSalvarProfissionais()" rows="3" placeholder="Observações do Médico Consultor..." class="w-full text-xs p-2 rounded-lg border border-violet-300 bg-white focus:outline-none focus:ring-1 focus:ring-violet-400"></textarea>
+            <!-- CAMPO ÚNICO DE OBSERVAÇÃO VINCULADO AO COPIAR FICHA -->
+            <div class="p-3 sm:p-4 rounded-xl bg-indigo-50/70 border-2 border-indigo-200 shadow-2xs space-y-2">
+              <div class="flex items-center justify-between">
+                <label for="editCaseObservacao" class="text-[10px] sm:text-[11px] font-black uppercase text-indigo-950 tracking-wider flex items-center gap-1.5">
+                  <i class="fa-solid fa-comment-dots text-indigo-600"></i> Observação:
+                </label>
+                <span class="text-[9.5px] font-bold text-indigo-700 bg-white px-2 py-0.5 rounded-md border border-indigo-200 flex items-center gap-1 shadow-2xs">
+                  <i class="fa-solid fa-link text-[8.5px]"></i> Vinculado ao Copiar Ficha
+                </span>
               </div>
-
-              <!-- Enfermagem -->
-              <div class="p-3 rounded-xl bg-sky-50/80 border-2 border-sky-200 shadow-2xs space-y-2">
-                <label class="text-[10px] font-extrabold text-sky-950 block">Enfermagem</label>
-                <select id="editCaseEnf" onchange="autoSalvarProfissionais()" class="w-full bg-white font-bold text-slate-900 text-xs px-2 py-1.5 rounded-lg border border-sky-300">
-                  <option value="">Selecione...</option>
-                  <option value="Gabrielly Oliveira Costa">Gabrielly Oliveira Costa</option>
-                  <option value="Jaqueline Rocha Nascimento Sousa">Jaqueline Rocha Nascimento Sousa</option>
-                  <option value="Natália Santos do Carmo">Natália Santos do Carmo</option>
-                  <option value="Claudionice Aparecida Silva">Claudionice Aparecida Silva</option>
-                  <option value="Mauricio de Almeida Gomes">Mauricio de Almeida Gomes</option>
-                </select>
-                <label class="text-[9.5px] font-bold text-sky-900 block mt-1">Observação:</label>
-                <textarea id="editCaseObsEnf" oninput="autoSalvarProfissionais()" onchange="autoSalvarProfissionais()" rows="3" placeholder="Observações da Enfermagem..." class="w-full text-xs p-2 rounded-lg border border-sky-300 bg-white focus:outline-none focus:ring-1 focus:ring-sky-400"></textarea>
-              </div>
-
-              <!-- Administrativo -->
-              <div class="p-3 rounded-xl bg-slate-100 border-2 border-slate-300 shadow-2xs space-y-2">
-                <label class="text-[10px] font-extrabold text-slate-900 block">Administrativo</label>
-                <select id="editCaseAdm" onchange="autoSalvarProfissionais()" class="w-full bg-white font-bold text-slate-900 text-xs px-2 py-1.5 rounded-lg border border-slate-300">
-                  <option value="">Selecione...</option>
-                  <option value="Anna Carolina de Souza Hanna">Anna Carolina de Souza Hanna</option>
-                  <option value="Willian Lima Fogaça">Willian Lima Fogaça</option>
-                  <option value="Luciene de Paulo Borges">Luciene de Paulo Borges</option>
-                  <option value="Jose Alailton Reinaldo da Silva">Jose Alailton Reinaldo da Silva</option>
-                  <option value="Larissa Araujo Dos Santos">Larissa Araujo Dos Santos</option>
-                  <option value="Henrique Dos Santos Mozer">Henrique Dos Santos Mozer</option>
-                  <option value="Viviane Maconego Pereira Flauzino">Viviane Maconego Pereira Flauzino</option>
-                  <option value="Christiane Aparecida Balthazar">Christiane Aparecida Balthazar</option>
-                  <option value="Fernando Henrique Pires Mena">Fernando Henrique Pires Mena</option>
-                  <option value="Vitor Hugo de Almeida">Vitor Hugo de Almeida</option>
-                </select>
-                <label class="text-[9.5px] font-bold text-slate-700 block mt-1">Observação:</label>
-                <textarea id="editCaseObsAdm" oninput="autoSalvarProfissionais()" onchange="autoSalvarProfissionais()" rows="3" placeholder="Observações do Administrativo..." class="w-full text-xs p-2 rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-1 focus:ring-slate-400"></textarea>
-              </div>
+              <textarea id="editCaseObservacao" oninput="autoSalvarProfissionais()" onchange="autoSalvarProfissionais()" rows="4" placeholder="Insira aqui a observação do caso (andamento, equipe, negociações, alinhamentos, etc.)..." class="w-full text-xs font-semibold p-3 rounded-xl border-2 border-indigo-300 bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-xs leading-relaxed"></textarea>
             </div>
           </div>
         </div>
@@ -1410,6 +1358,9 @@
       PRESTADOR_PACOTE: [
         'prestadorpacote', 'hospitalpacote', 'localpacote'
       ],
+      OBSERVACAO: [
+        'observacao', 'observacoes', 'obs', 'observacaogeral', 'observacaocaso', 'parecer', 'anotacao'
+      ],
       OBS_MEDICO: [
         'obsmedico', 'obsmedicoplanilha', 'parecermedico', 'observacaomedica', 'condutamedica'
       ],
@@ -1720,6 +1671,7 @@
               PRESTADOR_PACOTE: salvoNoCofre.PRESTADOR_PACOTE || '',
               TIPO_DEMANDA: getVal('TIPO_DEMANDA', salvoNoCofre.TIPO_DEMANDA || ''),
               PRAZO_FINAL_DEMANDA: getVal('PRAZO_FINAL_DEMANDA', salvoNoCofre.PRAZO_FINAL_DEMANDA || ''),
+              OBSERVACAO: getVal('OBSERVACAO', salvoNoCofre.OBSERVACAO || ''),
               STATUS_COFRE: salvoNoCofre.STATUS_COFRE || 'EM ANDAMENTO',
               ULTIMO_DESFECHO: salvoNoCofre.ULTIMO_DESFECHO || ''
             };
@@ -1791,6 +1743,7 @@
           'ADM': c.ADM || '',
           'STATUS_ADM': c.STATUS_ADM || '',
           'OBS_ADM': c.OBS_ADM || '',
+          'OBSERVACAO': c.OBSERVACAO || '',
           'STATUS_ORCAMENTO': c.STATUS_ORCAMENTO || '',
           'VALOR_INICIAL': c.VALOR_INICIAL || '',
           'MENOR_VALOR': c.MENOR_VALOR || '',
@@ -1936,6 +1889,68 @@
       render();
     }
 
+    function casoCorrespondeBusca(c, q) {
+      if (!c) return false;
+      if (!q) return true;
+      const termo = String(q).trim().toLowerCase();
+      if (!termo) return true;
+
+      // Coleta todas as observações/logs da linha do tempo deste caso
+      const logsTexto = (historyLog[c.CD_USUARIO] || []).map(l => `${l.author || ''} ${l.text || ''}`).join(' ');
+
+      // Contexto semântico para encontrar mesmo quando o usuário busca termos como "enfermeira", "adm", "demanda"
+      let contextoSemantico = '';
+      if (c.ENF) contextoSemantico += ` enfermeira enfermagem enf ${c.ENF} ${c.OBS_ENF || ''}`;
+      if (c.ADM) contextoSemantico += ` administrativo adm ${c.ADM} ${c.OBS_ADM || ''}`;
+      if (c.MEDICO_CONSULTOR) contextoSemantico += ` medico consultor ${c.MEDICO_CONSULTOR} ${c.OBS_MED_CONSULTOR || ''}`;
+      if (c.ASSUMIU_POR) contextoSemantico += ` assumiu assumido operador responsavel ${c.ASSUMIU_POR}`;
+      if (c.GERENTE_MEDICO) contextoSemantico += ` gerente medico dr dra ${c.GERENTE_MEDICO}`;
+      if (c.TIPO_DEMANDA) contextoSemantico += ` demanda especial sac nip ouvidoria liminar ${c.TIPO_DEMANDA}`;
+      if (c.PRAZO_FINAL_DEMANDA) contextoSemantico += ` prazo final demanda ${c.PRAZO_FINAL_DEMANDA}`;
+      if (c.OBSERVACAO) contextoSemantico += ` observacao obs nota ${c.OBSERVACAO}`;
+
+      // Super texto abrangente com todos os campos existentes
+      const superTexto = [
+        c.NM_USUARIO,
+        c.CD_USUARIO,
+        c.PROCEDIMENTO_AGRUPADO,
+        c.CD_PROCEDIMENTO,
+        c.NM_PRESTADOR,
+        c.NM_SOLICITANTE,
+        c.CIDADE,
+        c.UF,
+        c.BASE,
+        c.NM_PLANO,
+        c.GERENTE_MEDICO,
+        c.ASSUMIU_POR,
+        c.OBSERVACAO,
+        c.ENF,
+        c.OBS_ENF,
+        c.ADM,
+        c.OBS_ADM,
+        c.MEDICO_CONSULTOR,
+        c.OBS_MED_CONSULTOR,
+        c.TIPO_DEMANDA,
+        c.PRAZO_FINAL_DEMANDA,
+        c.TIPO_PENDENCIA,
+        c['QUAL PACOTE?'],
+        c.PRESTADOR_PACOTE,
+        c.VALOR_INICIAL,
+        c.MENOR_VALOR,
+        c['VALOR PACOTE'],
+        c.AREA,
+        c.MACRO_DESFECHO,
+        c.MICRO_DESFECHO,
+        c.ULTIMO_DESFECHO,
+        contextoSemantico,
+        logsTexto
+      ].filter(Boolean).join(' ').toLowerCase();
+
+      // Divide por palavras para permitir busca composta (ex: "enf talita", "adm murilo", "nip sp")
+      const tokens = termo.split(/\s+/).filter(Boolean);
+      return tokens.every(token => superTexto.includes(token));
+    }
+
     function getFilteredCases() {
       const q = ((document.getElementById('searchInputMobile')?.value || document.getElementById('searchInput')?.value) || '').toLowerCase();
       const medSelect = document.getElementById('filterMedico');
@@ -1949,11 +1964,7 @@
 
       return activeCases.filter(c => {
         if (medFiltro && (!c.GERENTE_MEDICO || c.GERENTE_MEDICO.trim() !== medFiltro)) return false;
-        return !q || 
-          (c.NM_USUARIO && c.NM_USUARIO.toLowerCase().includes(q)) ||
-          (c.CD_USUARIO && c.CD_USUARIO.toLowerCase().includes(q)) ||
-          (c.PROCEDIMENTO_AGRUPADO && c.PROCEDIMENTO_AGRUPADO.toLowerCase().includes(q)) ||
-          (c.NM_PRESTADOR && c.NM_PRESTADOR.toLowerCase().includes(q));
+        return casoCorrespondeBusca(c, q);
       }).sort((a, b) => (b.DIAS_AUTORIZACAO || 0) - (a.DIAS_AUTORIZACAO || 0));
     }
 
@@ -2086,7 +2097,9 @@
       document.getElementById('singleDetailTUSS').innerText = 'Cód: ' + (currentCase.CD_PROCEDIMENTO || '-');
       document.getElementById('singleDetailProvider').innerText = currentCase.NM_PRESTADOR || '-';
       document.getElementById('singleDetailCity').innerHTML = '<i class="fa-solid fa-location-dot text-rose-500"></i> ' + (currentCase.CIDADE || '-') + ' - ' + (currentCase.UF || '-');
-      document.getElementById('singleDetailSolicitante').innerText = currentCase.NM_SOLICITANTE || '-';
+      if (document.getElementById('editCaseSolicitante')) {
+        document.getElementById('editCaseSolicitante').value = currentCase.NM_SOLICITANTE || '';
+      }
       
       const baseVal = currentCase.BASE || 'NDI';
       document.getElementById('labelBaseCard').innerText = baseVal;
@@ -2113,14 +2126,13 @@
       document.getElementById('editCaseQualPacote').value = currentCase['QUAL PACOTE?'] || '';
       document.getElementById('editCasePrestadorPacote').value = currentCase.PRESTADOR_PACOTE || '';
 
-      document.getElementById('editCaseMedConsultor').value = currentCase.MEDICO_CONSULTOR || '';
-      document.getElementById('editCaseObsMedConsultor').value = currentCase.OBS_MED_CONSULTOR || '';
-
-      document.getElementById('editCaseEnf').value = currentCase.ENF || '';
-      document.getElementById('editCaseObsEnf').value = currentCase.OBS_ENF || '';
-
-      document.getElementById('editCaseAdm').value = currentCase.ADM || '';
-      document.getElementById('editCaseObsAdm').value = currentCase.OBS_ADM || '';
+      // Observação Geral do Caso (vinculado ao Copiar Ficha)
+      const obsElem = document.getElementById('editCaseObservacao');
+      if (obsElem) {
+        const obsVal = currentCase.OBSERVACAO !== undefined ? currentCase.OBSERVACAO :
+          ([currentCase.OBS_MED_CONSULTOR, currentCase.OBS_ENF, currentCase.OBS_ADM].filter(Boolean).join('\n') || '');
+        obsElem.value = obsVal;
+      }
 
       const dias = currentCase.DIAS_AUTORIZACAO || 0;
       const slaBadge = document.getElementById('singleDetailSLA');
@@ -2210,14 +2222,13 @@
       currentCase['QUAL PACOTE?'] = document.getElementById('editCaseQualPacote').value;
       currentCase.PRESTADOR_PACOTE = document.getElementById('editCasePrestadorPacote').value;
 
-      currentCase.MEDICO_CONSULTOR = document.getElementById('editCaseMedConsultor').value;
-      currentCase.OBS_MED_CONSULTOR = document.getElementById('editCaseObsMedConsultor').value;
+      if (document.getElementById('editCaseObservacao')) {
+        currentCase.OBSERVACAO = document.getElementById('editCaseObservacao').value;
+      }
 
-      currentCase.ENF = document.getElementById('editCaseEnf').value;
-      currentCase.OBS_ENF = document.getElementById('editCaseObsEnf').value;
-
-      currentCase.ADM = document.getElementById('editCaseAdm').value;
-      currentCase.OBS_ADM = document.getElementById('editCaseObsAdm').value;
+      if (document.getElementById('editCaseSolicitante')) {
+        currentCase.NM_SOLICITANTE = document.getElementById('editCaseSolicitante').value;
+      }
 
       currentCase.ASSUMIU_POR = document.getElementById('editCaseAssumiuPor')?.value || '';
       
@@ -2382,16 +2393,12 @@
       const valorPacote = document.getElementById('editCaseValorPacote')?.value || currentCase['VALOR PACOTE'] || 'Não informado';
       const qualPacote = document.getElementById('editCaseQualPacote')?.value || currentCase['QUAL PACOTE?'] || 'Não informado';
       const prestadorPacote = document.getElementById('editCasePrestadorPacote')?.value || currentCase.PRESTADOR_PACOTE || 'Não informado';
+      const solicitante = document.getElementById('editCaseSolicitante')?.value || currentCase.NM_SOLICITANTE || '-';
 
       const medResponsavel = currentCase.GERENTE_MEDICO ? `Dr(a). ${currentCase.GERENTE_MEDICO}` : 'Não atribuído';
-      const medConsultor = (document.getElementById('editCaseMedConsultor')?.value || currentCase.MEDICO_CONSULTOR || '').trim();
-      const obsMedConsultor = (document.getElementById('editCaseObsMedConsultor')?.value || currentCase.OBS_MED_CONSULTOR || '').trim();
-
-      const enf = (document.getElementById('editCaseEnf')?.value || currentCase.ENF || '').trim();
-      const obsEnf = (document.getElementById('editCaseObsEnf')?.value || currentCase.OBS_ENF || '').trim();
-
-      const adm = (document.getElementById('editCaseAdm')?.value || currentCase.ADM || '').trim();
-      const obsAdm = (document.getElementById('editCaseObsAdm')?.value || currentCase.OBS_ADM || '').trim();
+      const observacaoInput = (document.getElementById('editCaseObservacao')?.value || currentCase.OBSERVACAO || '').trim();
+      const obsLegadas = [currentCase.OBS_MED_CONSULTOR, currentCase.OBS_ENF, currentCase.OBS_ADM].filter(Boolean).join('\n').trim();
+      const observacaoFinal = observacaoInput || obsLegadas;
 
       const logs = historyLog[currentCase.CD_USUARIO] || [];
       const ultimosLogs = logs.slice(0, 3).map(l => `• [${l.date}] ${l.author}: ${l.text}`).join('\n');
@@ -2414,7 +2421,7 @@
       txt += `• *Cód. TUSS:* ${currentCase.CD_PROCEDIMENTO || '-'}\n`;
       txt += `• *Prestador:* ${currentCase.NM_PRESTADOR || '-'}\n`;
       txt += `• *Local:* ${currentCase.CIDADE || '-'} - ${currentCase.UF || '-'}\n`;
-      txt += `• *Solicitante:* ${currentCase.NM_SOLICITANTE || '-'}\n`;
+      txt += `• *Solicitante:* ${solicitante}\n`;
       txt += `\n💰 *ORÇAMENTO & PACOTE NEGOCIADO*\n`;
       txt += `• *Valor Inicial:* ${valorInicial}\n`;
       txt += `• *Valor Negociado:* ${menorValor}\n`;
@@ -2424,17 +2431,9 @@
       txt += `\n👥 *EQUIPE DESIGNADA*\n`;
       txt += `• *Gerente Médico:* ${medResponsavel}\n`;
       if (currentCase.ASSUMIU_POR) txt += `• *Assumiu o Caso:* ${currentCase.ASSUMIU_POR}\n`;
-      if (medConsultor || obsMedConsultor) {
-        txt += `• *Médico Consultor:* ${medConsultor || 'Não selecionado'}\n`;
-        if (obsMedConsultor) txt += `  ↳ *Observação:* ${obsMedConsultor}\n`;
-      }
-      if (enf || obsEnf) {
-        txt += `• *Enfermagem:* ${enf || 'Não selecionada'}\n`;
-        if (obsEnf) txt += `  ↳ *Observação:* ${obsEnf}\n`;
-      }
-      if (adm || obsAdm) {
-        txt += `• *Administrativo:* ${adm || 'Não selecionado'}\n`;
-        if (obsAdm) txt += `  ↳ *Observação:* ${obsAdm}\n`;
+
+      if (observacaoFinal) {
+        txt += `\n💬 *OBSERVAÇÃO:*\n${observacaoFinal}\n`;
       }
 
       if (currentCase.ULTIMO_DESFECHO) {
@@ -2556,12 +2555,7 @@
       const listaFinalizados = Object.values(vaultCases).filter(c => {
         const isFin = c.STATUS_COFRE === 'CONCLUÍDO' || (c.ULTIMO_DESFECHO && c.ULTIMO_DESFECHO.trim() !== '');
         if (!isFin) return false;
-        return !q ||
-          (c.NM_USUARIO && c.NM_USUARIO.toLowerCase().includes(q)) ||
-          (c.CD_USUARIO && c.CD_USUARIO.toLowerCase().includes(q)) ||
-          (c.PROCEDIMENTO_AGRUPADO && c.PROCEDIMENTO_AGRUPADO.toLowerCase().includes(q)) ||
-          (c.ASSUMIU_POR && c.ASSUMIU_POR.toLowerCase().includes(q)) ||
-          (c.ULTIMO_DESFECHO && c.ULTIMO_DESFECHO.toLowerCase().includes(q));
+        return casoCorrespondeBusca(c, q);
       });
 
       const countFinalizadosTotal = Object.values(vaultCases).filter(c => c.STATUS_COFRE === 'CONCLUÍDO' || (c.ULTIMO_DESFECHO && c.ULTIMO_DESFECHO.trim() !== '')).length;
@@ -2610,10 +2604,7 @@
 
       // 2. Renderizar Histórico Completo (Cofre)
       const listaCofre = Object.values(vaultCases).filter(c => {
-        return !q ||
-          (c.NM_USUARIO && c.NM_USUARIO.toLowerCase().includes(q)) ||
-          (c.CD_USUARIO && c.CD_USUARIO.toLowerCase().includes(q)) ||
-          (c.PROCEDIMENTO_AGRUPADO && c.PROCEDIMENTO_AGRUPADO.toLowerCase().includes(q));
+        return casoCorrespondeBusca(c, q);
       });
 
       document.getElementById('historico-tbody').innerHTML = listaCofre.length ? listaCofre.map(c => {
@@ -2641,7 +2632,12 @@
       }).join('') : `<tr><td colspan="7" class="py-8 text-center text-slate-400 italic">Nenhum registro acumulado no Cofre ainda.</td></tr>`;
     }
 
-    document.getElementById('searchInput').addEventListener('input', render);
+    if (document.getElementById('searchInput')) {
+      document.getElementById('searchInput').addEventListener('input', render);
+    }
+    if (document.getElementById('searchInputMobile')) {
+      document.getElementById('searchInputMobile').addEventListener('input', render);
+    }
     
     // Abertura Direta via Link (Hash na URL #caso=...)
     function verificarCasoNaURL() {
