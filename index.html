@@ -63,6 +63,29 @@
       </div>
     </div>
 
+    <!-- ABAS EXCLUSIVAS DO DR. RUBENS -->
+    <div id="containerAbasDrRubens" class="hidden items-center gap-1.5 sm:gap-2">
+      <!-- Aba 1: Ausência de Consenso GNHAP / GNMED -->
+      <button onclick="alternarEsteiraRubens('rubens_consenso')" id="btn-view-rubens_consenso" 
+        class="text-[10px] sm:text-[11px] font-bold px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-amber-400/50 bg-amber-500/20 hover:bg-amber-500 hover:text-slate-950 text-amber-200 flex items-center gap-1.5 transition active:scale-[0.98] shadow-xs cursor-pointer" 
+        title="Casos finalizados com Ausência Completa de Consenso (GNHAP & GNMED)">
+        <i class="fa-solid fa-scale-unbalanced text-amber-400 text-xs"></i>
+        <span class="hidden xl:inline">Ausência de Consenso</span>
+        <span class="xl:hidden">Consenso</span>
+        <span id="badge-rubens-consenso" class="bg-amber-400 text-slate-950 text-[9.5px] font-black px-1.5 py-0.2 rounded-full">0</span>
+      </button>
+
+      <!-- Aba 2: Procedimento Cirúrgico em Oncologia -->
+      <button onclick="alternarEsteiraRubens('rubens_onco')" id="btn-view-rubens_onco" 
+        class="text-[10px] sm:text-[11px] font-bold px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-rose-400/50 bg-rose-500/20 hover:bg-rose-600 hover:text-white text-rose-200 flex items-center gap-1.5 transition active:scale-[0.98] shadow-xs cursor-pointer" 
+        title="Casos com procedimento cirúrgico vinculado à Oncologia">
+        <i class="fa-solid fa-ribbon text-rose-400 text-xs"></i>
+        <span class="hidden xl:inline">Cirurgias Oncológicas</span>
+        <span class="xl:hidden">Oncologia</span>
+        <span id="badge-rubens-onco" class="bg-rose-500 text-white text-[9.5px] font-black px-1.5 py-0.2 rounded-full">0</span>
+      </button>
+    </div>
+
     <!-- Actions & User Profile & Planilha Upload -->
     <div class="flex items-center space-x-1.5 sm:space-x-2 ml-auto sm:ml-0">
       <!-- BOTÕES DE GESTÃO E ADMINISTRAÇÃO (EXCLUSIVO FERNANDO MENA E VITOR HUGO) -->
@@ -340,7 +363,90 @@
         </div>
       </div>
 
-    </main>
+      <!-- 6. ESTEIRA DR. RUBENS: AUSÊNCIA DE CONSENSO (GNHAP & GNMED) -->
+      <div id="view-rubens_consenso" class="hidden space-y-4">
+        <div class="bg-gradient-to-r from-amber-950 via-slate-900 to-indigo-950 text-white p-3.5 sm:p-4 rounded-2xl shadow-xs flex flex-wrap items-center justify-between gap-3 sm:gap-4 border border-amber-500/30">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300 text-base sm:text-lg shrink-0">
+              <i class="fa-solid fa-scale-unbalanced"></i>
+            </div>
+            <div>
+              <h2 class="text-xs sm:text-sm font-extrabold flex items-center gap-2 flex-wrap">
+                Esteira de Ausência de Consenso — GNHAP &amp; GNMED
+                <span class="text-[9px] sm:text-[10px] bg-amber-400 text-slate-950 font-black px-2 py-0.5 rounded-full uppercase">Exclusivo Dr. Rubens</span>
+              </h2>
+              <p class="text-[11px] sm:text-xs text-amber-200/90 mt-0.5">Casos finalizados com ausência completa de consenso para acompanhamento médico e deliberação.</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <button onclick="setView('kanban')" class="w-full sm:w-auto justify-center bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs px-3.5 py-2 rounded-xl flex items-center gap-2 transition border border-slate-700 cursor-pointer">
+              <i class="fa-solid fa-arrow-left"></i> Voltar ao Kanban
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
+          <div class="overflow-x-auto w-full">
+            <table class="w-full text-left border-collapse text-xs whitespace-nowrap sm:whitespace-normal min-w-[800px] sm:min-w-0">
+              <thead>
+                <tr class="bg-amber-50/60 text-slate-700 uppercase tracking-wider font-bold border-b border-amber-200/60 text-[10.5px] sm:text-[11px]">
+                  <th class="py-2.5 sm:py-3 px-3 sm:px-4">Cód. Utente</th>
+                  <th class="py-2.5 sm:py-3 px-3 sm:px-4">Beneficiário</th>
+                  <th class="py-2.5 sm:py-3 px-3 sm:px-4">Procedimento</th>
+                  <th class="py-2.5 sm:py-3 px-3 sm:px-4">Área / Origem</th>
+                  <th class="py-2.5 sm:py-3 px-3 sm:px-4">Desfecho &amp; Encaminhamento</th>
+                  <th class="py-2.5 sm:py-3 px-3 sm:px-4">Assumiu / Médico</th>
+                  <th class="py-2.5 sm:py-3 px-3 sm:px-4 text-right">Ação</th>
+                </tr>
+              </thead>
+              <tbody id="rubens-consenso-tbody" class="divide-y divide-slate-100 text-slate-700"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7. ESTEIRA DR. RUBENS: PROCEDIMENTOS CIRÚRGICOS ONCOLÓGICOS -->
+      <div id="view-rubens_onco" class="hidden space-y-4">
+        <div class="bg-gradient-to-r from-rose-950 via-slate-900 to-indigo-950 text-white p-3.5 sm:p-4 rounded-2xl shadow-xs flex flex-wrap items-center justify-between gap-3 sm:gap-4 border border-rose-500/30">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-rose-500/20 border border-rose-400/40 flex items-center justify-center text-rose-300 text-base sm:text-lg shrink-0">
+              <i class="fa-solid fa-ribbon"></i>
+            </div>
+            <div>
+              <h2 class="text-xs sm:text-sm font-extrabold flex items-center gap-2 flex-wrap">
+                Esteira de Cirurgias Oncológicas
+                <span class="text-[9px] sm:text-[10px] bg-rose-500 text-white font-black px-2 py-0.5 rounded-full uppercase">Exclusivo Dr. Rubens</span>
+              </h2>
+              <p class="text-[11px] sm:text-xs text-rose-200/90 mt-0.5">Casos com procedimentos cirúrgicos vinculados à especialidade de Oncologia.</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <button onclick="setView('kanban')" class="w-full sm:w-auto justify-center bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs px-3.5 py-2 rounded-xl flex items-center gap-2 transition border border-slate-700 cursor-pointer">
+              <i class="fa-solid fa-arrow-left"></i> Voltar ao Kanban
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
+          <div class="overflow-x-auto w-full">
+            <table class="w-full text-left border-collapse text-xs whitespace-nowrap sm:whitespace-normal min-w-[850px] sm:min-w-0">
+              <thead>
+                <tr class="bg-rose-50/60 text-slate-700 uppercase tracking-wider font-bold border-b border-rose-200/60 text-[10.5px] sm:text-[11px]">
+                  <th class="py-2.5 sm:py-3 px-3 sm:px-4">Status</th>
+                  <th class="py-2.5 sm:py-3 px-3 sm:px-4">Cód. Utente</th>
+                  <th class="py-2.5 sm:py-3 px-3 sm:px-4">Beneficiário</th>
+                  <th class="py-2.5 sm:py-3 px-3 sm:px-4">Procedimento Oncológico</th>
+                  <th class="py-2.5 sm:py-3 px-3 sm:px-4">Prestador &amp; Cidade</th>
+                  <th class="py-2.5 sm:py-3 px-3 sm:px-4 text-center">Prazos</th>
+                  <th class="py-2.5 sm:py-3 px-3 sm:px-4">Parecer / Desfecho</th>
+                  <th class="py-2.5 sm:py-3 px-3 sm:px-4 text-right">Ação</th>
+                </tr>
+              </thead>
+              <tbody id="rubens-onco-tbody" class="divide-y divide-slate-100 text-slate-700"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
   </div>
 
   <!-- ======================================================== -->
@@ -904,6 +1010,12 @@
       });
     }
 
+    function isDrRubens() {
+      if (!operadorAtual) return false;
+      const op = operadorAtual.trim().toLowerCase();
+      return op.includes('rubens') || op.includes('zapponi') || isOperadorAdmin();
+    }
+
     function atualizarPermissoesOperador() {
       const containerAdmin = document.getElementById('containerBotoesAdmin');
       const btnExportarCofre = document.getElementById('btnExportarCofre');
@@ -926,6 +1038,18 @@
         } else {
           btnExportarCofre.classList.add('hidden');
           btnExportarCofre.classList.remove('flex');
+        }
+      }
+
+      const containerRubens = document.getElementById('containerAbasDrRubens');
+      const ehRubens = isDrRubens();
+      if (containerRubens) {
+        if (ehRubens) {
+          containerRubens.classList.remove('hidden');
+          containerRubens.classList.add('flex');
+        } else {
+          containerRubens.classList.add('hidden');
+          containerRubens.classList.remove('flex');
         }
       }
     }
@@ -1948,19 +2072,95 @@
       reader.readAsArrayBuffer(file);
     }
 
+    function alternarEsteiraRubens(viewTarget) {
+      if (currentView === viewTarget) {
+        setView('kanban');
+      } else {
+        setView(viewTarget);
+      }
+    }
+
     function setView(view) {
       currentView = view;
-      ['kanban', 'lista', 'fichas', 'finalizados', 'historico'].forEach(v => {
+      ['kanban', 'lista', 'fichas', 'finalizados', 'historico', 'rubens_consenso', 'rubens_onco'].forEach(v => {
         const el = document.getElementById('view-' + v);
         const btn = document.getElementById('btn-view-' + v);
         if (el) el.classList.add('hidden');
-        if (btn) btn.className = 'flex-1 sm:flex-none justify-center px-2 sm:px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 flex items-center gap-1 transition text-[11px] sm:text-xs';
+        if (btn) {
+          if (v === 'rubens_consenso') {
+            btn.className = 'text-[10px] sm:text-[11px] font-bold px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-amber-400/50 bg-amber-500/20 hover:bg-amber-500 hover:text-slate-950 text-amber-200 flex items-center gap-1.5 transition active:scale-[0.98] shadow-xs cursor-pointer';
+          } else if (v === 'rubens_onco') {
+            btn.className = 'text-[10px] sm:text-[11px] font-bold px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-rose-400/50 bg-rose-500/20 hover:bg-rose-600 hover:text-white text-rose-200 flex items-center gap-1.5 transition active:scale-[0.98] shadow-xs cursor-pointer';
+          } else {
+            btn.className = 'flex-1 sm:flex-none justify-center px-2 sm:px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 flex items-center gap-1 transition text-[11px] sm:text-xs';
+          }
+        }
       });
+
       const elAtivo = document.getElementById('view-' + view);
       const btnAtivo = document.getElementById('btn-view-' + view);
       if (elAtivo) elAtivo.classList.remove('hidden');
-      if (btnAtivo) btnAtivo.className = 'flex-1 sm:flex-none justify-center px-2 sm:px-3 py-1.5 rounded-lg bg-white text-indigo-700 shadow-xs flex items-center gap-1 font-bold transition text-[11px] sm:text-xs';
+      if (btnAtivo) {
+        if (view === 'rubens_consenso') {
+          btnAtivo.className = 'text-[10px] sm:text-[11px] font-black px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-amber-400 bg-amber-400 text-slate-950 flex items-center gap-1.5 transition shadow-md ring-2 ring-amber-300 cursor-pointer';
+        } else if (view === 'rubens_onco') {
+          btnAtivo.className = 'text-[10px] sm:text-[11px] font-black px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-rose-500 bg-rose-600 text-white flex items-center gap-1.5 transition shadow-md ring-2 ring-rose-400 cursor-pointer';
+        } else {
+          btnAtivo.className = 'flex-1 sm:flex-none justify-center px-2 sm:px-3 py-1.5 rounded-lg bg-white text-indigo-700 shadow-xs flex items-center gap-1 font-bold transition text-[11px] sm:text-xs';
+        }
+      }
       render();
+    }
+
+    function isCasoAusenciaConsenso(c) {
+      if (!c) return false;
+      const isFin = c.STATUS_COFRE === 'CONCLUÍDO' || (c.ULTIMO_DESFECHO && c.ULTIMO_DESFECHO.trim() !== '');
+      if (!isFin) return false;
+
+      const texto = [
+        c.AREA,
+        c.MACRO_DESFECHO,
+        c.MICRO_DESFECHO,
+        c.ENCAMINHAR,
+        c.ULTIMO_DESFECHO,
+        (historyLog[c.CD_USUARIO] || []).map(l => l.text || '').join(' ')
+      ].filter(Boolean).join(' ').toLowerCase();
+
+      const temAusencia = texto.includes('ausência completa de consenso') || 
+                          texto.includes('ausencia completa de consenso') ||
+                          (texto.includes('ausencia') && texto.includes('consenso')) ||
+                          (texto.includes('ausência') && texto.includes('consenso'));
+
+      const temGnhapOuGnmed = texto.includes('gnhap') || 
+                              texto.includes('gnmed') || 
+                              texto.includes('auditoria eletiva') ||
+                              !c.AREA;
+
+      return temAusencia && temGnhapOuGnmed;
+    }
+
+    function isCasoOncologia(c) {
+      if (!c) return false;
+      const campos = [
+        c.PROCEDIMENTO_AGRUPADO,
+        c.DS_PROCEDIMENTO,
+        c.CD_PROCEDIMENTO,
+        c.ESPECIALIDADE,
+        c.NM_ESPECIALIDADE,
+        c.TRATAMENTO,
+        c.CID,
+        c.DS_CID,
+        c.OBSERVACAO,
+        c.ULTIMO_DESFECHO
+      ].filter(Boolean).join(' ').toLowerCase();
+
+      const termosOnco = [
+        'onco', 'oncolog', 'neopl', 'tumor', 'cancer', 'câncer', 
+        'carcinom', 'linfoma', 'leucemia', 'sarcoma', 'melanoma', 
+        'mastectomia', 'linfonodectomia', 'segmentectomia', 'quimioter', 'radioter'
+      ];
+
+      return termosOnco.some(t => campos.includes(t));
     }
 
     function popularFiltroMedicos() {
@@ -2809,6 +3009,115 @@
           </tr>
         `;
       }).join('') : `<tr><td colspan="7" class="py-8 text-center text-slate-400 italic">Nenhum registro acumulado no Cofre ainda.</td></tr>`;
+
+      // 3. Renderizar Esteira Dr. Rubens: Ausência de Consenso (GNHAP & GNMED)
+      const listaRubensConsenso = Object.values(vaultCases).filter(c => {
+        if (!isCasoAusenciaConsenso(c)) return false;
+        return casoCorrespondeBusca(c, q);
+      });
+
+      const totalConsensoDrRubens = Object.values(vaultCases).filter(isCasoAusenciaConsenso).length;
+      const badgeConsensoEl = document.getElementById('badge-rubens-consenso');
+      if (badgeConsensoEl) badgeConsensoEl.innerText = totalConsensoDrRubens;
+
+      const tbodyConsenso = document.getElementById('rubens-consenso-tbody');
+      if (tbodyConsenso) {
+        tbodyConsenso.innerHTML = listaRubensConsenso.length ? listaRubensConsenso.map(c => {
+          const logs = historyLog[c.CD_USUARIO] || [];
+          const ultimoLog = logs[0] ? `${logs[0].text}` : (c.ULTIMO_DESFECHO || '-');
+          const areaExibida = c.AREA || (c.ULTIMO_DESFECHO && c.ULTIMO_DESFECHO.includes('GNMED') ? 'GNMED' : 'Auditoria / GNHAP');
+          const desfechoExibido = c.ULTIMO_DESFECHO || (c.MACRO_DESFECHO ? `${c.MACRO_DESFECHO} ➔ ${c.MICRO_DESFECHO || ''} | Encaminhar: ${c.ENCAMINHAR || ''}` : ultimoLog);
+          return `
+            <tr onclick="openCaseDetail('${c.CD_USUARIO}')" class="hover:bg-amber-50/60 cursor-pointer transition">
+              <td class="py-3 px-4 font-mono font-bold text-slate-800">${c.CD_USUARIO}</td>
+              <td class="py-3 px-4 font-bold text-slate-900">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span>${c.NM_USUARIO}</span>
+                  ${(c.TIPO_DEMANDA || c.PRAZO_FINAL_DEMANDA) ? `
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-600 text-white text-[9.5px] font-black">
+                      <i class="fa-solid fa-triangle-exclamation text-[8px]"></i> ${c.TIPO_DEMANDA || 'DEMANDA'}
+                    </span>
+                  ` : ''}
+                </div>
+              </td>
+              <td class="py-3 px-4 text-slate-700 truncate max-w-xs font-medium">${c.PROCEDIMENTO_AGRUPADO || '-'}</td>
+              <td class="py-3 px-4">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-bold text-[10.5px] ${areaExibida.includes('GNMED') ? 'bg-purple-100 text-purple-800 border border-purple-200' : 'bg-blue-100 text-blue-800 border border-blue-200'}">
+                  ${areaExibida}
+                </span>
+              </td>
+              <td class="py-3 px-4 text-slate-800 truncate max-w-sm">
+                <span class="font-bold text-amber-900">${desfechoExibido}</span>
+              </td>
+              <td class="py-3 px-4 text-xs">
+                ${c.ASSUMIU_POR ? `<span class="inline-flex items-center gap-1 font-extrabold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md"><i class="fa-solid fa-user-check text-amber-600 text-[9px]"></i> ${c.ASSUMIU_POR}</span>` : `<span class="text-slate-400 font-medium">${c.GERENTE_MEDICO || '-'}</span>`}
+              </td>
+              <td class="py-3 px-4 text-right font-bold text-amber-700 hover:text-amber-900">Ver Ficha ➔</td>
+            </tr>
+          `;
+        }).join('') : `<tr><td colspan="7" class="py-8 text-center text-slate-400 italic">Nenhum caso com Ausência de Consenso finalizado até o momento.</td></tr>`;
+      }
+
+      // 4. Renderizar Esteira Dr. Rubens: Cirurgias Oncológicas
+      const mapaOnco = {};
+      Object.values(vaultCases).forEach(c => {
+        if (c.CD_USUARIO && isCasoOncologia(c)) mapaOnco[c.CD_USUARIO] = { ...c, _origem: 'cofre' };
+      });
+      activeCases.forEach(c => {
+        if (c.CD_USUARIO && isCasoOncologia(c)) mapaOnco[c.CD_USUARIO] = { ...(mapaOnco[c.CD_USUARIO] || {}), ...c, _origem: 'ativo' };
+      });
+
+      const listaRubensOnco = Object.values(mapaOnco).filter(c => casoCorrespondeBusca(c, q));
+      const totalOncoDrRubens = Object.values(mapaOnco).length;
+      const badgeOncoEl = document.getElementById('badge-rubens-onco');
+      if (badgeOncoEl) badgeOncoEl.innerText = totalOncoDrRubens;
+
+      const tbodyOnco = document.getElementById('rubens-onco-tbody');
+      if (tbodyOnco) {
+        tbodyOnco.innerHTML = listaRubensOnco.length ? listaRubensOnco.map(c => {
+          const isAtivo = c._origem === 'ativo' && activeCases.some(a => String(a.CD_USUARIO) === String(c.CD_USUARIO));
+          const temSetor = c.DIAS_SETOR !== undefined && c.DIAS_SETOR !== null && c.DIAS_SETOR !== '';
+          const ultimoDesfecho = c.ULTIMO_DESFECHO || (c.STATUS_COFRE === 'CONCLUÍDO' ? 'Concluído no Cofre' : 'Em análise operacional');
+          return `
+            <tr onclick="openCaseDetail('${c.CD_USUARIO}')" class="hover:bg-rose-50/50 cursor-pointer transition">
+              <td class="py-3 px-4">
+                <span class="text-[10px] font-extrabold px-2.5 py-1 rounded-full ${isAtivo ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-emerald-100 text-emerald-800 border border-emerald-300'}">
+                  ${isAtivo ? '⚡ ATIVO NA FILA' : '✔ CONCLUÍDO'}
+                </span>
+              </td>
+              <td class="py-3 px-4 font-mono font-bold text-slate-800">${c.CD_USUARIO}</td>
+              <td class="py-3 px-4 font-bold text-slate-900">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span>${c.NM_USUARIO}</span>
+                  ${(c.TIPO_DEMANDA || c.PRAZO_FINAL_DEMANDA) ? `
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-600 text-white text-[9.5px] font-black">
+                      <i class="fa-solid fa-triangle-exclamation text-[8px]"></i> ${c.TIPO_DEMANDA || 'DEMANDA'}
+                    </span>
+                  ` : ''}
+                </div>
+              </td>
+              <td class="py-3 px-4 text-slate-700 truncate max-w-xs font-semibold">
+                <span>${c.PROCEDIMENTO_AGRUPADO || '-'}</span>
+                ${c.CD_PROCEDIMENTO ? `<span class="block text-[10px] font-mono text-slate-400">TUSS: ${c.CD_PROCEDIMENTO}</span>` : ''}
+              </td>
+              <td class="py-3 px-4 text-slate-500 truncate max-w-xs text-xs">
+                <div>${c.NM_PRESTADOR || '-'}</div>
+                ${c.CIDADE ? `<div class="text-[10px] text-slate-400">${c.CIDADE} - ${c.UF || ''}</div>` : ''}
+              </td>
+              <td class="py-3 px-4 text-center">
+                <div class="inline-flex items-center gap-1 justify-center">
+                  <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full ${c.DIAS_AUTORIZACAO > 10 ? 'bg-rose-100 text-rose-700' : (c.DIAS_AUTORIZACAO >= 7 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800')}">${c.DIAS_AUTORIZACAO || 0}d</span>
+                  ${temSetor ? `<span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">${c.DIAS_SETOR}d</span>` : ''}
+                </div>
+              </td>
+              <td class="py-3 px-4 text-slate-700 truncate max-w-xs text-xs">
+                <span class="${isAtivo ? 'text-slate-600 italic' : 'font-bold text-emerald-800'}">${ultimoDesfecho}</span>
+              </td>
+              <td class="py-3 px-4 text-right font-bold text-rose-700 hover:text-rose-900">Ver Ficha ➔</td>
+            </tr>
+          `;
+        }).join('') : `<tr><td colspan="8" class="py-8 text-center text-slate-400 italic">Nenhum caso oncológico identificado.</td></tr>`;
+      }
     }
 
     if (document.getElementById('searchInput')) {
