@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
@@ -1108,6 +1108,13 @@
     }
 
     function abrirConfigNuvem() {
+      const senhaDigitada = prompt('🔒 Acesso Restrito à Configuração de Nuvem\n\nPor favor, digite a senha de administrador:');
+      if (senhaDigitada === null) return; // Usuário cancelou
+      if (senhaDigitada.trim() !== 'hapvida2026') {
+        alert('❌ Senha incorreta! Acesso não autorizado.');
+        return;
+      }
+
       const saved = localStorage.getItem(SUPABASE_CONFIG_KEY);
       let cfg = DEFAULT_SUPABASE_CONFIG;
       if (saved) {
