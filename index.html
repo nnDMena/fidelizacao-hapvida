@@ -2913,24 +2913,31 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
       closeCaseDetail();
     }
 
+    const microdesfechosAuditoriaGNHAP = [
+      "Autorizado dentro do pacote",
+      "Verticalização (Rede Própria)",
+      "Direcionamento de rede (Rede Credenciada)",
+      "Adequação integral de TUSS e/ou OPME",
+      "Adequação parcial de TUSS e/ou OPME",
+      "Adequação integral de medicamento",
+      "Cancelamento aceito pelo solicitante",
+      "Cancelamento aceito pelo beneficiário",
+      "Cancelamento por contrato inativo",
+      "Autorização sem adequação de exame",
+      "Autorização sem adequação de internação",
+      "Autorização de OPME por custo inferior ao menor pacote",
+      "Abertura de Junta Médica",
+      "Autorização com emissão de carta de rede",
+      "Autorização dentro do capitation",
+      "Deliberação VP Auditoria",
+      "Caso Einstein"
+    ];
+
     const hierarquiaDesfechos = {
       "Auditoria eletiva e/ou GNHAP": {
-        "Consenso integral": [
-          "Cancelamento de guia",
-          "Verticalização",
-          "Autorizado dentro do pacote",
-          "Direcionamento de rede",
-          "Adequação completa de TUSS e/ou OPME"
-        ],
-        "Consenso parcial": [
-          "Integral de códigos e parcial de OPME",
-          "Parcial de códigos"
-        ],
-        "Ausência completa de consenso": [
-          "Sugerido Junta Médica",
-          "Sugerido Resolução",
-          "Deliberação VP auditoria"
-        ]
+        "Consenso integral": microdesfechosAuditoriaGNHAP,
+        "Consenso parcial": microdesfechosAuditoriaGNHAP,
+        "Ausência completa de consenso": microdesfechosAuditoriaGNHAP
       },
       "GNMED": {
         "Consenso integral": [
