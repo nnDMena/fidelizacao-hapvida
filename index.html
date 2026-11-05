@@ -62,7 +62,7 @@
       </div>
     </div>
 
-    <!-- ABAS EXCLUSIVAS DO DR. RUBENS -->
+    <!-- ABAS DE GESTÃO MÉDICA (DR. RUBENS & DR. VINICIUS) -->
     <div id="containerAbasDrRubens" class="hidden items-center gap-1.5 sm:gap-2">
       <!-- Aba 1: Ausência de Consenso GNHAP / GNMED -->
       <button onclick="alternarEsteiraRubens('rubens_consenso')" id="btn-view-rubens_consenso" 
@@ -77,7 +77,7 @@
       <!-- Aba 2: Procedimento Cirúrgico em Oncologia -->
       <button onclick="alternarEsteiraRubens('rubens_onco')" id="btn-view-rubens_onco" 
         class="text-[10px] sm:text-[11px] font-bold px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-rose-400/50 bg-rose-500/20 hover:bg-rose-600 hover:text-white text-rose-200 flex items-center gap-1.5 transition active:scale-[0.98] shadow-xs cursor-pointer" 
-        title="Casos com procedimento cirúrgico vinculado à Oncologia">
+        title="Casos oncológicos (Quimioterapia Sistêmica, Terapia Oncológica, Terapia Antineoplásica)">
         <i class="fa-solid fa-ribbon text-rose-400 text-xs"></i>
         <span>Oncológicas</span>
         <span id="badge-rubens-onco" class="bg-rose-500 text-white text-[9.5px] font-black px-1.5 py-0.2 rounded-full">0</span>
@@ -421,9 +421,9 @@
             </div>
             <div>
               <h2 class="text-xs sm:text-sm font-extrabold flex items-center gap-2 flex-wrap">
-                Esteira de Cirurgias Oncológicas
+                Esteira de Tratamento Oncológico
               </h2>
-              <p class="text-[11px] sm:text-xs text-rose-200/90 mt-0.5">Casos com procedimentos cirúrgicos vinculados à especialidade de Oncologia.</p>
+              <p class="text-[11px] sm:text-xs text-rose-200/90 mt-0.5">Casos com Quimioterapia Sistêmica, Terapia Oncológica ou Terapia Antineoplásica.</p>
             </div>
           </div>
           <div class="flex items-center gap-2 w-full sm:w-auto">
@@ -1117,6 +1117,16 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
       return op.includes('rubens') || op.includes('zapponi') || isOperadorAdmin();
     }
 
+    function isDrVinicius() {
+      if (!operadorAtual) return false;
+      const op = operadorAtual.trim().toLowerCase();
+      return op.includes('vinicius') || op.includes('azevedo') || isOperadorAdmin();
+    }
+
+    function isPainelGestaoMedica() {
+      return isDrRubens() || isDrVinicius() || isOperadorAdmin();
+    }
+
     function atualizarPermissoesOperador() {
       const containerAdmin = document.getElementById('containerBotoesAdmin');
       const btnExportarCofre = document.getElementById('btnExportarCofre');
@@ -1143,9 +1153,9 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
       }
 
       const containerRubens = document.getElementById('containerAbasDrRubens');
-      const ehRubens = isDrRubens();
+      const ehGestor = isPainelGestaoMedica();
       if (containerRubens) {
-        if (ehRubens) {
+        if (ehGestor) {
           containerRubens.classList.remove('hidden');
           containerRubens.classList.add('flex');
         } else {
@@ -2404,15 +2414,21 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
         c.DS_CID,
         c.OBSERVACAO,
         c.ULTIMO_DESFECHO
-      ].filter(Boolean).join(' ').toLowerCase();
+      ].filter(Boolean).join(' ');
 
-      const termosOnco = [
-        'onco', 'oncolog', 'neopl', 'tumor', 'cancer', 'câncer', 
-        'carcinom', 'linfoma', 'leucemia', 'sarcoma', 'melanoma', 
-        'mastectomia', 'linfonodectomia', 'segmentectomia', 'quimioter', 'radioter'
+      // Normaliza para comparar sem acentos e em minúsculas
+      const textoNorm = String(campos)
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+
+      const termosOncoExatos = [
+        'quimioterapia sistemica',
+        'terapia oncologica',
+        'terapia antineoplasica'
       ];
 
-      return termosOnco.some(t => campos.includes(t));
+      return termosOncoExatos.some(termo => textoNorm.includes(termo));
     }
 
     function popularFiltroMedicos() {
@@ -3269,13 +3285,18 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
         `;
       }).join('') : `<tr><td colspan="7" class="py-8 text-center text-slate-400 italic">Nenhum registro acumulado no Cofre ainda.</td></tr>`;
 
-      // 3. Renderizar Esteira Dr. Rubens: Ausência de Consenso (GNHAP & GNMED)
+      // 3. Renderizar Esteira Médica: Ausência de Consenso (GNHAP & GNMED)
       const listaRubensConsenso = Object.values(vaultCases).filter(c => {
         if (!isCasoAusenciaConsenso(c)) return false;
+        if (medFiltro && (!c.GERENTE_MEDICO || c.GERENTE_MEDICO.trim() !== medFiltro)) return false;
         return casoCorrespondeBusca(c, q);
       });
 
-      const totalConsensoDrRubens = Object.values(vaultCases).filter(isCasoAusenciaConsenso).length;
+      const totalConsensoDrRubens = Object.values(vaultCases).filter(c => {
+        if (!isCasoAusenciaConsenso(c)) return false;
+        if (medFiltro && (!c.GERENTE_MEDICO || c.GERENTE_MEDICO.trim() !== medFiltro)) return false;
+        return true;
+      }).length;
       const badgeConsensoEl = document.getElementById('badge-rubens-consenso');
       if (badgeConsensoEl) badgeConsensoEl.innerText = totalConsensoDrRubens;
 
@@ -3317,7 +3338,7 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
         }).join('') : `<tr><td colspan="7" class="py-8 text-center text-slate-400 italic">Nenhum caso com Ausência de Consenso finalizado até o momento.</td></tr>`;
       }
 
-      // 4. Renderizar Esteira Dr. Rubens: Cirurgias Oncológicas
+      // 4. Renderizar Esteira Médica: Tratamentos Oncológicos Específicos
       const mapaOnco = {};
       Object.values(vaultCases).forEach(c => {
         if (c.CD_USUARIO && isCasoOncologia(c)) mapaOnco[c.CD_USUARIO] = { ...c, _origem: 'cofre' };
@@ -3326,8 +3347,14 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
         if (c.CD_USUARIO && isCasoOncologia(c)) mapaOnco[c.CD_USUARIO] = { ...(mapaOnco[c.CD_USUARIO] || {}), ...c, _origem: 'ativo' };
       });
 
-      const listaRubensOnco = Object.values(mapaOnco).filter(c => casoCorrespondeBusca(c, q));
-      const totalOncoDrRubens = Object.values(mapaOnco).length;
+      const listaRubensOnco = Object.values(mapaOnco).filter(c => {
+        if (medFiltro && (!c.GERENTE_MEDICO || c.GERENTE_MEDICO.trim() !== medFiltro)) return false;
+        return casoCorrespondeBusca(c, q);
+      });
+      const totalOncoDrRubens = Object.values(mapaOnco).filter(c => {
+        if (medFiltro && (!c.GERENTE_MEDICO || c.GERENTE_MEDICO.trim() !== medFiltro)) return false;
+        return true;
+      }).length;
       const badgeOncoEl = document.getElementById('badge-rubens-onco');
       if (badgeOncoEl) badgeOncoEl.innerText = totalOncoDrRubens;
 
@@ -3375,17 +3402,23 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
               <td class="py-3 px-4 text-right font-bold text-rose-700 hover:text-rose-900">Ver Ficha ➔</td>
             </tr>
           `;
-        }).join('') : `<tr><td colspan="8" class="py-8 text-center text-slate-400 italic">Nenhum caso oncológico identificado.</td></tr>`;
+        }).join('') : `<tr><td colspan="8" class="py-8 text-center text-slate-400 italic">Nenhum caso oncológico com os termos especificados identificado.</td></tr>`;
       }
 
-      // 5. Renderizar Esteira Dr. Rubens: Casos Críticos na Esteira (>10 dias)
+      // 5. Renderizar Esteira Médica: Casos Críticos na Esteira (>10 dias)
       const listaRubensCriticos = activeCases.filter(c => {
         const isCrit = (c.DIAS_AUTORIZACAO || 0) > 10;
         if (!isCrit) return false;
+        if (medFiltro && (!c.GERENTE_MEDICO || c.GERENTE_MEDICO.trim() !== medFiltro)) return false;
         return casoCorrespondeBusca(c, q);
       });
 
-      const totalCriticosDrRubens = activeCases.filter(c => (c.DIAS_AUTORIZACAO || 0) > 10).length;
+      const totalCriticosDrRubens = activeCases.filter(c => {
+        const isCrit = (c.DIAS_AUTORIZACAO || 0) > 10;
+        if (!isCrit) return false;
+        if (medFiltro && (!c.GERENTE_MEDICO || c.GERENTE_MEDICO.trim() !== medFiltro)) return false;
+        return true;
+      }).length;
       const badgeCriticosEl = document.getElementById('badge-rubens-criticos');
       if (badgeCriticosEl) badgeCriticosEl.innerText = totalCriticosDrRubens;
 
