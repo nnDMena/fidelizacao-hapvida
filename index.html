@@ -3204,6 +3204,8 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
       document.getElementById('view-fichas').innerHTML = cases.length ? cases.map(buildCard).join('') : `<div class="col-span-3">${emptyMsg('Nenhum caso carregado.')}</div>`;
 
       const q = ((document.getElementById('searchInputMobile')?.value || document.getElementById('searchInput')?.value) || '').toLowerCase();
+      const medSelect = document.getElementById('filterMedico');
+      const medFiltro = medSelect ? medSelect.value : '';
       
       // 1. Renderizar Casos Finalizados
       const listaFinalizados = Object.values(vaultCases).filter(c => {
