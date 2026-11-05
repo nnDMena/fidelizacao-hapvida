@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
@@ -1251,9 +1251,9 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
     }
 
     // Compatibilidade com chamadas
-    const initFirebase = initSupabase;
-    const abrirConfigFirebase = abrirConfigNuvem;
-    const fecharConfigFirebase = fecharConfigNuvem;
+    function initFirebase() { return initSupabase(); }
+    function abrirConfigFirebase() { abrirConfigNuvem(); }
+    function fecharConfigFirebase() { fecharConfigNuvem(); }
 
     async function carregarDadosIniciaisNuvem() {
       if (!supabaseClient) return;
