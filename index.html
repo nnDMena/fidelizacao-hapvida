@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
@@ -1251,9 +1251,9 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
     }
 
     // Compatibilidade com chamadas
-    function initFirebase() { return initSupabase(); }
-    function abrirConfigFirebase() { abrirConfigNuvem(); }
-    function fecharConfigFirebase() { fecharConfigNuvem(); }
+    const initFirebase = initSupabase;
+    const abrirConfigFirebase = abrirConfigNuvem;
+    const fecharConfigFirebase = fecharConfigNuvem;
 
     async function carregarDadosIniciaisNuvem() {
       if (!supabaseClient) return;
@@ -1366,7 +1366,7 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
     // ==========================================
     // SINCRONIZAÇÃO EM TEMPO REAL (SUPABASE REALTIME)
     // ==========================================
-        function iniciarOuvintesTempoReal() {
+    function iniciarOuvintesTempoReal() {
       if (!supabaseClient) return;
 
       // 1. Escutar Casos Ativos em Tempo Real
@@ -1425,14 +1425,122 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
         })
         .subscribe();
     }
-// ==========================================
+
+    function abrirConfigNuvem() {
+      const senhaDigitada = prompt('🔒 Acesso Restrito à Configuração de Nuvem\n\nPor favor, digite a senha de administrador:');
+      if (senhaDigitada === null) return; // Usuário cancelou
+      if (senhaDigitada.trim() !== 'hapvida2026') {
+        alert('❌ Senha incorreta! Acesso não autorizado.');
+        return;
+      }
+
+      const saved = localStorage.getItem(SUPABASE_CONFIG_KEY);
+      let cfg = DEFAULT_SUPABASE_CONFIG;
+      if (saved) {
+        try { cfg = JSON.parse(saved); } catch (e) {}
+      }
+      document.getElementById('inputSupabaseUrl').value = cfg.url || '';
+      document.getElementById('inputSupabaseKey').value = cfg.anonKey || '';
+      document.getElementById('modal-nuvem').classList.remove('hidden');
+      document.getElementById('modal-nuvem').classList.add('flex');
+    }
+
+    function fecharConfigNuvem() {
+      document.getElementById('modal-nuvem').classList.add('hidden');
+      document.getElementById('modal-nuvem').classList.remove('flex');
+    }
+
+    function salvarConfigNuvem() {
+      const url = document.getElementById('inputSupabaseUrl').value.trim();
+      const anonKey = document.getElementById('inputSupabaseKey').value.trim();
+      if (!url || !anonKey) {
+        alert('Preencha a URL e a Anon Key do Supabase.');
+        return;
+      }
+      localStorage.setItem(SUPABASE_CONFIG_KEY, JSON.stringify({ url, anonKey }));
+      fecharConfigNuvem();
+      alert('Configuração do Supabase salva com sucesso! Recarregando aplicação...');
+      location.reload();
+    }
+
+    async function testarConexaoSupabase() {
+      const urlInput = document.getElementById('inputSupabaseUrl').value.trim();
+      const keyInput = document.getElementById('inputSupabaseKey').value.trim();
+      const resEl = document.getElementById('diagConexaoResultado');
+      if (resEl) {
+        resEl.classList.remove('hidden');
+        resEl.innerHTML = '<span class="text-indigo-600 font-bold"><i class="fa-solid fa-spinner fa-spin"></i> Testando conexão e tabelas no Supabase...</span>';
+      }
+
+      if (!urlInput || !keyInput) {
+        alert('Preencha a URL e a Anon Key antes de testar.');
+        if (resEl) resEl.innerHTML = '<span class="text-rose-600 font-bold">Preencha a URL e a Anon Key acima.</span>';
+        return;
+      }
+
+      try {
+        let testClient = window.supabase ? window.supabase.createClient(urlInput, keyInput) : null;
+        if (!testClient) {
+          throw new Error('SDK do Supabase não carregado no navegador.');
+        }
+
+        // Testar tabela casos_ativos
+        const { data, error } = await testClient.from('casos_ativos').select('cd_usuario').limit(1);
+        if (error) {
+          console.error('Erro teste Supabase:', error);
+          if (error.code === 'PGRST205' || (error.message && error.message.includes('schema cache'))) {
+            const msg = '⚠️ O Supabase respondeu, mas a tabela "casos_ativos" NÃO existe no seu banco!\n\nVocê precisa abrir o painel do Supabase > SQL Editor > colar o script SQL abaixo e clicar em "Run".';
+            if (resEl) resEl.innerHTML = '<span class="text-amber-700 font-bold">⚠️ Banco conectado, porém as tabelas ainda NÃO foram criadas no Supabase (Erro PGRST205). Veja o script SQL abaixo.</span>';
+            alert(msg);
+            return;
+          }
+          const msg = '❌ Erro de comunicação com o Supabase: ' + error.message;
+          if (resEl) resEl.innerHTML = '<span class="text-rose-600 font-bold">' + msg + '</span>';
+          alert(msg);
+          return;
+        }
+
+        // Testar cofre_casos e cofre_logs
+        await testClient.from('cofre_casos').select('cd_usuario').limit(1);
+        await testClient.from('cofre_logs').select('cd_usuario').limit(1);
+
+        const okMsg = '✅ Conexão e tabelas testadas com 100% de sucesso! O banco em nuvem está pronto para sincronizar em tempo real.';
+        if (resEl) resEl.innerHTML = '<span class="text-emerald-700 font-bold">' + okMsg + '</span>';
+        alert(okMsg);
+      } catch (err) {
+        console.error('Falha geral teste Supabase:', err);
+        const errMsg = '❌ Falha de conexão: ' + (err.message || err);
+        if (resEl) resEl.innerHTML = '<span class="text-rose-600 font-bold">' + errMsg + '</span>';
+        alert(errMsg);
+      }
+    }
+
+    function copiarScriptSqlSupabase() {
+      const pre = document.getElementById('preScriptSqlSupabase');
+      if (pre) {
+        navigator.clipboard.writeText(pre.innerText).then(() => {
+          alert('📋 Script SQL copiado com sucesso! Agora vá no Supabase > SQL Editor > Cole e clique em Run.');
+        }).catch(() => {
+          alert('Selecione e copie o texto SQL manualmente.');
+        });
+      }
+    }
+
+    function limparCredenciaisNuvem() {
+      if (confirm('Deseja desconectar da Nuvem e voltar ao modo Local?')) {
+        localStorage.removeItem(SUPABASE_CONFIG_KEY);
+        location.reload();
+      }
+    }
+
+    // ==========================================
     // OPERAÇÕES DE DADOS (NUVEM OU LOCAL)
     // ==========================================
     function sanitizeDocId(id) {
       return String(id || '').trim().replace(/[\/\.#$\[\]]/g, '_');
     }
 
-        function syncToVault(caso) {
+    function syncToVault(caso) {
       if (!caso || !caso.CD_USUARIO) return;
       const cod = String(caso.CD_USUARIO).trim();
       const payload = {
@@ -1479,7 +1587,8 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
         console.warn('Alerta de armazenamento:', err);
       }
     }
-function solicitarSubirPlanilha() {
+
+    function solicitarSubirPlanilha() {
       if (!isOperadorAdmin()) {
         alert('🔒 Acesso Restrito\nApenas Fernando Mena e Vitor Hugo possuem permissão para subir planilhas.');
         return;
@@ -2267,7 +2376,7 @@ function solicitarSubirPlanilha() {
 
     function isCasoAusenciaConsenso(c) {
       if (!c) return false;
-      const isFin = c.STATUS_COFRE === 'CONCLUÃDO' || (c.ULTIMO_DESFECHO && c.ULTIMO_DESFECHO.trim() !== '');
+      const isFin = c.STATUS_COFRE === 'CONCLUÍDO' || (c.ULTIMO_DESFECHO && c.ULTIMO_DESFECHO.trim() !== '');
       if (!isFin) return false;
 
       const texto = [
@@ -2538,7 +2647,7 @@ function solicitarSubirPlanilha() {
       }
     }
 
-        function openCaseDetail(cod) {
+    function openCaseDetail(cod) {
       currentCase = activeCases.find(c => String(c.CD_USUARIO) === String(cod)) || vaultCases[String(cod)];
       if (!currentCase) return;
 
@@ -2550,20 +2659,57 @@ function solicitarSubirPlanilha() {
       document.getElementById('screen-main').classList.add('hidden');
       document.getElementById('screen-case-detail').classList.remove('hidden');
 
-      // Top Header
-      const elCode = document.getElementById('singleDetailCode');
-      if (elCode) elCode.innerText = currentCase.CD_USUARIO || '-';
+      document.getElementById('singleDetailCode').innerText = currentCase.CD_USUARIO;
+      document.getElementById('singleDetailBeneficiaryHeader').innerText = currentCase.NM_USUARIO;
+      document.getElementById('singleDetailName').innerText = currentCase.NM_USUARIO;
+      document.getElementById('singleDetailUserCode').innerText = currentCase.CD_USUARIO;
+      document.getElementById('singleDetailPlan').innerText = currentCase.NM_PLANO || '-';
+      document.getElementById('singleDetailProcedure').innerText = currentCase.PROCEDIMENTO_AGRUPADO || '-';
+      document.getElementById('singleDetailTUSS').innerText = 'Cód: ' + (currentCase.CD_PROCEDIMENTO || '-');
+      document.getElementById('singleDetailProvider').innerText = currentCase.NM_PRESTADOR || '-';
+      document.getElementById('singleDetailCity').innerHTML = '<i class="fa-solid fa-location-dot text-rose-500"></i> ' + (currentCase.CIDADE || '-') + ' - ' + (currentCase.UF || '-');
+      if (document.getElementById('editCaseSolicitante')) {
+        document.getElementById('editCaseSolicitante').value = currentCase.NM_SOLICITANTE || '';
+      }
+      
+      const baseVal = currentCase.BASE || 'NDI';
+      document.getElementById('labelBaseCard').innerText = baseVal;
+      document.getElementById('labelBaseText').innerText = baseVal;
+      document.getElementById('labelBaseTop').innerText = baseVal;
+      document.getElementById('singleDetailBase').innerText = baseVal;
+      document.getElementById('singleDetailMedResponsavel').innerText = currentCase.GERENTE_MEDICO ? 'Dr(a). ' + currentCase.GERENTE_MEDICO : 'Não Atribuído';
+      popularSelectAssumiuCaso();
+      if (document.getElementById('editCaseAssumiuPor')) {
+        document.getElementById('editCaseAssumiuPor').value = currentCase.ASSUMIU_POR || '';
+      }
 
-      const elBenefHeader = document.getElementById('singleDetailBeneficiaryHeader');
-      if (elBenefHeader) elBenefHeader.innerText = currentCase.NM_USUARIO || '-';
+      if (document.getElementById('editCaseTipoDemanda')) {
+        document.getElementById('editCaseTipoDemanda').value = currentCase.TIPO_DEMANDA || '';
+      }
+      if (document.getElementById('editCasePrazoDemanda')) {
+        document.getElementById('editCasePrazoDemanda').value = converterDataParaInput(currentCase.PRAZO_FINAL_DEMANDA || '');
+      }
+      atualizarEstiloDemanda();
+      
+      document.getElementById('editCaseValorInicial').value = currentCase.VALOR_INICIAL || '';
+      document.getElementById('editCaseMenorValor').value = currentCase.MENOR_VALOR || '';
+      document.getElementById('editCaseValorPacote').value = currentCase['VALOR PACOTE'] || '';
+      document.getElementById('editCaseQualPacote').value = currentCase['QUAL PACOTE?'] || '';
+      document.getElementById('editCasePrestadorPacote').value = currentCase.PRESTADOR_PACOTE || '';
+
+      // Observação Geral do Caso (vinculado ao Copiar Ficha)
+      const obsElem = document.getElementById('editCaseObservacao');
+      if (obsElem) {
+        const obsVal = currentCase.OBSERVACAO !== undefined ? currentCase.OBSERVACAO :
+          ([currentCase.OBS_MED_CONSULTOR, currentCase.OBS_ENF, currentCase.OBS_ADM].filter(Boolean).join('\n') || '');
+        obsElem.value = obsVal;
+      }
 
       const dias = currentCase.DIAS_AUTORIZACAO || 0;
       const slaBadge = document.getElementById('singleDetailSLA');
-      if (slaBadge) {
-        slaBadge.innerText = dias + 'd';
-        slaBadge.className = 'text-[9.5px] sm:text-[10px] font-extrabold px-2 py-0.5 rounded-full ' + 
-          (dias > 10 ? 'bg-rose-100 text-rose-700' : (dias >= 7 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'));
-      }
+      slaBadge.innerText = dias + 'd';
+      slaBadge.className = 'text-[9.5px] sm:text-[10px] font-extrabold px-2 py-0.5 rounded-full ' + 
+        (dias > 10 ? 'bg-rose-100 text-rose-700' : (dias >= 7 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'));
 
       const setorBadge = document.getElementById('singleDetailSetor');
       if (setorBadge) {
@@ -2575,119 +2721,20 @@ function solicitarSubirPlanilha() {
         }
       }
 
-      const elPend = document.getElementById('labelTipoPendencia');
-      if (elPend) elPend.innerText = currentCase.TIPO_PENDENCIA || '69';
-
-      const baseVal = currentCase.BASE || currentCase.REGIONAL || currentCase.UF || 'NDI';
-      const elBaseTop = document.getElementById('labelBaseTop');
-      if (elBaseTop) elBaseTop.innerText = baseVal;
-      const elBaseCard = document.getElementById('labelBaseCard');
-      if (elBaseCard) elBaseCard.innerText = baseVal;
-      const elBaseText = document.getElementById('labelBaseText');
-      if (elBaseText) elBaseText.innerText = baseVal;
-      const elDetailBase = document.getElementById('singleDetailBase');
-      if (elDetailBase) elDetailBase.innerText = baseVal;
-
-      // Demanda Especial / CrÃ­tica
-      const demandaBadgeTop = document.getElementById('singleDetailDemandaTopBadge');
-      const labelDemandaTop = document.getElementById('labelDemandaTop');
-      const badgeDemandaAlerta = document.getElementById('badgeDemandaAlerta');
-      const labelDemandaAlerta = document.getElementById('labelDemandaAlerta');
-      if (currentCase.TIPO_DEMANDA || currentCase.PRAZO_FINAL_DEMANDA) {
-        const txtDemanda = ${currentCase.TIPO_DEMANDA || 'DEMANDA CRÃTICA'};
-        if (demandaBadgeTop) {
-          demandaBadgeTop.classList.remove('hidden');
-          if (labelDemandaTop) labelDemandaTop.innerText = txtDemanda;
-        }
-        if (badgeDemandaAlerta) {
-          badgeDemandaAlerta.classList.remove('hidden');
-          if (labelDemandaAlerta) labelDemandaAlerta.innerText = txtDemanda;
-        }
-      } else {
-        if (demandaBadgeTop) demandaBadgeTop.classList.add('hidden');
-        if (badgeDemandaAlerta) badgeDemandaAlerta.classList.add('hidden');
-      }
-
-      // Card BeneficiÃ¡rio
-      const elName = document.getElementById('singleDetailName');
-      if (elName) elName.innerText = currentCase.NM_USUARIO || '-';
-
-      const elUserCode = document.getElementById('singleDetailUserCode');
-      if (elUserCode) elUserCode.innerText = currentCase.CD_USUARIO || '-';
-
-      const elPlan = document.getElementById('singleDetailPlan');
-      if (elPlan) elPlan.innerText = currentCase.NM_PLANO || '-';
-
-      const elTipoDemanda = document.getElementById('editCaseTipoDemanda');
-      if (elTipoDemanda) elTipoDemanda.value = currentCase.TIPO_DEMANDA || '';
-
-      const elPrazoDemanda = document.getElementById('editCasePrazoDemanda');
-      if (elPrazoDemanda) elPrazoDemanda.value = currentCase.PRAZO_FINAL_DEMANDA || '';
-
-      // Procedimento & Prestador
-      const elProc = document.getElementById('singleDetailProcedure');
-      if (elProc) elProc.innerText = currentCase.PROCEDIMENTO_AGRUPADO || '-';
-
-      const elTuss = document.getElementById('singleDetailTUSS');
-      if (elTuss) elTuss.innerText = 'CÃ³d. TUSS: ' + (currentCase.CD_PROCEDIMENTO || '-');
-
-      const elProv = document.getElementById('singleDetailProvider');
-      if (elProv) elProv.innerText = currentCase.NM_PRESTADOR || '-';
-
-      const elCity = document.getElementById('singleDetailCity');
-      if (elCity) elCity.innerHTML = '<i class="fa-solid fa-location-dot text-rose-500"></i> ' + (currentCase.CIDADE || '-') + ' - ' + (currentCase.UF || '-');
-
-      const elSolic = document.getElementById('editCaseSolicitante');
-      if (elSolic) elSolic.value = currentCase.SOLICITANTE || currentCase.NM_SOLICITANTE || '';
-
-      // OrÃ§amento
-      const elValIni = document.getElementById('editCaseValorInicial');
-      if (elValIni) elValIni.value = currentCase.VALOR_INICIAL || '';
-
-      const elMenorVal = document.getElementById('editCaseMenorValor');
-      if (elMenorVal) elMenorVal.value = currentCase.MENOR_VALOR || '';
-
-      const elValPac = document.getElementById('editCaseValorPacote');
-      if (elValPac) elValPac.value = currentCase['VALOR PACOTE'] || '';
-
-      const elQualPac = document.getElementById('editCaseQualPacote');
-      if (elQualPac) elQualPac.value = currentCase['QUAL PACOTE?'] || '';
-
-      const elPrestPac = document.getElementById('editCasePrestadorPacote');
-      if (elPrestPac) elPrestPac.value = currentCase.PRESTADOR_PACOTE || '';
-
-      // Equipe
-      const elMedResp = document.getElementById('singleDetailMedResponsavel');
-      if (elMedResp) elMedResp.innerText = currentCase.GERENTE_MEDICO ? 'Dr(a). ' + currentCase.GERENTE_MEDICO : 'NÃ£o AtribuÃ­do';
-
-      popularSelectAssumiuCaso();
-      const elAssumiu = document.getElementById('editCaseAssumiuPor');
-      if (elAssumiu) elAssumiu.value = currentCase.ASSUMIU_POR || '';
-
-      const elObs = document.getElementById('editCaseObservacao');
-      if (elObs) elObs.value = currentCase.OBSERVACAO || '';
-
-      // Desfechos
-      const elArea = document.getElementById('singleSelectArea');
-      if (elArea) elArea.value = currentCase.AREA || '';
+      document.getElementById('labelTipoPendencia').innerText = currentCase.TIPO_PENDENCIA || '69';
+      document.getElementById('singleSelectArea').value = currentCase.AREA || '';
       atualizarMacrodesfechos();
-
-      const elMacro = document.getElementById('singleSelectMacroDesfecho');
-      if (elMacro && currentCase.MACRO_DESFECHO) {
-        elMacro.value = currentCase.MACRO_DESFECHO;
+      if (currentCase.MACRO_DESFECHO) {
+        document.getElementById('singleSelectMacroDesfecho').value = currentCase.MACRO_DESFECHO;
         atualizarMicrodesfechos();
-        const elMicro = document.getElementById('singleSelectDesfecho');
-        if (elMicro && currentCase.MICRO_DESFECHO) {
-          elMicro.value = currentCase.MICRO_DESFECHO;
+        if (currentCase.MICRO_DESFECHO) {
+          document.getElementById('singleSelectDesfecho').value = currentCase.MICRO_DESFECHO;
         }
       }
-
-      const elNota = document.getElementById('singleInputNota');
-      if (elNota) elNota.value = '';
-
-      const elEnc = document.getElementById('singleSelectEncaminhar');
-      if (elEnc) elEnc.value = currentCase.ENCAMINHAR || '';
-
+      document.getElementById('singleInputNota').value = '';
+      if (document.getElementById('singleSelectEncaminhar')) {
+        document.getElementById('singleSelectEncaminhar').value = currentCase.ENCAMINHAR || '';
+      }
       renderSingleTimeline();
     }
 
@@ -3162,12 +3209,12 @@ function solicitarSubirPlanilha() {
       
       // 1. Renderizar Casos Finalizados
       const listaFinalizados = Object.values(vaultCases).filter(c => {
-        const isFin = c.STATUS_COFRE === 'CONCLUÃDO' || (c.ULTIMO_DESFECHO && c.ULTIMO_DESFECHO.trim() !== '');
+        const isFin = c.STATUS_COFRE === 'CONCLUÍDO' || (c.ULTIMO_DESFECHO && c.ULTIMO_DESFECHO.trim() !== '');
         if (!isFin) return false;
         return casoCorrespondeBusca(c, q);
       });
 
-      const countFinalizadosTotal = Object.values(vaultCases).filter(c => c.STATUS_COFRE === 'CONCLUÃDO' || (c.ULTIMO_DESFECHO && c.ULTIMO_DESFECHO.trim() !== '')).length;
+      const countFinalizadosTotal = Object.values(vaultCases).filter(c => c.STATUS_COFRE === 'CONCLUÍDO' || (c.ULTIMO_DESFECHO && c.ULTIMO_DESFECHO.trim() !== '')).length;
       const badgeTabFin = document.getElementById('tab-count-finalizados');
       if (badgeTabFin) badgeTabFin.innerText = countFinalizadosTotal;
       const kpiFin = document.getElementById('kpi-concluidas');
@@ -3219,7 +3266,7 @@ function solicitarSubirPlanilha() {
       document.getElementById('historico-tbody').innerHTML = listaCofre.length ? listaCofre.map(c => {
         const logs = historyLog[c.CD_USUARIO] || [];
         const ultimoLog = logs[0] ? `${logs[0].text} (${logs[0].date})` : (c.ULTIMO_DESFECHO || 'Sem parecer final');
-        const isConcluido = c.STATUS_COFRE === 'CONCLUÃDO';
+        const isConcluido = c.STATUS_COFRE === 'CONCLUÍDO';
         return `
           <tr onclick="openCaseDetail('${c.CD_USUARIO}')" class="hover:bg-emerald-50/50 cursor-pointer transition">
             <td class="py-3 px-4">
