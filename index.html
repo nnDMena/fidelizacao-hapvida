@@ -799,7 +799,7 @@
             </div>
 
             <div class="pt-1">
-              <button onclick="singleConcluirCasoOK()" class="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm transition active:scale-[0.98]">
+              <button id="btnFinalizarGuia" onclick="singleConcluirCasoOK()" class="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm transition active:scale-[0.98]">
                 <i class="fa-solid fa-check-double text-sm"></i> Finalizar Guia (Arquivar no Cofre)
               </button>
             </div>
@@ -1344,6 +1344,49 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
           }
         }
 
+        // 4. Auto-cura de Casos Finalizados com Registro Blindado
+        let houveCura = false;
+        Object.keys(historyLog).forEach(cod => {
+          const logs = historyLog[cod] || [];
+          const logFin = logs.find(l => {
+            const aut = String(l.author || '').toLowerCase();
+            const txt = String(l.text || '').toLowerCase();
+            return aut.includes('finaliza') || txt.includes('[desfecho:');
+          });
+
+          if (logFin) {
+            const caso = vaultCases[cod] || activeCases.find(c => String(c.CD_USUARIO).trim() === cod) || { CD_USUARIO: cod };
+            if (caso.STATUS_COFRE !== 'CONCLUÍDO') {
+              caso.STATUS_COFRE = 'CONCLUÍDO';
+              if (!caso.ULTIMO_DESFECHO) {
+                caso.ULTIMO_DESFECHO = logFin.text;
+              }
+              if (logFin.meta && logFin.meta.desfecho) {
+                caso.ULTIMO_DESFECHO = `${logFin.meta.desfecho} (${logFin.meta.sigo || ''})`;
+              }
+              vaultCases[cod] = { ...caso, ULTIMA_ATUALIZACAO: new Date().toLocaleString('pt-BR') };
+              activeCases = activeCases.filter(c => String(c.CD_USUARIO).trim() !== cod);
+              houveCura = true;
+
+              // Propaga reparo para a nuvem Supabase
+              if (supabaseClient) {
+                supabaseClient.from('cofre_casos').upsert({
+                  cd_usuario: cod,
+                  dados: vaultCases[cod],
+                  updated_at: new Date().toISOString()
+                }).then(() => {});
+                supabaseClient.from('casos_ativos').delete().eq('cd_usuario', cod).then(() => {});
+              }
+            }
+          }
+        });
+
+        if (houveCura) {
+          localStorage.setItem(VAULT_CASES_KEY, JSON.stringify(vaultCases));
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(activeCases));
+          render();
+        }
+
         // Conexão bem-sucedida!
         isCloudConnected = true;
         if (banner) banner.classList.add('hidden');
@@ -1376,20 +1419,26 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
           if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
             const caso = payload.new.dados;
             if (!caso || !caso.CD_USUARIO) return;
-            const idx = activeCases.findIndex(c => String(c.CD_USUARIO) === String(caso.CD_USUARIO));
+            const cod = String(caso.CD_USUARIO).trim();
+            // Se já foi finalizado, impede reabertura indevida como ativo
+            if (isCasoRealmenteFinalizado(vaultCases[cod])) return;
+
+            const idx = activeCases.findIndex(c => String(c.CD_USUARIO).trim() === cod);
             if (idx !== -1) {
               activeCases[idx] = caso;
             } else {
               activeCases.push(caso);
             }
-            if (currentCase && String(currentCase.CD_USUARIO) === String(caso.CD_USUARIO)) {
+            if (currentCase && String(currentCase.CD_USUARIO).trim() === cod) {
               currentCase = caso;
             }
           } else if (payload.eventType === 'DELETE') {
-            const cd = payload.old.cd_usuario;
-            activeCases = activeCases.filter(c => String(c.CD_USUARIO) !== String(cd));
-            if (currentCase && String(currentCase.CD_USUARIO) === String(cd)) {
-              closeCaseDetail();
+            const cd = payload.old ? String(payload.old.cd_usuario || payload.old.CD_USUARIO || '').trim() : '';
+            if (cd) {
+              activeCases = activeCases.filter(c => String(c.CD_USUARIO).trim() !== cd);
+              if (currentCase && String(currentCase.CD_USUARIO).trim() === cd) {
+                closeCaseDetail();
+              }
             }
           }
           localStorage.setItem(STORAGE_KEY, JSON.stringify(activeCases));
@@ -1402,9 +1451,18 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
         .channel('canal_cofre_casos')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'cofre_casos' }, (payload) => {
           if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-            const cd = payload.new.cd_usuario;
-            vaultCases[cd] = payload.new.dados;
+            const cd = String(payload.new.cd_usuario).trim();
+            const novoDado = payload.new.dados;
+            // Protege caso já finalizado contra sobreposição acidental
+            if (isCasoRealmenteFinalizado(vaultCases[cd]) && !isCasoRealmenteFinalizado(novoDado)) {
+              return;
+            }
+            vaultCases[cd] = novoDado;
+            if (isCasoRealmenteFinalizado(novoDado)) {
+              activeCases = activeCases.filter(c => String(c.CD_USUARIO).trim() !== cd);
+            }
             localStorage.setItem(VAULT_CASES_KEY, JSON.stringify(vaultCases));
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(activeCases));
             render();
           }
         })
@@ -1415,6 +1473,27 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
         .channel('canal_cofre_logs')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'cofre_logs' }, (payload) => {
           if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+            const cd = String(payload.new.cd_usuario).trim();
+            historyLog[cd] = payload.new.itens || [];
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(historyLog));
+            // Se log de finalização chegou, atualiza cofre e remove de ativos instantaneamente
+            const temFin = (historyLog[cd] || []).some(l => {
+              const a = String(l.author || '').toLowerCase();
+              const t = String(l.text || '').toLowerCase();
+              return a.includes('finaliza') || t.includes('[desfecho:');
+            });
+            if (temFin) {
+              if (vaultCases[cd]) vaultCases[cd].STATUS_COFRE = 'CONCLUÍDO';
+              activeCases = activeCases.filter(c => String(c.CD_USUARIO).trim() !== cd);
+              localStorage.setItem(VAULT_CASES_KEY, JSON.stringify(vaultCases));
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(activeCases));
+            }
+            if (currentCase && String(currentCase.CD_USUARIO).trim() === cd) {
+              renderSingleTimeline();
+            }
+            render();
+          }
+        })
             const cd = payload.new.cd_usuario;
             historyLog[cd] = payload.new.itens || [];
             localStorage.setItem(HISTORY_KEY, JSON.stringify(historyLog));
@@ -1540,9 +1619,34 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
       return String(id || '').trim().replace(/[\/\.#$\[\]]/g, '_');
     }
 
+    function isCasoRealmenteFinalizado(c) {
+      if (!c) return false;
+      const cod = String(c.CD_USUARIO || '').trim();
+      if (!cod) return false;
+
+      if (c.STATUS_COFRE === 'CONCLUÍDO') return true;
+      if (c.ULTIMO_DESFECHO && c.ULTIMO_DESFECHO.trim() !== '') return true;
+
+      const logs = historyLog[cod] || [];
+      return logs.some(l => {
+        const aut = String(l.author || '').toLowerCase();
+        const txt = String(l.text || '').toLowerCase();
+        return aut.includes('finaliza') || txt.includes('[desfecho:');
+      });
+    }
+
     function syncToVault(caso) {
       if (!caso || !caso.CD_USUARIO) return;
       const cod = String(caso.CD_USUARIO).trim();
+
+      // PROTEÇÃO CRÍTICA: Se o caso já foi finalizado, NUNCA rebaixar para "EM ANDAMENTO"
+      const existente = vaultCases[cod];
+      const jaFinalizado = existente && (existente.STATUS_COFRE === 'CONCLUÍDO' || isCasoRealmenteFinalizado(existente));
+      if (jaFinalizado && caso.STATUS_COFRE !== 'CONCLUÍDO') {
+        console.warn(`[syncToVault] Bloqueada sobreposição indevida do caso finalizado ${cod}`);
+        return;
+      }
+
       const payload = {
         ...caso,
         ULTIMA_ATUALIZACAO: new Date().toLocaleString('pt-BR')
@@ -1579,7 +1683,6 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
 
     function saveState() {
       try {
-        activeCases.forEach(c => syncToVault(c));
         localStorage.setItem(STORAGE_KEY, JSON.stringify(activeCases));
         localStorage.setItem(HISTORY_KEY, JSON.stringify(historyLog));
         localStorage.setItem(VAULT_CASES_KEY, JSON.stringify(vaultCases));
@@ -2376,7 +2479,7 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
 
     function isCasoAusenciaConsenso(c) {
       if (!c) return false;
-      const isFin = c.STATUS_COFRE === 'CONCLUÍDO' || (c.ULTIMO_DESFECHO && c.ULTIMO_DESFECHO.trim() !== '');
+      const isFin = isCasoRealmenteFinalizado(c);
       if (!isFin) return false;
 
       const texto = [
@@ -2648,8 +2751,42 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
     }
 
     function openCaseDetail(cod) {
-      currentCase = activeCases.find(c => String(c.CD_USUARIO) === String(cod)) || vaultCases[String(cod)];
+      const codStr = String(cod).trim();
+      const casoNoCofre = vaultCases[codStr];
+      const casoAtivo = activeCases.find(c => String(c.CD_USUARIO).trim() === codStr);
+
+      if (casoNoCofre && isCasoRealmenteFinalizado(casoNoCofre)) {
+        currentCase = casoNoCofre;
+        currentCase.STATUS_COFRE = 'CONCLUÍDO';
+      } else if (casoAtivo && isCasoRealmenteFinalizado(casoAtivo)) {
+        currentCase = casoAtivo;
+        currentCase.STATUS_COFRE = 'CONCLUÍDO';
+        syncToVault(currentCase);
+      } else {
+        currentCase = casoAtivo || casoNoCofre;
+      }
       if (!currentCase) return;
+
+      // Se o caso foi finalizado e campos não estão explicitamente salvos no objeto, resgata do log
+      const logsCaso = historyLog[codStr] || [];
+      const logFin = logsCaso.find(l => {
+        const aut = String(l.author || '').toLowerCase();
+        const txt = String(l.text || '').toLowerCase();
+        return aut.includes('finaliza') || txt.includes('[desfecho:');
+      });
+      if (logFin) {
+        currentCase.STATUS_COFRE = 'CONCLUÍDO';
+        if (!currentCase.ULTIMO_DESFECHO) currentCase.ULTIMO_DESFECHO = logFin.text;
+        if (!currentCase.AREA || !currentCase.MACRO_DESFECHO) {
+          const match = logFin.text.match(/\[DESFECHO:\s*\[([^\]]+)\]\s*([^➔\->]+)\s*[➔\->]+\s*([^\|]+)\s*\|\s*Encaminhar:\s*([^\]\)]+)/i);
+          if (match) {
+            currentCase.AREA = match[1].trim();
+            currentCase.MACRO_DESFECHO = match[2].trim();
+            currentCase.MICRO_DESFECHO = match[3].trim();
+            currentCase.ENCAMINHAR = match[4].trim();
+          }
+        }
+      }
 
       // Atualiza o hash da URL para permitir compartilhamento direto por link
       try {
@@ -2734,6 +2871,18 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
       document.getElementById('singleInputNota').value = '';
       if (document.getElementById('singleSelectEncaminhar')) {
         document.getElementById('singleSelectEncaminhar').value = currentCase.ENCAMINHAR || '';
+      }
+
+      // Atualiza visual do botão caso já esteja finalizado
+      const btnFin = document.getElementById('btnFinalizarGuia');
+      if (btnFin) {
+        if (isCasoRealmenteFinalizado(currentCase)) {
+          btnFin.innerHTML = '<i class="fa-solid fa-check-circle text-sm"></i> Guia Concluída no Cofre (Atualizar Desfecho)';
+          btnFin.className = 'w-full py-3 px-4 rounded-xl bg-indigo-700 hover:bg-indigo-800 text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm transition active:scale-[0.98]';
+        } else {
+          btnFin.innerHTML = '<i class="fa-solid fa-check-double text-sm"></i> Finalizar Guia (Arquivar no Cofre)';
+          btnFin.className = 'w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm transition active:scale-[0.98]';
+        }
       }
       renderSingleTimeline();
     }
@@ -3209,12 +3358,12 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
       
       // 1. Renderizar Casos Finalizados
       const listaFinalizados = Object.values(vaultCases).filter(c => {
-        const isFin = c.STATUS_COFRE === 'CONCLUÍDO' || (c.ULTIMO_DESFECHO && c.ULTIMO_DESFECHO.trim() !== '');
+        const isFin = isCasoRealmenteFinalizado(c);
         if (!isFin) return false;
         return casoCorrespondeBusca(c, q);
       });
 
-      const countFinalizadosTotal = Object.values(vaultCases).filter(c => c.STATUS_COFRE === 'CONCLUÍDO' || (c.ULTIMO_DESFECHO && c.ULTIMO_DESFECHO.trim() !== '')).length;
+      const countFinalizadosTotal = Object.values(vaultCases).filter(isCasoRealmenteFinalizado).length;
       const badgeTabFin = document.getElementById('tab-count-finalizados');
       if (badgeTabFin) badgeTabFin.innerText = countFinalizadosTotal;
       const kpiFin = document.getElementById('kpi-concluidas');
@@ -3266,7 +3415,7 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
       document.getElementById('historico-tbody').innerHTML = listaCofre.length ? listaCofre.map(c => {
         const logs = historyLog[c.CD_USUARIO] || [];
         const ultimoLog = logs[0] ? `${logs[0].text} (${logs[0].date})` : (c.ULTIMO_DESFECHO || 'Sem parecer final');
-        const isConcluido = c.STATUS_COFRE === 'CONCLUÍDO';
+        const isConcluido = isCasoRealmenteFinalizado(c);
         return `
           <tr onclick="openCaseDetail('${c.CD_USUARIO}')" class="hover:bg-emerald-50/50 cursor-pointer transition">
             <td class="py-3 px-4">
