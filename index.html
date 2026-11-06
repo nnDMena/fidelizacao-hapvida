@@ -2905,6 +2905,37 @@ function solicitarSubirPlanilha() {
       } finally { finalizacaoEmAndamento = false; }
     }
 
+    const microdesfechosAuditoriaGNHAP = [
+      "Autorizado dentro do pacote",
+      "Verticalização (Rede Própria)",
+      "Direcionamento de rede (Rede Credenciada)",
+      "Adequação integral de TUSS e/ou OPME",
+      "Adequação parcial de TUSS e/ou OPME",
+      "Adequação integral de medicamento",
+      "Cancelamento aceito pelo solicitante",
+      "Cancelamento aceito pelo beneficiário",
+      "Cancelamento por contrato inativo",
+      "Autorização sem adequação de exame",
+      "Autorização sem adequação de internação",
+      "Autorização de OPME por custo inferior ao menor pacote",
+      "Abertura de Junta Médica",
+      "Autorização com emissão de carta de rede",
+      "Autorização dentro do capitation",
+      "Deliberação VP Auditoria",
+      "Caso Einstein"
+    ];
+
+    const novosMacrodesfechosRede = {
+      "Direcionamento para Rede Credenciada": [
+        "Direcionamento anterior \u00e0 negativa de consenso",
+        "Direcionamento com negativa de consenso"
+      ],
+      "Verticaliza\u00e7\u00e3o para Rede Pr\u00f3pria": [
+        "Verticaliza\u00e7\u00e3o anterior \u00e0 negativa de consenso",
+        "Verticaliza\u00e7\u00e3o com negativa de consenso"
+      ]
+    };
+
     const hierarquiaDesfechos = {
       "Auditoria eletiva e/ou GNHAP": {
         "Consenso integral": microdesfechosAuditoriaGNHAP,
