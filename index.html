@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
@@ -1196,6 +1196,21 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
     let currentCase = null;
     let currentView = 'kanban';
 
+
+    // Identifies the selected operator on each database request.
+    // The shared login and its password remain in their original implementation.
+    async function fetchComHistorico(input, options = {}) {
+      const headers = new Headers(options.headers || (input instanceof Request ? input.headers : undefined));
+      if (operadorAtual) {
+        const bytes = new TextEncoder().encode(operadorAtual);
+        headers.set('x-operador-painel', btoa(Array.from(bytes, byte => String.fromCharCode(byte)).join('')));
+      }
+      return fetch(input, { ...options, headers });
+    }
+
+    let finalizacaoEmAndamento = false;
+    let tentativaFinalizacao = null;
+
     async function initSupabase() {
       const savedConfig = localStorage.getItem(SUPABASE_CONFIG_KEY);
       let config = DEFAULT_SUPABASE_CONFIG;
@@ -1233,7 +1248,7 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
         if (!window.supabase) {
           throw new Error('Biblioteca Supabase ainda não foi carregada no navegador.');
         }
-        supabaseClient = window.supabase.createClient(config.url, config.anonKey);
+        supabaseClient = window.supabase.createClient(config.url, config.anonKey, { global: { fetch: fetchComHistorico } });
 
         await carregarDadosIniciaisNuvem();
         iniciarOuvintesTempoReal();
@@ -1471,7 +1486,7 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
 
     function saveState() {
       try {
-        activeCases.forEach(c => syncToVault(c));
+        // The changed case is persisted by its own operation.
         localStorage.setItem(STORAGE_KEY, JSON.stringify(activeCases));
         localStorage.setItem(HISTORY_KEY, JSON.stringify(historyLog));
         localStorage.setItem(VAULT_CASES_KEY, JSON.stringify(vaultCases));
@@ -2265,7 +2280,7 @@ function solicitarSubirPlanilha() {
 
     function isCasoAusenciaConsenso(c) {
       if (!c) return false;
-      const isFin = c.STATUS_COFRE === 'CONCLUÃDO' || (c.ULTIMO_DESFECHO && c.ULTIMO_DESFECHO.trim() !== '');
+      const isFin = c.STATUS_COFRE === 'CONCLUÍDO' || (c.ULTIMO_DESFECHO && c.ULTIMO_DESFECHO.trim() !== '');
       if (!isFin) return false;
 
       const texto = [
@@ -2790,7 +2805,7 @@ function solicitarSubirPlanilha() {
     }
 
     function autoSalvarProfissionais() {
-      if (!currentCase) return;
+      if (!currentCase || currentCase.STATUS_COFRE === 'CONCLUÍDO') return;
       currentCase.VALOR_INICIAL = document.getElementById('editCaseValorInicial').value;
       currentCase.MENOR_VALOR = document.getElementById('editCaseMenorValor').value;
       currentCase['VALOR PACOTE'] = document.getElementById('editCaseValorPacote').value;
@@ -2833,51 +2848,61 @@ function solicitarSubirPlanilha() {
       saveState();
     }
 
-    function singleConcluirCasoOK() {
-      if (!currentCase) return;
+    async function singleConcluirCasoOK() {
+      if (!currentCase || finalizacaoEmAndamento) return;
       const area = document.getElementById('singleSelectArea').value;
-      const macroDesfecho = document.getElementById('singleSelectMacroDesfecho').value;
-      const desfecho = document.getElementById('singleSelectDesfecho').value;
+      const macro = document.getElementById('singleSelectMacroDesfecho').value;
+      const micro = document.getElementById('singleSelectDesfecho').value;
       const nota = document.getElementById('singleInputNota').value.trim();
       const encaminhar = document.getElementById('singleSelectEncaminhar')?.value || '';
-
-      if (!area) { alert('Selecione a Área.'); return; }
-      if (!macroDesfecho) { alert('Selecione o Macro-desfecho.'); return; }
-      if (!desfecho) { alert('Selecione o Microdesfecho.'); return; }
-      if (!nota) { alert('Preencha a Finalização - SIGO.'); return; }
-      if (!encaminhar) { alert('Selecione o campo Encaminhar.'); return; }
-
-      const desfechoCompleto = `[${area}] ${macroDesfecho} ➔ ${desfecho} | Encaminhar: ${encaminhar}`;
-      const now = new Date();
-      const dateStr = now.toLocaleDateString('pt-BR') + ' às ' + now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-
-      addImmutableLog(
-        currentCase.CD_USUARIO, 
-        `${operadorAtual} (Finalização)`, 
-        dateStr, 
-        `[DESFECHO: ${desfechoCompleto}] - ${nota}`,
-        { desfecho: desfechoCompleto, sigo: nota }
-      );
-
-      currentCase.AREA = area;
-      currentCase.MACRO_DESFECHO = macroDesfecho;
-      currentCase.MICRO_DESFECHO = desfecho;
-      currentCase.ENCAMINHAR = encaminhar;
-      currentCase.STATUS_COFRE = 'CONCLUÍDO';
-      currentCase.ULTIMO_DESFECHO = `${desfechoCompleto} (${nota})`;
-      syncToVault(currentCase);
-
-      // Remove de casos_ativos na Nuvem
-      if (isCloudConnected && supabaseClient) {
-        supabaseClient.from('casos_ativos').delete().eq('cd_usuario', String(currentCase.CD_USUARIO).trim()).then(({ error }) => {
-          if (error) console.error('Erro ao remover de casos_ativos:', error);
-        });
+      if (!area || !macro || !micro || !nota || !encaminhar) {
+        alert('Preencha área, macrodesfecho, microdesfecho, encaminhamento e a nota SIGO.');
+        return;
       }
-
-      activeCases = activeCases.filter(c => String(c.CD_USUARIO) !== String(currentCase.CD_USUARIO));
-      saveState();
-      alert('Guia finalizada e arquivada permanentemente no Cofre de Histórico!');
-      closeCaseDetail();
+      if (!isCloudConnected || !supabaseClient) {
+        alert('Conecte ao Supabase antes de finalizar. A conclusão precisa ser confirmada pelo banco.');
+        return;
+      }
+      const codigo = String(currentCase.CD_USUARIO).trim();
+      const desfecho = '[' + area + '] ' + macro + ' ➔ ' + micro + ' | Encaminhar: ' + encaminhar;
+      const ficha = {
+        ...currentCase, AREA: area, MACRO_DESFECHO: macro, MICRO_DESFECHO: micro,
+        ENCAMINHAR: encaminhar, STATUS_COFRE: 'CONCLUÍDO',
+        ULTIMO_DESFECHO: desfecho + ' (' + nota + ')',
+        FINALIZADO_POR: operadorAtual,
+        ULTIMA_ATUALIZACAO: new Date().toLocaleString('pt-BR')
+      };
+      const assinatura = JSON.stringify([codigo,area,macro,micro,nota,encaminhar,operadorAtual]);
+      if (tentativaFinalizacao?.assinatura !== assinatura) {
+        tentativaFinalizacao = { assinatura, id: crypto.randomUUID() };
+      }
+      finalizacaoEmAndamento = true;
+      try {
+        const { data, error } = await supabaseClient.rpc('finalizar_caso_painel', {
+          p_dados: ficha,
+          p_evento: {
+            author: operadorAtual + ' (Finalização)',
+            text: '[DESFECHO: ' + desfecho + '] - ' + nota,
+            desfecho, sigo: nota
+          },
+          p_requisicao: tentativaFinalizacao.id
+        });
+        if (error) throw error;
+        vaultCases[codigo] = data.ficha;
+        historyLog[codigo] = data.eventos;
+        activeCases = activeCases.filter(c => String(c.CD_USUARIO).trim() !== codigo);
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(activeCases));
+          localStorage.setItem(VAULT_CASES_KEY, JSON.stringify(vaultCases));
+          localStorage.setItem(HISTORY_KEY, JSON.stringify(historyLog));
+        } catch (erroLocal) { console.warn('Conclusão salva no banco. Cache local indisponível.', erroLocal); }
+        tentativaFinalizacao = null;
+        alert('Conclusão e histórico confirmados pelo Supabase. O caso está em Finalizados.');
+        closeCaseDetail();
+        setView('finalizados');
+      } catch (erro) {
+        alert('O banco não confirmou a conclusão. Confira a conexão e tente novamente. ' + erro.message);
+      } finally { finalizacaoEmAndamento = false; }
     }
 
     const microdesfechosAuditoriaGNHAP = [
@@ -3173,12 +3198,12 @@ function solicitarSubirPlanilha() {
       
       // 1. Renderizar Casos Finalizados
       const listaFinalizados = Object.values(vaultCases).filter(c => {
-        const isFin = c.STATUS_COFRE === 'CONCLUÃDO' || (c.ULTIMO_DESFECHO && c.ULTIMO_DESFECHO.trim() !== '');
+        const isFin = c.STATUS_COFRE === 'CONCLUÍDO' || (c.ULTIMO_DESFECHO && c.ULTIMO_DESFECHO.trim() !== '');
         if (!isFin) return false;
         return casoCorrespondeBusca(c, q);
       });
 
-      const countFinalizadosTotal = Object.values(vaultCases).filter(c => c.STATUS_COFRE === 'CONCLUÃDO' || (c.ULTIMO_DESFECHO && c.ULTIMO_DESFECHO.trim() !== '')).length;
+      const countFinalizadosTotal = Object.values(vaultCases).filter(c => c.STATUS_COFRE === 'CONCLUÍDO' || (c.ULTIMO_DESFECHO && c.ULTIMO_DESFECHO.trim() !== '')).length;
       const badgeTabFin = document.getElementById('tab-count-finalizados');
       if (badgeTabFin) badgeTabFin.innerText = countFinalizadosTotal;
       const kpiFin = document.getElementById('kpi-concluidas');
@@ -3230,7 +3255,7 @@ function solicitarSubirPlanilha() {
       document.getElementById('historico-tbody').innerHTML = listaCofre.length ? listaCofre.map(c => {
         const logs = historyLog[c.CD_USUARIO] || [];
         const ultimoLog = logs[0] ? `${logs[0].text} (${logs[0].date})` : (c.ULTIMO_DESFECHO || 'Sem parecer final');
-        const isConcluido = c.STATUS_COFRE === 'CONCLUÃDO';
+        const isConcluido = c.STATUS_COFRE === 'CONCLUÍDO';
         return `
           <tr onclick="openCaseDetail('${c.CD_USUARIO}')" class="hover:bg-emerald-50/50 cursor-pointer transition">
             <td class="py-3 px-4">
