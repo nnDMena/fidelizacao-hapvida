@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
@@ -742,62 +742,49 @@
               </p>
             </div>
 
-            <div class="space-y-2.5">
+            <div class="space-y-3">
               <div>
-                <label class="block text-[11px] font-bold text-slate-700 mb-1">1. Área:</label>
-                <select id="singleSelectArea" onchange="atualizarMacrodesfechos()" class="w-full p-2.5 text-xs bg-slate-50 border border-slate-300 rounded-xl font-bold text-slate-800">
-                  <option value="">-- Selecione a Área --</option>
-                  <option value="Auditoria eletiva e/ou GNHAP">Auditoria eletiva e/ou GNHAP</option>
-                  <option value="GNMED">GNMED</option>
-                  <option value="Novo Formato">Novo Formato</option>
+                <label for="singleSelectDesfecho" class="block text-[11px] font-bold text-slate-700 mb-1 flex items-center gap-1.5">
+                  <i class="fa-solid fa-list-check text-emerald-600"></i> Desfecho:
+                </label>
+                <select id="singleSelectDesfecho" onchange="aoMudarDesfecho(this.value);" class="w-full p-2.5 sm:p-3 text-xs bg-slate-50 border-2 border-indigo-200/80 rounded-xl font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-xs">
+                  <option value="">-- Selecione o Desfecho --</option>
+                  <option value="JUNTA M&#201;DICA">JUNTA M&#201;DICA</option>
+                  <option value="GNMED - Consulta agendada, sem cancelamento do pedido">GNMED - Consulta agendada, sem cancelamento do pedido</option>
+                  <option value="Cong&#234;nere">Cong&#234;nere</option>
+                  <option value="P1 (Finalizado com consenso integral)">P1 (Finalizado com consenso integral)</option>
+                  <option value="P3 (Finalizado com carta de rede)">P3 (Finalizado com carta de rede)</option>
+                  <option value="P18 (Enviado por pedido realizado em hospital ou ambulat&#243;rio da Rede Pr&#243;pria)">P18 (Enviado por pedido realizado em hospital ou ambulat&#243;rio da Rede Pr&#243;pria)</option>
+                  <option value="P28 (GNMED finalizado com consenso integral)">P28 (GNMED finalizado com consenso integral)</option>
+                  <option value="P39 (Novo Formato enviado para Rede Pr&#243;pria, por aus&#234;ncia de Rede Credenciada local)">P39 (Novo Formato enviado para Rede Pr&#243;pria, por aus&#234;ncia de Rede Credenciada local)</option>
+                  <option value="P50 (Guia cancelada com benefici&#225;rio)">P50 (Guia cancelada com benefici&#225;rio)</option>
+                  <option value="P50 (Guia cancelada com solicitante)">P50 (Guia cancelada com solicitante)</option>
+                  <option value="P67 (Delibera&#231;&#227;o VP auditoria)">P67 (Delibera&#231;&#227;o VP auditoria)</option>
+                  <option value="P67 (Negocia&#231;&#227;o Einstein - HIAE)">P67 (Negocia&#231;&#227;o Einstein - HIAE)</option>
+                  <option value="P67 (Finalizado devido guia cancelada por contrato inativo)">P67 (Finalizado devido guia cancelada por contrato inativo)</option>
+                  <option value="P67 (Finalizado com PACOTE)">P67 (Finalizado com PACOTE)</option>
+                  <option value="P67 (Finalizado com PACOTE endosc&#243;pica de coluna no BLANC)">P67 (Finalizado com PACOTE endosc&#243;pica de coluna no BLANC)</option>
+                  <option value="P67 (Finalizado por prestador CAPTATION)">P67 (Finalizado por prestador CAPTATION)</option>
+                  <option value="P67 (Finalizado com REGRA de OPME autorizado at&#233; 6 vezes o valor do OPME indicado na Rede Pr&#243;pria)">P67 (Finalizado com REGRA de OPME autorizado at&#233; 6 vezes o valor do OPME indicado na Rede Pr&#243;pria)</option>
+                  <option value="P67 (Finalizado com REGRA de OPME com valor menor que o menor pacote)">P67 (Finalizado com REGRA de OPME com valor menor que o menor pacote)</option>
+                  <option value="P67 (Finalizado com REGRA de OPME menor que 3.000 reais)">P67 (Finalizado com REGRA de OPME menor que 3.000 reais)</option>
+                  <option value="P67 (Delibera&#231;&#227;o de interna&#231;&#227;o, exame ou procedimento sem OPME, por aus&#234;ncia de adequa&#231;&#227;o)">P67 (Delibera&#231;&#227;o de interna&#231;&#227;o, exame ou procedimento sem OPME, por aus&#234;ncia de adequa&#231;&#227;o)</option>
+                  <option value="P67 (Resolu&#231;&#227;o)">P67 (Resolu&#231;&#227;o)</option>
+                  <option value="P67 (Verticalizado contratual com possibilidade de JUNTA M&#201;DICA, se falha da verticaliza&#231;&#227;o, por OPME alto custo)">P67 (Verticalizado contratual com possibilidade de JUNTA M&#201;DICA, se falha da verticaliza&#231;&#227;o, por OPME alto custo)</option>
+                  <option value="P67 (Verticalizado contratual com possibilidade de RESOLU&#199;&#195;O do valor, se falha da verticaliza&#231;&#227;o, por OPME baixo custo)">P67 (Verticalizado contratual com possibilidade de RESOLU&#199;&#195;O do valor, se falha da verticaliza&#231;&#227;o, por OPME baixo custo)</option>
+                  <option value="P71 (Direcionado com possibilidade de JUNTA M&#201;DICA, se falha do direcionamento de rede, por OPME alto custo)">P71 (Direcionado com possibilidade de JUNTA M&#201;DICA, se falha do direcionamento de rede, por OPME alto custo)</option>
+                  <option value="P71 (Direcionado com possibilidade de RESOLU&#199;&#195;O do valor, se falha do direcionamento de rede, por OPME baixo custo)">P71 (Direcionado com possibilidade de RESOLU&#199;&#195;O do valor, se falha do direcionamento de rede, por OPME baixo custo)</option>
+                  <option value="P75 (Novo Formato enviado para acolhimento na Rede Credenciada)">P75 (Novo Formato enviado para acolhimento na Rede Credenciada)</option>
                 </select>
               </div>
 
               <div>
-                <label class="block text-[11px] font-bold text-slate-700 mb-1">2. Macro-desfecho:</label>
-                <select id="singleSelectMacroDesfecho" onchange="atualizarMicrodesfechos()" disabled class="w-full p-2.5 text-xs bg-slate-100 border border-slate-200 rounded-xl font-semibold text-slate-500">
-                  <option value="">-- Selecione primeiro a Área --</option>
-                </select>
-              </div>
-
-              <div>
-                <label class="block text-[11px] font-bold text-slate-700 mb-1">3. Microdesfecho:</label>
-                <select id="singleSelectDesfecho" disabled class="w-full p-2.5 text-xs bg-slate-100 border border-slate-200 rounded-xl font-semibold text-slate-500">
-                  <option value="">-- Selecione primeiro o Macro-desfecho --</option>
-                </select>
+                <label for="singleInputNota" class="block text-[11px] font-bold text-slate-700 mb-1 flex items-center gap-1.5">
+                  <i class="fa-solid fa-file-pen text-indigo-600"></i> Finaliza&#231;&#227;o - SIGO:
+                </label>
+                <textarea id="singleInputNota" rows="3" placeholder="Insira aqui as informa&#231;&#245;es finais..." class="w-full p-2.5 sm:p-3 text-xs bg-slate-50 border-2 border-indigo-200/80 rounded-xl font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-xs"></textarea>
               </div>
             </div>
-
-            <div>
-              <label class="block text-[11px] font-bold text-slate-700 mb-1">Finalização - SIGO:</label>
-              <textarea id="singleInputNota" rows="3" placeholder="Insira aqui as informações finais..." class="w-full p-2.5 sm:p-3 text-xs bg-slate-50 border border-slate-300 rounded-xl"></textarea>
-            </div>
-
-            <div>
-              <label for="singleSelectEncaminhar" class="block text-[11px] font-bold text-slate-700 mb-1 flex items-center gap-1.5">
-                <i class="fa-solid fa-share-from-square text-indigo-600"></i> Encaminhar:
-              </label>
-              <select id="singleSelectEncaminhar" onchange="if(currentCase){currentCase.ENCAMINHAR=this.value; autoSalvarProfissionais();}" class="w-full p-2.5 text-xs bg-slate-50 border border-slate-300 rounded-xl font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer">
-                <option value="">-- Selecione o Encaminhamento --</option>
-                <option value="DEVOLVIDO ANM (p1)">DEVOLVIDO ANM (p1)</option>
-                <option value="ENVIADO FINALIZADO (p67)">ENVIADO FINALIZADO (p67)</option>
-                <option value="ENVIADO VERTICALIZAR (p67)">ENVIADO VERTICALIZAR (p67)</option>
-                <option value="ENVIADO DIRECIONAR REDE (p71)">ENVIADO DIRECIONAR REDE (p71)</option>
-                <option value="ENVIADO REDE PRÓPRIA (p18)">ENVIADO REDE PRÓPRIA (p18)</option>
-                <option value="ENVIADO JUNTA MÉDICA (p67)">ENVIADO JUNTA MÉDICA (p67)</option>
-                <option value="ENVIADO GNMED (p28)">ENVIADO GNMED (p28)</option>
-                <option value="CONSULTA AGENDADA">CONSULTA AGENDADA</option>
-                <option value="ENVIADO GNHAP (p2)">ENVIADO GNHAP (p2)</option>
-                <option value="CONGÊNERES (VIDA REPASSADA)">CONGÊNERES (VIDA REPASSADA)</option>
-                <option value="GUIA CANCELADA">GUIA CANCELADA</option>
-                <option value="ENVIADO JM (p67)">ENVIADO JM (p67)</option>
-                <option value="ENVIADO JM ORTOP (p2)">ENVIADO JM ORTOP (p2)</option>
-                <option value="ENVIADA CRED (p3)">ENVIADA CRED (p3)</option>
-                <option value="ENVIADO FINALIZADO (p1)">ENVIADO FINALIZADO (p1)</option>
-                <option value="ENVIADO ACOLHIMENTO (p75)">ENVIADO ACOLHIMENTO (p75)</option>
-              </select>
-            </div>
-
             <div class="pt-1">
               <button onclick="singleConcluirCasoOK()" class="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm transition active:scale-[0.98]">
                 <i class="fa-solid fa-check-double text-sm"></i> Finalizar Guia (Arquivar no Cofre)
@@ -1196,21 +1183,6 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
     let currentCase = null;
     let currentView = 'kanban';
 
-
-    // Identifies the selected operator on each database request.
-    // The shared login and its password remain in their original implementation.
-    async function fetchComHistorico(input, options = {}) {
-      const headers = new Headers(options.headers || (input instanceof Request ? input.headers : undefined));
-      if (operadorAtual) {
-        const bytes = new TextEncoder().encode(operadorAtual);
-        headers.set('x-operador-painel', btoa(Array.from(bytes, byte => String.fromCharCode(byte)).join('')));
-      }
-      return fetch(input, { ...options, headers });
-    }
-
-    let finalizacaoEmAndamento = false;
-    let tentativaFinalizacao = null;
-
     async function initSupabase() {
       const savedConfig = localStorage.getItem(SUPABASE_CONFIG_KEY);
       let config = DEFAULT_SUPABASE_CONFIG;
@@ -1248,7 +1220,7 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
         if (!window.supabase) {
           throw new Error('Biblioteca Supabase ainda não foi carregada no navegador.');
         }
-        supabaseClient = window.supabase.createClient(config.url, config.anonKey, { global: { fetch: fetchComHistorico } });
+        supabaseClient = window.supabase.createClient(config.url, config.anonKey);
 
         await carregarDadosIniciaisNuvem();
         iniciarOuvintesTempoReal();
@@ -1486,7 +1458,7 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
 
     function saveState() {
       try {
-        // The changed case is persisted by its own operation.
+        activeCases.forEach(c => syncToVault(c));
         localStorage.setItem(STORAGE_KEY, JSON.stringify(activeCases));
         localStorage.setItem(HISTORY_KEY, JSON.stringify(historyLog));
         localStorage.setItem(VAULT_CASES_KEY, JSON.stringify(vaultCases));
@@ -2280,7 +2252,7 @@ function solicitarSubirPlanilha() {
 
     function isCasoAusenciaConsenso(c) {
       if (!c) return false;
-      const isFin = c.STATUS_COFRE === 'CONCLUÍDO' || (c.ULTIMO_DESFECHO && c.ULTIMO_DESFECHO.trim() !== '');
+      const isFin = c.STATUS_COFRE === 'CONCLUÃDO' || (c.ULTIMO_DESFECHO && c.ULTIMO_DESFECHO.trim() !== '');
       if (!isFin) return false;
 
       const texto = [
@@ -2681,25 +2653,11 @@ function solicitarSubirPlanilha() {
       if (elObs) elObs.value = currentCase.OBSERVACAO || '';
 
       // Desfechos
-      const elArea = document.getElementById('singleSelectArea');
-      if (elArea) elArea.value = currentCase.AREA || '';
-      atualizarMacrodesfechos();
-
-      const elMacro = document.getElementById('singleSelectMacroDesfecho');
-      if (elMacro && currentCase.MACRO_DESFECHO) {
-        elMacro.value = currentCase.MACRO_DESFECHO;
-        atualizarMicrodesfechos();
-        const elMicro = document.getElementById('singleSelectDesfecho');
-        if (elMicro && currentCase.MICRO_DESFECHO) {
-          elMicro.value = currentCase.MICRO_DESFECHO;
-        }
-      }
+      const elDesfecho = document.getElementById('singleSelectDesfecho');
+      if (elDesfecho) elDesfecho.value = currentCase.DESFECHO || currentCase.MICRO_DESFECHO || '';
 
       const elNota = document.getElementById('singleInputNota');
       if (elNota) elNota.value = '';
-
-      const elEnc = document.getElementById('singleSelectEncaminhar');
-      if (elEnc) elEnc.value = currentCase.ENCAMINHAR || '';
 
       renderSingleTimeline();
     }
@@ -2765,7 +2723,7 @@ function solicitarSubirPlanilha() {
               <!-- CAMPO 2: FINALIZAÇÃO - SIGO -->
               <div class="p-2.5 sm:p-3 rounded-xl border border-slate-200 bg-white shadow-xs">
                 <div class="text-[10px] font-extrabold text-slate-700 uppercase tracking-wider flex items-center gap-1.5 mb-1">
-                  <i class="fa-solid fa-file-lines text-slate-500"></i> Finalização - SIGO:
+                  <i class="fa-solid fa-file-pen text-indigo-600"></i> Finaliza&#231;&#227;o - SIGO:
                 </div>
                 <div class="text-xs text-slate-800 leading-relaxed whitespace-pre-wrap font-sans">${escapeHtmlTimeline(sigo)}</div>
               </div>
@@ -2805,7 +2763,7 @@ function solicitarSubirPlanilha() {
     }
 
     function autoSalvarProfissionais() {
-      if (!currentCase || currentCase.STATUS_COFRE === 'CONCLUÍDO') return;
+      if (!currentCase) return;
       currentCase.VALOR_INICIAL = document.getElementById('editCaseValorInicial').value;
       currentCase.MENOR_VALOR = document.getElementById('editCaseMenorValor').value;
       currentCase['VALOR PACOTE'] = document.getElementById('editCaseValorPacote').value;
@@ -2848,170 +2806,111 @@ function solicitarSubirPlanilha() {
       saveState();
     }
 
-    async function singleConcluirCasoOK() {
-      if (!currentCase || finalizacaoEmAndamento) return;
-      const area = document.getElementById('singleSelectArea').value;
-      const macro = document.getElementById('singleSelectMacroDesfecho').value;
-      const micro = document.getElementById('singleSelectDesfecho').value;
-      const nota = document.getElementById('singleInputNota').value.trim();
-      const encaminhar = document.getElementById('singleSelectEncaminhar')?.value || '';
-      if (!area || !macro || !micro || !nota || !encaminhar) {
-        alert('Preencha área, macrodesfecho, microdesfecho, encaminhamento e a nota SIGO.');
-        return;
-      }
-      if (!isCloudConnected || !supabaseClient) {
-        alert('Conecte ao Supabase antes de finalizar. A conclusão precisa ser confirmada pelo banco.');
-        return;
-      }
-      const codigo = String(currentCase.CD_USUARIO).trim();
-      const desfecho = '[' + area + '] ' + macro + ' ➔ ' + micro + ' | Encaminhar: ' + encaminhar;
-      const ficha = {
-        ...currentCase, AREA: area, MACRO_DESFECHO: macro, MICRO_DESFECHO: micro,
-        ENCAMINHAR: encaminhar, STATUS_COFRE: 'CONCLUÍDO',
-        ULTIMO_DESFECHO: desfecho + ' (' + nota + ')',
-        FINALIZADO_POR: operadorAtual,
-        ULTIMA_ATUALIZACAO: new Date().toLocaleString('pt-BR')
+    const modelosFinalizacaoSIGO = {
+      "JUNTA M\u00c9DICA": "DE ACORDO COM AUDITORIA, CASO COM DIVERG\u00caNCIA COM RELA\u00c7\u00c3O A INDICA\u00c7\u00c3O, AINDA DENTRO DO PRAZO REGULAT\u00d3RIO. SINALIZAMOS PARA ABERTURA DE JM. SUGERIMOS O(S) ACOLHEDOR(ES) [ESPECIALIDADE]  [M\u00c9DICO/CL\u00cdNICA 00 00000000] QUE TEM CADASTRO NO PRESTADOR DE ORIGEM",
+      "GNMED - Consulta agendada, sem cancelamento do pedido": "CONSULTA AGENDADA  COM [NOME] EM [LOCAL] [DATA] [HORA]",
+      "Cong\u00eanere": "REALIZADO CONTATO COM EQUIPE DO CONG\u00caNERE SOBRE O CASO. EMAIL ENVIADO [T\u00cdTULO DO E-MAIL]",
+      "P1 (Finalizado com consenso integral)": "SOLICITANTE ACEITOU ADEQUA\u00c7\u00c3O COMPLETA SUGERIDA PELA AUDITORIA [QUAIS C\u00d3DIGOS E/OU OPME ADEQUADOS].",
+      "P3 (Finalizado com carta de rede)": "CASO ACORDADO COM CREDENCIAMENTO E AUDITORIA PARA SEGUIR COM AUTORIZA\u00c7\u00c3O E PAGAMENTO VIA EMISS\u00c3O DE CARTA DE REDE. E-MAIL ENVIADO PARA FORMALIZAR O PEDIDO DA CARTA DE REDE [T\u00cdTULO DO E-MAIL]",
+      "P18 (Enviado por pedido realizado em hospital ou ambulat\u00f3rio da Rede Pr\u00f3pria)": "PEDIDO REALIZADO EM HOSPITAL E/OU AMBULAT\u00d3RIO DA REDE PR\u00d3PRIA.",
+      "P28 (GNMED finalizado com consenso integral)": "SOLICITANTE ACEITOU ADEQUA\u00c7\u00c3O DE MEDICAMENTO SUGERIDA PELA OPERADORA [QUAL MEDICAMENTO ADEQUADOS].",
+      "P39 (Novo Formato enviado para Rede Pr\u00f3pria, por aus\u00eancia de Rede Credenciada local)": "POR ORIENTA\u00c7\u00c3O DA EQUIPE DE ACOLHIMENTO, ENCAMINHAMOS \u00c0 P39 DEVIDO \u00c0 AUS\u00caNCIA DE M\u00c9DICO ACOLHEDOR FIDELIZADO NA REDE CREDENCIADA LOCAL. DIANTE DISSO, SUGERIMOS ACOLHIMENTO NA REDE PR\u00d3PRIA, COM TRANSLADO. SUGERIMOS O(S) SEGUINTE(S) M\u00c9DICO(S) DA ESPECIALIDADE COM NECESSIDADE DE ACOLHIMENTO: [NOME DO M\u00c9DICO]. ESPECIALIDADE: [ESPECIALIDADE], DA CIDADE [CIDADE] .",
+      "P50 (Guia cancelada com benefici\u00e1rio)": "DE ACORDO COM PROVAS EM ANEXO, BENEFICI\u00c1RIO DE ACORDO COM CANCELAMENTO DO PEDIDO.",
+      "P50 (Guia cancelada com solicitante)": "DE ACORDO COM PROVAS EM ANEXO, SOLICITANTE DE ACORDO COM CANCELAMENTO DO PEDIDO",
+      "P67 (Delibera\u00e7\u00e3o VP auditoria)": "DELIBERA\u00c7\u00c3O VP AUDITORIA POR ENVIO FORA DO PRAZO. ENTRADA D1 DA FIDELIZA\u00c7\u00c3O DA REDE CREDENCIADA EM D9 OU MAIS DO PRAZO REGULAT\u00d3RIO. TRATATIVAS INFRUT\u00cdFERAS. CASO AUDITORIA DECIDA POR JUNTA M\u00c9DICA, SUGERIMOS O(S) ACOLHEDOR(ES) [ESPECIALIDADE]  [M\u00c9DICO/CL\u00cdNICA 00 00000000] QUE TEM CADASTRO NO PRESTADOR DE ORIGEM",
+      "P67 (Negocia\u00e7\u00e3o Einstein - HIAE)": "EINSTEIN POSSUI NEGOCIA\u00c7\u00c3O DE PAGAMENTO ANALISADO PELO AUDITOR DE CONTAS MEDICAS, N\u00c3O PASSA PELO GNHAP",
+      "P67 (Negocia\u00e7\u00e3o Einstein)": "EINSTEIN POSSUI NEGOCIA\u00c7\u00c3O DE PAGAMENTO ANALISADO PELO AUDITOR DE CONTAS MEDICAS, N\u00c3O PASSA PELO GNHAP",
+      "P67 (Finalizado devido guia cancelada por contrato inativo)": "PLANO CANCELADO/INATIVO. ENVIAMOS PARA SETOR DE AUTORIZA\u00c7\u00d5ES PARA AVALIA\u00c7\u00c3O DO CANCELAMENTO ADMINISTRATIVO POR PLANO CANCELADO/INATIVO ANTES DA DATA DA AUTORIZA\u00c7\u00c3O. PEDIDO M\u00c9DICO EMITIDO ANTES DO CANCELAMENTO N\u00c3O MANT\u00caM COBERTURA PARA PROCEDIMENTO N\u00c3O REALIZAO AP\u00d3S ENCERRAMENTO REGULAR DO V\u00cdNCULO CONTRATUAL QUANDO PLANO FOR CANCELADO PELO PR\u00d3PRIO BENEFICI\u00c1RIO, DE ACORDO COM ARTIGO 15, DA RN 412, DE 2016.",
+      "P67 (Finalizado com PACOTE)": "C\u00d3DIGOS: [QUAL(IS) C\u00d3DIGOS ACORDADOS]. OPME: [QUAL(IS) OPME ACORDADOS]. AUTORIZAR C\u00d3DIGO DE PACOTE [0000000]. O(S) C\u00d3DIGO(S) TUSS CONSIDERADO(S) PERTINENTE PELA AUDITORIA DEVEM SER AUTORIZADO CONFORME ACORDADO EM PACOTE, APENAS PARA FINALIDADE DE HONOR\u00c1RIOS M\u00c9DICOS (VISTO QUE O PAGAMENTO DO HONOR\u00c1RIO N\u00c3O EST\u00c1 CONTEMPLADO NO PACOTE) | DEMAIS TUSS MANTIDO EM GUIA PARA CONTINUIDADE DO FLUXO ASSISTENCIAL E AN\u00c1LISE P\u00d3S-CONTA.",
+      "P67 (Finalizado com PACOTE endosc\u00f3pica de coluna no BLANC)": "C\u00d3DIGOS: [QUAL(IS) C\u00d3DIGOS ACORDADOS]. OPME: [QUAL(IS) OPME ACORDADOS]. AUTORIZAR 2 VEZES O C\u00d3DIGO DE PACOTE [98600580], VISTO QUE EST\u00c1 ACORDADO O PAGAMENTO DE 1,7 VEZES O PACOTE DE 98600580 PACOTE HERNIA DE DISCO LOMBAR TTO CIR S/ INSTRUMENTACAO 1 NIVEL S/ HM. O(S) C\u00d3DIGO(S) TUSS CONSIDERADO(S) PERTINENTE PELA AUDITORIA DEVEM SER AUTORIZADO CONFORME ACORDADO EM PACOTE, APENAS PARA FINALIDADE DE HONOR\u00c1RIOS M\u00c9DICOS (VISTO QUE O PAGAMENTO DO HONOR\u00c1RIO N\u00c3O EST\u00c1 CONTEMPLADO NO PACOTE). DEMAIS TUSS MANTIDO EM GUIA PARA CONTINUIDADE DO FLUXO ASSISTENCIAL E AN\u00c1LISE P\u00d3S-CONTA.",
+      "P67 (Finalizado por prestador CAPTATION)": "PRESTADOR POSSUI NEGOCIA\u00c7\u00c3O CAPTATION - O QUAL INCLUI C\u00d3DIGOS E OPME'S. TUSS MANTIDO EM GUIA PARA CONTINUIDADE DO FLUXO ASSISTENCIAL E AN\u00c1LISE P\u00d3S-CONTA.",
+      "P67 (Finalizado com REGRA de OPME autorizado at\u00e9 6 vezes o valor do OPME indicado na Rede Pr\u00f3pria)": "C\u00d3DIGOS: [QUAL(IS) C\u00d3DIGOS ACORDADOS]. OPME: [QUAL(IS) OPME ACORDADOS]. CASO ENQUADRADO NA REGRA DE CUSTO DE OPME (FORA DO PROTOCOLO) MENOR QUE 6 VEZES O OPME NA REDE PR\u00d3PRIA. SEGUIR COM AUTORIZA\u00c7\u00c3O NAS REGRAS. CUSTO OPME INICIAL OU AP\u00d3S NEGOCIA\u00c7\u00c3O: R$ [VALOR]. CUSTO DO OPME NA REDE PR\u00d3PRIA: R$ [VALOR].",
+      "P67 (Finalizado com REGRA de OPME com valor menor que o menor pacote)": "C\u00d3DIGOS: [QUAL(IS) C\u00d3DIGOS ACORDADOS]. OPME: [QUAL(IS) OPME ACORDADOS]. CASO ENQUADRADO NA REGRA DE CUSTO DE OPME (FORA DO PROTOCOLO) MENOR QUE NOSSO MENOR PACOTE PARA A INDICA\u00c7\u00c3O. SEGUIR COM AUTORIZA\u00c7\u00c3O NAS REGRAS. CUSTO OPME INICIAL OU AP\u00d3S NEGOCIA\u00c7\u00c3O: R$ [VALOR]. CUSTO MENOR PACOTE: R$ [VALOR] [PRESTADOR]",
+      "P67 (Finalizado com REGRA de OPME menor que 3.000 reais)": "CASO SEM CONSENSO. O CASO EQUADRA-SE NA LISTA DE PROCEDIMENTOS AT\u00c9 3.000 REAIS. SEGUIR COM AUTORIZA\u00c7\u00c3O ESTRAT\u00c9GICA, BASEADA EM ANALISE DE DADOS, COM A FINALIDADE DE EVITAR BACKLOG, DEMANDAS REGULAT\u00d3RIAS E LIMINARES.",
+      "P67 (Delibera\u00e7\u00e3o de interna\u00e7\u00e3o, exame ou procedimento sem OPME, por aus\u00eancia de adequa\u00e7\u00e3o)": "AUTORIZAR TUSS CONSIDERADOS PERTINENTES PALA AUDITORIA ELETIVA. DEMAIS TUSS MANTIDO(S) EM GUIA PARA CONTINUIDADE DO FLUXO ASSISTENCIAL E AN\u00c1LISE P\u00d3S-CONTA.",
+      "P67 (Resolu\u00e7\u00e3o)": "CASO SEM CONSENSO, N\u00c3O PASS\u00cdVEL DE AUTORIZA\u00c7\u00c3O DENTRO DAS REGRAS ADMINISTRATIVAS. COM O OBJETIVO DE MITIGAR RISCOS REGULAT\u00d3RIOS, SEGUIR COM AUTORIZA\u00c7\u00c3O E RESOLU\u00c7\u00c3O DA DIFEREN\u00c7A DO OPME FORA DO PROTOCOLO E OPME CONSIDERADO PERTINENTE. [VALOR OPME NEGOCIADO COM SOLICITANTE] - [VALOR OPME AUTORIZADO] = [VALOR DA RESOLU\u00c7\u00c3O].",
+      "P67 (Verticalizado contratual com possibilidade de JUNTA M\u00c9DICA, se falha da verticaliza\u00e7\u00e3o, por OPME alto custo)": "CASO PASS\u00cdVEL DE JUNTA SE FALHA NA VERTICALIZA\u00c7\u00c3O. FORA DAS REGRAS DE AUTORIZA\u00c7\u00c3O. SEM CONSENSO. PACIENTE EM PLANOS PASS\u00cdVEIS DE VERTICALIZA\u00c7\u00c3O (HMO \"N\u00c3O LICITA\u00c7\u00c3O\", PPO ADVANCE 600/700 ENF). SINALIZAMOS PARA TRANSLADO/VERTICALIZA\u00c7\u00c3O. SUGERIMOS [ESPECIALIDADE]  [M\u00c9DICO/CL\u00cdNICA 00 00000000], QUE ATENDE NA CIDADE [CIDADE].",
+      "P67 (Verticalizado contratual com possibilidade de RESOLU\u00c7\u00c3O do valor, se falha da verticaliza\u00e7\u00e3o, por OPME baixo custo)": "CASO FORA DAS REGRAS DE AUTORIZA\u00c7\u00c3O. SEM CONSENSO. PACIENTE EM PLANOS PASS\u00cdVEIS DE VERTICALIZA\u00c7\u00c3O (HMO \"N\u00c3O LICITA\u00c7\u00c3O\", PPO ADVANCE 600/700 ENF). SINALIZAMOS PARA TRANSLADO/VERTICALIZA\u00c7\u00c3O. SUGERIMOS [ESPECIALIDADE]  [M\u00c9DICO/CL\u00cdNICA 00 00000000], QUE ATENDE NA CIDADE [CIDADE].",
+      "P71 (Direcionado com possibilidade de JUNTA M\u00c9DICA, se falha do direcionamento de rede, por OPME alto custo)": "CASO PASS\u00cdVEL DE JUNTA SE FALHA NO DIRECIONAMENTO. FORA DAS REGRAS DE AUTORIZA\u00c7\u00c3O. SEM CONSENSO. PACIENTE EM PLANOS PASS\u00cdVEIS DE DIRECIONAMENTO DE REDE (HMO LICITA\u00c7\u00c3O, PPO - ADVANCE 600/700 APTO, PREMIUM E INFINITY). SUGERIMOS  [ESPECIALIDADE]  [M\u00c9DICO/CL\u00cdNICA 00 00000000], QUE ATENDE NA CIDADE [CIDADE].",
+      "P71 (Direcionado com possibilidade de RESOLU\u00c7\u00c3O do valor, se falha do direcionamento de rede, por OPME baixo custo)": "CASO FORA DAS REGRAS DE AUTORIZA\u00c7\u00c3O. SEM CONSENSO. PACIENTE EM PLANOS PASS\u00cdVEIS DE DIRECIONAMENTO DE REDE (HMO LICITA\u00c7\u00c3O, PPO - ADVANCE 600/700 APTO, PREMIUM E INFINITY). SUGERIMOS  [ESPECIALIDADE]  [M\u00c9DICO/CL\u00cdNICA 00 00000000], QUE ATENDE NA CIDADE [CIDADE].",
+      "P75 (Novo Formato enviado para acolhimento na Rede Credenciada)": "ENVIO \u00c0 P75 PARA TRATATIVA DE NOVO FORMATO, COM AS SEGUINTES INFORMA\u00c7\u00d5ES: M\u00c9DICO INDICADO: [NOME DO M\u00c9DICO]. ESPECIALIDADE: [ESPECIALIDADE]. REDE: [PR\u00d3PRIA OU CREDENCIADA]. CONSULTA AGENDADA PARA [DATA] \u00c0S [HOR\u00c1RIO]. PRESTADOR/LOCAL DE ATENDIMENTO: [NOME DO PRESTADOR]. ENDERE\u00c7O: [ENDERE\u00c7O COMPLETO]. EVID\u00caNCIA DE ORIENTA\u00c7\u00c3O PR\u00c9VIA DO M\u00c9DICO FIDELIZADO SOBRE O CASO: [DESCREVER OU ANEXAR EVID\u00caNCIA]."
+    };
+
+    function buscarTextoModeloFinalizacao(desfecho) {
+      if (!desfecho) return '';
+      if (modelosFinalizacaoSIGO[desfecho]) return modelosFinalizacaoSIGO[desfecho];
+      
+      const norm = function(s) {
+        return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
       };
-      const assinatura = JSON.stringify([codigo,area,macro,micro,nota,encaminhar,operadorAtual]);
-      if (tentativaFinalizacao?.assinatura !== assinatura) {
-        tentativaFinalizacao = { assinatura, id: crypto.randomUUID() };
+      const target = norm(desfecho);
+      for (const key in modelosFinalizacaoSIGO) {
+        if (norm(key) === target) return modelosFinalizacaoSIGO[key];
       }
-      finalizacaoEmAndamento = true;
-      try {
-        const { data, error } = await supabaseClient.rpc('finalizar_caso_painel', {
-          p_dados: ficha,
-          p_evento: {
-            author: operadorAtual + ' (Finalização)',
-            text: '[DESFECHO: ' + desfecho + '] - ' + nota,
-            desfecho, sigo: nota
-          },
-          p_requisicao: tentativaFinalizacao.id
+      return '';
+    }
+
+    function aoMudarDesfecho(valor) {
+      const val = valor || document.getElementById('singleSelectDesfecho')?.value || '';
+      if (currentCase) {
+        currentCase.DESFECHO = val;
+        autoSalvarProfissionais();
+      }
+      const notaEl = document.getElementById('singleInputNota');
+      if (notaEl && val) {
+        const textoModelo = buscarTextoModeloFinalizacao(val);
+        if (textoModelo) {
+          notaEl.value = textoModelo;
+        }
+      }
+    }
+
+    function singleConcluirCasoOK() {
+      if (!currentCase) return;
+      const desfecho = document.getElementById('singleSelectDesfecho')?.value || '';
+      const nota = document.getElementById('singleInputNota')?.value.trim() || '';
+
+      if (!desfecho) {
+        alert('Selecione o Desfecho.');
+        return;
+      }
+      if (!nota) {
+        alert('Preencha a Finaliza\u00e7\u00e3o - SIGO.');
+        return;
+      }
+
+      const desfechoCompleto = desfecho;
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('pt-BR') + ' \u00e0s ' + now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+      addImmutableLog(
+        currentCase.CD_USUARIO,
+        operadorAtual + ' (Finaliza\u00e7\u00e3o)',
+        dateStr,
+        '[DESFECHO: ' + desfechoCompleto + '] - ' + nota,
+        { desfecho: desfechoCompleto, sigo: nota }
+      );
+
+      currentCase.DESFECHO = desfecho;
+      currentCase.MICRO_DESFECHO = desfecho;
+      currentCase.FINALIZACAO_SIGO = nota;
+      currentCase.STATUS_COFRE = 'CONCLU\u00cdDO';
+      currentCase.ULTIMO_DESFECHO = desfechoCompleto + ' (' + nota + ')';
+      syncToVault(currentCase);
+
+      // Remove de casos_ativos na Nuvem
+      if (isCloudConnected && supabaseClient) {
+        supabaseClient.from('casos_ativos').delete().eq('cd_usuario', String(currentCase.CD_USUARIO).trim()).then(function(res) {
+          if (res && res.error) console.error('Erro ao remover de casos_ativos:', res.error);
         });
-        if (error) throw error;
-        vaultCases[codigo] = data.ficha;
-        historyLog[codigo] = data.eventos;
-        activeCases = activeCases.filter(c => String(c.CD_USUARIO).trim() !== codigo);
-        try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(activeCases));
-          localStorage.setItem(VAULT_CASES_KEY, JSON.stringify(vaultCases));
-          localStorage.setItem(HISTORY_KEY, JSON.stringify(historyLog));
-        } catch (erroLocal) { console.warn('Conclusão salva no banco. Cache local indisponível.', erroLocal); }
-        tentativaFinalizacao = null;
-        alert('Conclusão e histórico confirmados pelo Supabase. O caso está em Finalizados.');
-        closeCaseDetail();
-        setView('finalizados');
-      } catch (erro) {
-        alert('O banco não confirmou a conclusão. Confira a conexão e tente novamente. ' + erro.message);
-      } finally { finalizacaoEmAndamento = false; }
-    }
-
-    const microdesfechosAuditoriaGNHAP = [
-      "Autorizado dentro do pacote",
-      "Verticalização (Rede Própria)",
-      "Direcionamento de rede (Rede Credenciada)",
-      "Adequação integral de TUSS e/ou OPME",
-      "Adequação parcial de TUSS e/ou OPME",
-      "Adequação integral de medicamento",
-      "Cancelamento aceito pelo solicitante",
-      "Cancelamento aceito pelo beneficiário",
-      "Cancelamento por contrato inativo",
-      "Autorização sem adequação de exame",
-      "Autorização sem adequação de internação",
-      "Autorização de OPME por custo inferior ao menor pacote",
-      "Abertura de Junta Médica",
-      "Autorização com emissão de carta de rede",
-      "Autorização dentro do capitation",
-      "Deliberação VP Auditoria",
-      "Caso Einstein"
-    ];
-
-    const novosMacrodesfechosRede = {
-      "Direcionamento para Rede Credenciada": [
-        "Direcionamento anterior \u00e0 negativa de consenso",
-        "Direcionamento com negativa de consenso"
-      ],
-      "Verticaliza\u00e7\u00e3o para Rede Pr\u00f3pria": [
-        "Verticaliza\u00e7\u00e3o anterior \u00e0 negativa de consenso",
-        "Verticaliza\u00e7\u00e3o com negativa de consenso"
-      ]
-    };
-
-    const hierarquiaDesfechos = {
-      "Auditoria eletiva e/ou GNHAP": {
-        "Consenso integral": microdesfechosAuditoriaGNHAP,
-        "Consenso parcial": microdesfechosAuditoriaGNHAP,
-        "Aus\u00eancia completa de consenso": microdesfechosAuditoriaGNHAP,
-        ...novosMacrodesfechosRede
-      },
-      "GNMED": {
-        "Consenso integral": [
-          "Cancelamento da guia e verticaliza\u00e7\u00e3o para rede pr\u00f3pria",
-          "Cancelamento da guia e direcionamento para rede credenciada"
-        ],
-        "Aus\u00eancia completa de consenso": [
-          "Verticaliza\u00e7\u00e3o para rede pr\u00f3pria - teleconsulta",
-          "Verticaliza\u00e7\u00e3o para rede pr\u00f3pria - consulta presencial",
-          "Direcionamento para rede credenciada - teleconsulta",
-          "Direcionamento para rede credenciada - consulta presencial"
-        ],
-        ...novosMacrodesfechosRede
-      },
-      "Novo Formato": {
-        "Acolhimento na Rede Credenciada": [
-          "Localidade de origem do beneficiário",
-          "Localidade distante do beneficiário (> 100Km)"
-        ],
-        "Acolhimento na Rede Própria": [
-          "Ausência de Rede Credenciada na localidade de origem do beneficiário"
-        ]
-      }
-    };
-
-    function atualizarMacrodesfechos() {
-      const area = document.getElementById('singleSelectArea').value;
-      const macroSelect = document.getElementById('singleSelectMacroDesfecho');
-      const microSelect = document.getElementById('singleSelectDesfecho');
-
-      microSelect.disabled = true;
-      microSelect.className = "w-full p-2.5 text-xs bg-slate-100 border border-slate-200 rounded-xl font-semibold text-slate-500";
-      microSelect.innerHTML = '<option value="">-- Selecione primeiro o Macro-desfecho --</option>';
-
-      if (!area || !hierarquiaDesfechos[area]) {
-        macroSelect.disabled = true;
-        macroSelect.className = "w-full p-2.5 text-xs bg-slate-100 border border-slate-200 rounded-xl font-semibold text-slate-500";
-        macroSelect.innerHTML = '<option value="">-- Selecione primeiro a Área --</option>';
-        return;
       }
 
-      macroSelect.disabled = false;
-      macroSelect.className = "w-full p-2.5 text-xs bg-slate-50 border border-slate-300 rounded-xl font-bold text-slate-800";
-      const macros = Object.keys(hierarquiaDesfechos[area]);
-      macroSelect.innerHTML = '<option value="">-- Selecione o Macro-desfecho --</option>' +
-        macros.map(m => `<option value="${m}">${m}</option>`).join('');
-    }
-
-    function atualizarMicrodesfechos() {
-      const area = document.getElementById('singleSelectArea').value;
-      const macro = document.getElementById('singleSelectMacroDesfecho').value;
-      const microSelect = document.getElementById('singleSelectDesfecho');
-
-      if (!area || !macro || !hierarquiaDesfechos[area] || !hierarquiaDesfechos[area][macro]) {
-        microSelect.disabled = true;
-        microSelect.className = "w-full p-2.5 text-xs bg-slate-100 border border-slate-200 rounded-xl font-semibold text-slate-500";
-        microSelect.innerHTML = '<option value="">-- Selecione primeiro o Macro-desfecho --</option>';
-        return;
-      }
-
-      microSelect.disabled = false;
-      microSelect.className = "w-full p-2.5 text-xs bg-slate-50 border border-slate-300 rounded-xl font-bold text-slate-800";
-      const micros = hierarquiaDesfechos[area][macro];
-      microSelect.innerHTML = '<option value="">-- Selecione o Microdesfecho --</option>' +
-        micros.map(s => `<option value="${s}">${s}</option>`).join('');
-    }
-
-    // Compatibilidade reversa
-    function atualizarSubmotivosDesfecho() {
-      atualizarMicrodesfechos();
+      activeCases = activeCases.filter(function(c) {
+        return String(c.CD_USUARIO) !== String(currentCase.CD_USUARIO);
+      });
+      saveState();
+      alert('Guia finalizada e arquivada permanentemente no Cofre de Hist\u00f3rico!');
+      closeCaseDetail();
     }
 
     function copiarFichaCasoAtual() {
@@ -3198,12 +3097,12 @@ function solicitarSubirPlanilha() {
       
       // 1. Renderizar Casos Finalizados
       const listaFinalizados = Object.values(vaultCases).filter(c => {
-        const isFin = c.STATUS_COFRE === 'CONCLUÍDO' || (c.ULTIMO_DESFECHO && c.ULTIMO_DESFECHO.trim() !== '');
+        const isFin = c.STATUS_COFRE === 'CONCLUÃDO' || (c.ULTIMO_DESFECHO && c.ULTIMO_DESFECHO.trim() !== '');
         if (!isFin) return false;
         return casoCorrespondeBusca(c, q);
       });
 
-      const countFinalizadosTotal = Object.values(vaultCases).filter(c => c.STATUS_COFRE === 'CONCLUÍDO' || (c.ULTIMO_DESFECHO && c.ULTIMO_DESFECHO.trim() !== '')).length;
+      const countFinalizadosTotal = Object.values(vaultCases).filter(c => c.STATUS_COFRE === 'CONCLUÃDO' || (c.ULTIMO_DESFECHO && c.ULTIMO_DESFECHO.trim() !== '')).length;
       const badgeTabFin = document.getElementById('tab-count-finalizados');
       if (badgeTabFin) badgeTabFin.innerText = countFinalizadosTotal;
       const kpiFin = document.getElementById('kpi-concluidas');
@@ -3255,7 +3154,7 @@ function solicitarSubirPlanilha() {
       document.getElementById('historico-tbody').innerHTML = listaCofre.length ? listaCofre.map(c => {
         const logs = historyLog[c.CD_USUARIO] || [];
         const ultimoLog = logs[0] ? `${logs[0].text} (${logs[0].date})` : (c.ULTIMO_DESFECHO || 'Sem parecer final');
-        const isConcluido = c.STATUS_COFRE === 'CONCLUÍDO';
+        const isConcluido = c.STATUS_COFRE === 'CONCLUÃDO';
         return `
           <tr onclick="openCaseDetail('${c.CD_USUARIO}')" class="hover:bg-emerald-50/50 cursor-pointer transition">
             <td class="py-3 px-4">
