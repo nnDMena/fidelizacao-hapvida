@@ -1267,23 +1267,9 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
           throw atvErr;
         }
 
-        if (atvData && atvData.length > 0) {
-          activeCases = atvData.map(r => r.dados);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(activeCases));
-          render();
-        } else if (activeCases && activeCases.length > 0) {
-          // A nuvem está vazia, mas o operador tem casos locais: envia para o Supabase
-          try {
-            const rows = activeCases.map(c => ({
-              cd_usuario: String(c.CD_USUARIO).trim(),
-              dados: c,
-              updated_at: new Date().toISOString()
-            }));
-            await supabaseClient.from('casos_ativos').upsert(rows);
-          } catch (e) {
-            console.warn('Erro seed ativos:', e);
-          }
-        }
+        activeCases = (atvData || []).map(r => r.dados);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(activeCases));
+        render();
 
         // 2. Cofre de Casos
         const { data: vltData, error: vltErr } = await supabaseClient.from('cofre_casos').select('cd_usuario, dados');
@@ -1363,19 +1349,19 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
           if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
             const caso = payload.new.dados;
             if (!caso || !caso.CD_USUARIO) return;
-            const idx = activeCases.findIndex(c => String(c.CD_USUARIO) === String(caso.CD_USUARIO));
+            const idx = activeCases.findIndex(c => chaveFicha(c) === chaveFicha(caso));
             if (idx !== -1) {
               activeCases[idx] = caso;
             } else {
               activeCases.push(caso);
             }
-            if (currentCase && String(currentCase.CD_USUARIO) === String(caso.CD_USUARIO)) {
+            if (currentCase && chaveFicha(currentCase) === chaveFicha(caso)) {
               currentCase = caso;
             }
           } else if (payload.eventType === 'DELETE') {
             const cd = payload.old.cd_usuario;
-            activeCases = activeCases.filter(c => String(c.CD_USUARIO) !== String(cd));
-            if (currentCase && String(currentCase.CD_USUARIO) === String(cd)) {
+            activeCases = activeCases.filter(c => chaveFicha(c) !== String(cd));
+            if (currentCase && chaveFicha(currentCase) === String(cd)) {
               closeCaseDetail();
             }
           }
@@ -1405,7 +1391,7 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
             const cd = payload.new.cd_usuario;
             historyLog[cd] = payload.new.itens || [];
             localStorage.setItem(HISTORY_KEY, JSON.stringify(historyLog));
-            if (currentCase && String(currentCase.CD_USUARIO) === String(cd)) {
+            if (currentCase && chaveFicha(currentCase) === String(cd)) {
               renderSingleTimeline();
             }
           }
@@ -1415,13 +1401,27 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
 // ==========================================
     // OPERAÇÕES DE DADOS (NUVEM OU LOCAL)
     // ==========================================
+    function chaveFicha(ficha) {
+      return String(ficha?.ID_FICHA || ficha?.CD_USUARIO || '').trim();
+    }
+
+    function buscarFicha(chave) {
+      const exata = activeCases.find(c => chaveFicha(c) === chave) || vaultCases[chave];
+      if (exata) return exata;
+      const correspondencias = new Map();
+      [...Object.values(vaultCases), ...activeCases].forEach(ficha => {
+        if (String(ficha.CD_USUARIO).trim() === chave) correspondencias.set(chaveFicha(ficha), ficha);
+      });
+      return correspondencias.size === 1 ? correspondencias.values().next().value : null;
+    }
+
     function sanitizeDocId(id) {
       return String(id || '').trim().replace(/[\/\.#$\[\]]/g, '_');
     }
 
         function syncToVault(caso) {
       if (!caso || !caso.CD_USUARIO) return;
-      const cod = String(caso.CD_USUARIO).trim();
+      const cod = chaveFicha(caso);
       const payload = {
         ...caso,
         ULTIMA_ATUALIZACAO: new Date().toLocaleString('pt-BR')
@@ -1458,7 +1458,6 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
 
     function saveState() {
       try {
-        activeCases.forEach(c => syncToVault(c));
         localStorage.setItem(STORAGE_KEY, JSON.stringify(activeCases));
         localStorage.setItem(HISTORY_KEY, JSON.stringify(historyLog));
         localStorage.setItem(VAULT_CASES_KEY, JSON.stringify(vaultCases));
@@ -1770,15 +1769,47 @@ function solicitarSubirPlanilha() {
       return 0;
     }
 
+    let cargaEmAndamento = false;
+
+    function dataEntradaPlanilha(valor, data1904) {
+      let partes;
+      if (typeof valor === 'number') {
+        const excel = XLSX.SSF.parse_date_code(valor, { date1904: data1904 });
+        if (excel) partes = [excel.y, excel.m, excel.d];
+      } else {
+        const texto = String(valor ?? '').trim();
+        const iso = /^(\d{4})-(\d{2})-(\d{2})$/.exec(texto);
+        const br = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(texto);
+        if (iso) partes = iso.slice(1).map(Number);
+        if (br) partes = [Number(br[3]), Number(br[2]), Number(br[1])];
+      }
+      if (!partes) return '';
+      const [ano, mes, dia] = partes;
+      const data = new Date(Date.UTC(ano, mes - 1, dia));
+      if (data.getUTCFullYear() !== ano || data.getUTCMonth() !== mes - 1 || data.getUTCDate() !== dia) return '';
+      return data.toISOString().slice(0, 10);
+    }
+
     function executarSubirPlanilha(event) {
       const file = (event && event.target && event.target.files) ? event.target.files[0] : null;
       if (!file) return;
-
+      if (cargaEmAndamento || !isCloudConnected || !supabaseClient) {
+        event.target.value = '';
+        alert(cargaEmAndamento ? 'Aguarde a carga atual.' : 'Conecte ao Supabase antes de carregar a fila.');
+        return;
+      }
+      cargaEmAndamento = true;
+      const liberarCarga = () => {
+        cargaEmAndamento = false;
+        event.target.value = '';
+      };
       const reader = new FileReader();
+      reader.onerror = () => { liberarCarga(); alert('Falha ao ler o arquivo. A fila anterior continua disponível.'); };
+      reader.onabort = liberarCarga;
       reader.onload = async function(e) {
         try {
           const data = new Uint8Array(e.target.result);
-          const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+          const workbook = XLSX.read(data, { type: 'array', cellDates: false });
 
           if (!workbook || !workbook.SheetNames || workbook.SheetNames.length === 0) {
             alert('Não foi possível ler o arquivo. O arquivo pode estar vazio ou corrompido.');
@@ -1933,12 +1964,18 @@ function solicitarSubirPlanilha() {
             mapeamentoColunas.DIAS_AUTORIZACAO = colunasDeDias[0];
           }
 
+          const colunaEntrada = headerRow.findIndex(c => normalizarTexto(c) === 'entradanofidelizacao' ||
+            normalizarTexto(c) === 'entradafidelizacao');
+          const colunaProcedimento = headerRow.findIndex(c => ['cdprocedimento','codprocedimento','codigoprocedimento','tuss'].includes(normalizarTexto(c)));
+          if (colunaEntrada < 0 || colunaProcedimento < 0) {
+            throw new Error('A planilha precisa das colunas Entrada Fidelização e Código do Procedimento.');
+          }
           const dataRows = matrixFinal.slice(indiceCabecalho + 1);
-          const novosCasos = [];
+          const novosCasos = new Map();
           const dataHoje = new Date().toLocaleDateString('pt-BR') + ' - Importação Planilha';
-          let recuperadosDoCofre = 0;
+          let duplicadas = 0;
 
-          dataRows.forEach((row) => {
+          dataRows.forEach((row, indice) => {
             if (!row || !Array.isArray(row)) return;
             const temConteudo = row.some(cell => cell !== null && cell !== undefined && String(cell).trim() !== '');
             if (!temConteudo) return;
@@ -1964,9 +2001,12 @@ function solicitarSubirPlanilha() {
               return;
             }
 
-            if (!codUsuario && nmUsuario) codUsuario = 'GUIA_' + (novosCasos.length + 1);
-            if (codUsuario && !nmUsuario) nmUsuario = 'Beneficiário ' + codUsuario;
-            if (!codUsuario && !nmUsuario) return;
+            const procedimento = String(row[colunaProcedimento] ?? '').trim();
+            const entrada = dataEntradaPlanilha(row[colunaEntrada], Boolean(workbook.Workbook?.WBProps?.date1904));
+            if (!codUsuario || !procedimento || !entrada) {
+              throw new Error('Código de usuário, procedimento ou data de entrada inválida na linha ' + (indiceCabecalho + indice + 2) + '.');
+            }
+            if (!nmUsuario) nmUsuario = 'Beneficiário ' + codUsuario;
 
             let diasSla = 0;
             if (mapeamentoColunas.DIAS_AUTORIZACAO !== undefined && row[mapeamentoColunas.DIAS_AUTORIZACAO] !== undefined) {
@@ -1982,87 +2022,88 @@ function solicitarSubirPlanilha() {
             const obsEnfPlan = getVal('OBS_ENF');
             const obsAdmPlan = getVal('OBS_ADM');
 
-            if (obsMedPlan) addImmutableLog(codUsuario, 'Médico (Planilha)', dataHoje, obsMedPlan);
-            if (obsEnfPlan) addImmutableLog(codUsuario, 'Enfermagem (Planilha)', dataHoje, obsEnfPlan);
-            if (obsAdmPlan) addImmutableLog(codUsuario, 'ADM (Planilha)', dataHoje, obsAdmPlan);
-
-            const salvoNoCofre = vaultCases[codUsuario] || {};
-            if (vaultCases[codUsuario]) recuperadosDoCofre++;
+            const observacoes = [
+              ['Médico (Planilha)', obsMedPlan], ['Enfermagem (Planilha)', obsEnfPlan], ['ADM (Planilha)', obsAdmPlan]
+            ].filter(([, texto]) => texto).map(([author,text]) => ({ author, text, date: dataHoje }));
 
             const novoCaso = {
               CD_USUARIO: codUsuario,
+              ENTRADA_FIDELIZACAO: entrada,
+              OBSERVACOES_IMPORTACAO: observacoes,
               NM_USUARIO: nmUsuario,
               DIAS_AUTORIZACAO: diasSla,
-              DIAS_SETOR: diasSetor !== null ? diasSetor : (salvoNoCofre.DIAS_SETOR !== undefined ? salvoNoCofre.DIAS_SETOR : null),
-              ASSUMIU_POR: salvoNoCofre.ASSUMIU_POR || '',
-              BASE: getVal('BASE', salvoNoCofre.BASE || 'NDI'),
-              TIPO_PENDENCIA: getVal('TIPO_PENDENCIA', salvoNoCofre.TIPO_PENDENCIA || '69'),
-              GERENTE_MEDICO: getVal('GERENTE_MEDICO', salvoNoCofre.GERENTE_MEDICO || ''),
-              MEDICO_CONSULTOR: getVal('MEDICO_CONSULTOR', salvoNoCofre.MEDICO_CONSULTOR || ''),
-              STATUS_MED_CONSULTOR: salvoNoCofre.STATUS_MED_CONSULTOR || '',
-              OBS_MED_CONSULTOR: obsMedPlan || salvoNoCofre.OBS_MED_CONSULTOR || '',
-              ENF: getVal('ENF', salvoNoCofre.ENF || ''),
-              STATUS_ENF: salvoNoCofre.STATUS_ENF || '',
-              OBS_ENF: obsEnfPlan || salvoNoCofre.OBS_ENF || '',
-              ADM: getVal('ADM', salvoNoCofre.ADM || ''),
-              STATUS_ADM: salvoNoCofre.STATUS_ADM || '',
-              OBS_ADM: obsAdmPlan || salvoNoCofre.OBS_ADM || '',
-              NM_PLANO: getVal('NM_PLANO', salvoNoCofre.NM_PLANO || '-'),
-              NM_EMPRESA: getVal('NM_EMPRESA', salvoNoCofre.NM_EMPRESA || '-'),
-              NM_PRESTADOR: getVal('NM_PRESTADOR', salvoNoCofre.NM_PRESTADOR || '-'),
-              PROCEDIMENTO_AGRUPADO: getVal('PROCEDIMENTO_AGRUPADO', salvoNoCofre.PROCEDIMENTO_AGRUPADO || '-'),
-              CD_PROCEDIMENTO: getVal('CD_PROCEDIMENTO', salvoNoCofre.CD_PROCEDIMENTO || '-'),
-              NM_SOLICITANTE: getVal('NM_SOLICITANTE', salvoNoCofre.NM_SOLICITANTE || '-'),
-              CIDADE: getVal('CIDADE', salvoNoCofre.CIDADE || '-'),
-              UF: getVal('UF', salvoNoCofre.UF || '-'),
-              STATUS_ORCAMENTO: getVal('STATUS_ORCAMENTO', salvoNoCofre.STATUS_ORCAMENTO || ''),
-              VALOR_INICIAL: getVal('VALOR_INICIAL', salvoNoCofre.VALOR_INICIAL || ''),
-              MENOR_VALOR: getVal('MENOR_VALOR', salvoNoCofre.MENOR_VALOR || ''),
-              'QUAL PACOTE?': getVal('QUAL PACOTE?', salvoNoCofre['QUAL PACOTE?'] || ''),
-              'VALOR PACOTE': getVal('VALOR PACOTE', salvoNoCofre['VALOR PACOTE'] || ''),
-              PRESTADOR_PACOTE: salvoNoCofre.PRESTADOR_PACOTE || '',
-              TIPO_DEMANDA: getVal('TIPO_DEMANDA', salvoNoCofre.TIPO_DEMANDA || ''),
-              PRAZO_FINAL_DEMANDA: getVal('PRAZO_FINAL_DEMANDA', salvoNoCofre.PRAZO_FINAL_DEMANDA || ''),
-              OBSERVACAO: salvoNoCofre.OBSERVACAO || '',
-              ENCAMINHAR: getVal('ENCAMINHAR', salvoNoCofre.ENCAMINHAR || ''),
-              STATUS_COFRE: salvoNoCofre.STATUS_COFRE || 'EM ANDAMENTO',
-              ULTIMO_DESFECHO: salvoNoCofre.ULTIMO_DESFECHO || ''
+              DIAS_SETOR: diasSetor !== null ? diasSetor : null,
+              ASSUMIU_POR: '',
+              BASE: getVal('BASE', 'NDI'),
+              TIPO_PENDENCIA: getVal('TIPO_PENDENCIA', '69'),
+              GERENTE_MEDICO: getVal('GERENTE_MEDICO', ''),
+              MEDICO_CONSULTOR: getVal('MEDICO_CONSULTOR', ''),
+              STATUS_MED_CONSULTOR: '',
+              OBS_MED_CONSULTOR: obsMedPlan || '',
+              ENF: getVal('ENF', ''),
+              STATUS_ENF: '',
+              OBS_ENF: obsEnfPlan || '',
+              ADM: getVal('ADM', ''),
+              STATUS_ADM: '',
+              OBS_ADM: obsAdmPlan || '',
+              NM_PLANO: getVal('NM_PLANO', '-'),
+              NM_EMPRESA: getVal('NM_EMPRESA', '-'),
+              NM_PRESTADOR: getVal('NM_PRESTADOR', '-'),
+              PROCEDIMENTO_AGRUPADO: getVal('PROCEDIMENTO_AGRUPADO', '-'),
+              CD_PROCEDIMENTO: procedimento,
+              NM_SOLICITANTE: getVal('NM_SOLICITANTE', '-'),
+              CIDADE: getVal('CIDADE', '-'),
+              UF: getVal('UF', '-'),
+              STATUS_ORCAMENTO: getVal('STATUS_ORCAMENTO', ''),
+              VALOR_INICIAL: getVal('VALOR_INICIAL', ''),
+              MENOR_VALOR: getVal('MENOR_VALOR', ''),
+              'QUAL PACOTE?': getVal('QUAL PACOTE?', ''),
+              'VALOR PACOTE': getVal('VALOR PACOTE', ''),
+              PRESTADOR_PACOTE: '',
+              TIPO_DEMANDA: getVal('TIPO_DEMANDA', ''),
+              PRAZO_FINAL_DEMANDA: getVal('PRAZO_FINAL_DEMANDA', ''),
+              OBSERVACAO: '',
+              ENCAMINHAR: getVal('ENCAMINHAR', ''),
+              STATUS_COFRE: 'EM ANDAMENTO',
+              ULTIMO_DESFECHO: ''
             };
 
-            novosCasos.push(novoCaso);
-            syncToVault(novoCaso);
+            const chave = JSON.stringify([codUsuario, procedimento, entrada]);
+            const existente = novosCasos.get(chave);
+            if (existente) {
+              if (JSON.stringify(existente) !== JSON.stringify(novoCaso)) {
+                throw new Error('Duas linhas da mesma ficha têm informações divergentes. Confira a linha ' + (indiceCabecalho + indice + 2) + '.');
+              }
+              duplicadas++;
+            } else {
+              novosCasos.set(chave, novoCaso);
+            }
           });
 
-          if (novosCasos.length === 0) {
-            alert('Nenhum caso identificado na planilha.');
-            return;
+          if (!novosCasos.size) throw new Error('Nenhuma ficha válida foi encontrada.');
+          const { data: gravacao, error } = await supabaseClient.rpc('importar_fila_pendencias_v2', {
+            p_fichas: Array.from(novosCasos.values())
+          });
+          if (error || !Array.isArray(gravacao?.fichas)) {
+            throw error || new Error('Supabase não confirmou a nova fila.');
           }
-
-          // Se estiver conectado na Nuvem, sincroniza em lote para todos os 30 usuários
-          if (isCloudConnected && supabaseClient) {
-            const rows = novosCasos.map(c => ({
-              cd_usuario: String(c.CD_USUARIO).trim(),
-              dados: c,
-              updated_at: new Date().toISOString()
-            }));
-            const { error: upsertErr } = await supabaseClient.from('casos_ativos').upsert(rows);
-            if (upsertErr) console.error('Erro ao subir casos no Supabase:', upsertErr);
-          }
-
-          activeCases = novosCasos;
+          activeCases = gravacao.fichas;
+          activeCases.forEach(ficha => { vaultCases[chaveFicha(ficha)] = ficha; });
           saveState();
           render();
-          alert(`✅ Sucesso! ${novosCasos.length} casos carregados.\n${isCloudConnected ? '☁️ Sincronizados na Nuvem para todos os operadores!' : '⚠️ Salvos apenas neste navegador.'}\n🔒 ${recuperadosDoCofre} casos vinculados ao histórico existente.`);
+          alert(`Supabase confirmou ${activeCases.length} fichas na fila.\n${duplicadas} linhas idênticas consolidadas. ${gravacao.finalizadas_preservadas} finalizações preservadas.`);
         } catch (err) {
-          console.error(err);
-          alert('Erro ao processar planilha: ' + (err.message || err));
+          console.error('Falha na importação:', err);
+          alert('Carga não confirmada. Atualize a página antes de tentar novamente. ' + (err.message || ''));
         } finally {
-          if (event && event.target) {
-            try { event.target.value = ''; } catch (_) {}
-          }
+          liberarCarga();
         }
       };
-      reader.readAsArrayBuffer(file);
+      try {
+        reader.readAsArrayBuffer(file);
+      } catch (_) {
+        reader.onerror();
+      }
     }
 
     function exportarPlanilhaBaseHistorico() {
@@ -2078,6 +2119,8 @@ function solicitarSubirPlanilha() {
         const resumoHistorico = logs.map(l => `[${l.date} - ${l.author}]: ${l.text}`).join(' | ');
         return {
           'STATUS_COFRE': c.STATUS_COFRE || 'ATIVO',
+          'ID_FICHA': cod,
+          'ENTRADA_FIDELIZACAO': c.ENTRADA_FIDELIZACAO || '',
           'CD_USUARIO': c.CD_USUARIO || cod,
           'NM_USUARIO': c.NM_USUARIO || '-',
           'BASE': c.BASE || 'NDI',
@@ -2125,7 +2168,8 @@ function solicitarSubirPlanilha() {
         const c = vaultCases[cod] || {};
         (historyLog[cod] || []).forEach(l => {
           linhasLogs.push({
-            'CD_USUARIO': cod,
+            'ID_FICHA': cod,
+            'CD_USUARIO': c.CD_USUARIO || cod,
             'NM_USUARIO': c.NM_USUARIO || '-',
             'DATA_HORA': l.date,
             'AUTOR': l.author,
@@ -2162,7 +2206,7 @@ function solicitarSubirPlanilha() {
             const rows = XLSX.utils.sheet_to_json(wb.Sheets['Casos_Consolidados'], { defval: '' });
             rows.forEach(r => {
               if (!r.CD_USUARIO) return;
-              const cod = String(r.CD_USUARIO).trim();
+              const cod = chaveFicha(r);
               vaultCases[cod] = {
                 ...(vaultCases[cod] || {}),
                 ...r,
@@ -2184,13 +2228,13 @@ function solicitarSubirPlanilha() {
             const logs = XLSX.utils.sheet_to_json(wb.Sheets['Linha_do_Tempo_Logs'], { defval: '' });
             logs.forEach(l => {
               if (!l.CD_USUARIO || !l.REGISTRO_HISTORICO) return;
-              addImmutableLog(l.CD_USUARIO, l.AUTOR || 'Sistema', l.DATA_HORA || '-', l.REGISTRO_HISTORICO);
+              addImmutableLog(chaveFicha(l), l.AUTOR || 'Sistema', l.DATA_HORA || '-', l.REGISTRO_HISTORICO);
               logsImportados++;
             });
           }
 
           activeCases = activeCases.map(c => {
-            const salvo = vaultCases[c.CD_USUARIO];
+            const salvo = vaultCases[chaveFicha(c)];
             return salvo ? { ...c, ...salvo } : c;
           });
 
@@ -2261,7 +2305,7 @@ function solicitarSubirPlanilha() {
         c.MICRO_DESFECHO,
         c.ENCAMINHAR,
         c.ULTIMO_DESFECHO,
-        (historyLog[c.CD_USUARIO] || []).map(l => l.text || '').join(' ')
+        (historyLog[chaveFicha(c)] || []).map(l => l.text || '').join(' ')
       ].filter(Boolean).join(' ').toLowerCase();
 
       const temAusencia = texto.includes('ausência completa de consenso') || 
@@ -2341,7 +2385,7 @@ function solicitarSubirPlanilha() {
       if (!termo) return true;
 
       // Coleta todas as observações/logs da linha do tempo deste caso
-      const logsTexto = (historyLog[c.CD_USUARIO] || []).map(l => `${l.author || ''} ${l.text || ''}`).join(' ');
+      const logsTexto = (historyLog[chaveFicha(c)] || []).map(l => `${l.author || ''} ${l.text || ''}`).join(' ');
 
       // Contexto semântico para encontrar mesmo quando o usuário busca termos como "enfermeira", "adm", "demanda"
       let contextoSemantico = '';
@@ -2524,12 +2568,12 @@ function solicitarSubirPlanilha() {
     }
 
         function openCaseDetail(cod) {
-      currentCase = activeCases.find(c => String(c.CD_USUARIO) === String(cod)) || vaultCases[String(cod)];
+      currentCase = buscarFicha(String(cod));
       if (!currentCase) return;
 
       // Atualiza o hash da URL para permitir compartilhamento direto por link
       try {
-        history.replaceState(null, null, '#caso=' + encodeURIComponent(cod));
+        history.replaceState(null, null, '#caso=' + encodeURIComponent(chaveFicha(currentCase)));
       } catch (_) {}
 
       document.getElementById('screen-main').classList.add('hidden');
@@ -2685,7 +2729,7 @@ function solicitarSubirPlanilha() {
     function renderSingleTimeline() {
       if (!currentCase) return;
       const container = document.getElementById('singleTimelineContainer');
-      const logs = historyLog[currentCase.CD_USUARIO] || [];
+      const logs = historyLog[chaveFicha(currentCase)] || [];
       document.getElementById('singleTimelineCount').innerText = logs.length + ' registos blindados';
 
       if (logs.length === 0) {
@@ -2755,7 +2799,7 @@ function solicitarSubirPlanilha() {
 
       const now = new Date();
       const dateStr = now.toLocaleDateString('pt-BR') + ' às ' + now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-      addImmutableLog(currentCase.CD_USUARIO, `${operadorAtual} (Andamento)`, dateStr, texto);
+      addImmutableLog(chaveFicha(currentCase), `${operadorAtual} (Andamento)`, dateStr, texto);
       syncToVault(currentCase);
       saveState();
       input.value = '';
@@ -2790,13 +2834,13 @@ function solicitarSubirPlanilha() {
         currentCase.ENCAMINHAR = document.getElementById('singleSelectEncaminhar').value;
       }
       
-      const idx = activeCases.findIndex(c => String(c.CD_USUARIO) === String(currentCase.CD_USUARIO));
+      const idx = activeCases.findIndex(c => chaveFicha(c) === chaveFicha(currentCase));
       if (idx !== -1) activeCases[idx] = { ...currentCase };
       
       // Salva no Supabase instantaneamente para que os outros 29 vejam
       if (isCloudConnected && supabaseClient) {
         supabaseClient.from('casos_ativos').upsert({
-          cd_usuario: String(currentCase.CD_USUARIO).trim(),
+          cd_usuario: chaveFicha(currentCase),
           dados: currentCase,
           updated_at: new Date().toISOString()
         }).then(({ error }) => { if (error) console.error('Erro save caso ativo:', error); });
@@ -2865,8 +2909,11 @@ function solicitarSubirPlanilha() {
       }
     }
 
-    function singleConcluirCasoOK() {
-      if (!currentCase) return;
+    let finalizacaoEmAndamento = false;
+    let tentativaFinalizacao = null;
+
+    async function singleConcluirCasoOK() {
+      if (!currentCase || finalizacaoEmAndamento || currentCase.STATUS_COFRE === 'CONCLU\u00cdDO') return;
       const desfecho = document.getElementById('singleSelectDesfecho')?.value || '';
       const nota = document.getElementById('singleInputNota')?.value.trim() || '';
 
@@ -2879,38 +2926,60 @@ function solicitarSubirPlanilha() {
         return;
       }
 
-      const desfechoCompleto = desfecho;
-      const now = new Date();
-      const dateStr = now.toLocaleDateString('pt-BR') + ' \u00e0s ' + now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-
-      addImmutableLog(
-        currentCase.CD_USUARIO,
-        operadorAtual + ' (Finaliza\u00e7\u00e3o)',
-        dateStr,
-        '[DESFECHO: ' + desfechoCompleto + '] - ' + nota,
-        { desfecho: desfechoCompleto, sigo: nota }
-      );
-
-      currentCase.DESFECHO = desfecho;
-      currentCase.MICRO_DESFECHO = desfecho;
-      currentCase.FINALIZACAO_SIGO = nota;
-      currentCase.STATUS_COFRE = 'CONCLU\u00cdDO';
-      currentCase.ULTIMO_DESFECHO = desfechoCompleto + ' (' + nota + ')';
-      syncToVault(currentCase);
-
-      // Remove de casos_ativos na Nuvem
-      if (isCloudConnected && supabaseClient) {
-        supabaseClient.from('casos_ativos').delete().eq('cd_usuario', String(currentCase.CD_USUARIO).trim()).then(function(res) {
-          if (res && res.error) console.error('Erro ao remover de casos_ativos:', res.error);
-        });
+      if (!isCloudConnected || !supabaseClient) {
+        alert('Conecte ao Supabase para finalizar a ficha.');
+        return;
       }
 
-      activeCases = activeCases.filter(function(c) {
-        return String(c.CD_USUARIO) !== String(currentCase.CD_USUARIO);
-      });
-      saveState();
-      alert('Guia finalizada e arquivada permanentemente no Cofre de Hist\u00f3rico!');
-      closeCaseDetail();
+      const codigo = chaveFicha(currentCase);
+      const ficha = {
+        ...currentCase,
+        DESFECHO: desfecho,
+        MICRO_DESFECHO: desfecho,
+        FINALIZACAO_SIGO: nota,
+        STATUS_COFRE: 'CONCLU\u00cdDO',
+        ULTIMO_DESFECHO: desfecho + ' (' + nota + ')',
+        FINALIZADO_POR: operadorAtual,
+        ULTIMA_ATUALIZACAO: new Date().toLocaleString('pt-BR')
+      };
+      const evento = {
+        author: operadorAtual + ' (Finaliza\u00e7\u00e3o)',
+        text: '[DESFECHO: ' + desfecho + '] - ' + nota,
+        desfecho,
+        sigo: nota
+      };
+      const assinatura = JSON.stringify([codigo, desfecho, nota, operadorAtual]);
+      if (tentativaFinalizacao?.assinatura !== assinatura) {
+        tentativaFinalizacao = { assinatura, id: crypto.randomUUID() };
+      }
+
+      finalizacaoEmAndamento = true;
+      try {
+        const { data, error } = await supabaseClient.rpc('finalizar_ficha_painel_v2', {
+          p_dados: ficha, p_evento: evento, p_requisicao: tentativaFinalizacao.id
+        });
+        if (error || !data?.ficha || !Array.isArray(data.eventos)) {
+          throw error || new Error('Resposta incompleta do Supabase');
+        }
+        vaultCases[codigo] = data.ficha;
+        historyLog[codigo] = data.eventos;
+        activeCases = activeCases.filter(c => chaveFicha(c) !== codigo);
+        tentativaFinalizacao = null;
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(activeCases));
+          localStorage.setItem(VAULT_CASES_KEY, JSON.stringify(vaultCases));
+          localStorage.setItem(HISTORY_KEY, JSON.stringify(historyLog));
+        } catch (erroLocal) {
+          console.warn('Finalização confirmada, cache local indisponível.', erroLocal);
+        }
+        alert('Supabase confirmou a finalização. O desfecho e a nota SIGO foram salvos.');
+        if (chaveFicha(currentCase) === codigo) closeCaseDetail();
+      } catch (erro) {
+        console.error('O Supabase não confirmou a finalização:', erro);
+        alert('O Supabase não confirmou a finalização. Confira a conexão e tente novamente.');
+      } finally {
+        finalizacaoEmAndamento = false;
+      }
     }
 
     function copiarFichaCasoAtual() {
@@ -2919,9 +2988,9 @@ function solicitarSubirPlanilha() {
       // Gerar link direto para este caso (funciona na web hospedada ou localmente)
       let linkDireto = '';
       if (window.location.protocol.startsWith('http')) {
-        linkDireto = `${window.location.origin}${window.location.pathname}#caso=${encodeURIComponent(currentCase.CD_USUARIO)}`;
+        linkDireto = `${window.location.origin}${window.location.pathname}#caso=${encodeURIComponent(chaveFicha(currentCase))}`;
       } else {
-        linkDireto = `${window.location.href.split('#')[0]}#caso=${encodeURIComponent(currentCase.CD_USUARIO)}`;
+        linkDireto = `${window.location.href.split('#')[0]}#caso=${encodeURIComponent(chaveFicha(currentCase))}`;
       }
 
       // Coleta dados dos inputs em tempo real para garantir que pegou o que foi preenchido
@@ -2937,7 +3006,7 @@ function solicitarSubirPlanilha() {
       const obsLegadas = [currentCase.OBS_MED_CONSULTOR, currentCase.OBS_ENF, currentCase.OBS_ADM].filter(Boolean).join('\n').trim();
       const observacaoFinal = observacaoInput;
 
-      const logs = historyLog[currentCase.CD_USUARIO] || [];
+      const logs = historyLog[chaveFicha(currentCase)] || [];
       const ultimosLogs = logs.slice(0, 3).map(l => `• [${l.date}] ${l.author}: ${l.text}`).join('\n');
 
       let txt = `📋 *FICHA DE CASO - FIDELIZAÇÃO HAPVIDA NDI*\n`;
@@ -3018,10 +3087,10 @@ function solicitarSubirPlanilha() {
       document.getElementById('kpi-concluidas').innerText = totalNoCofre;
 
       const buildCard = (c) => {
-        const qtdLogs = (historyLog[c.CD_USUARIO] || []).length;
+        const qtdLogs = (historyLog[chaveFicha(c)] || []).length;
         const temSetor = c.DIAS_SETOR !== undefined && c.DIAS_SETOR !== null && c.DIAS_SETOR !== '';
         return `
-        <div onclick="openCaseDetail('${c.CD_USUARIO}')" class="bg-white p-4 rounded-xl border border-slate-200 hover:border-indigo-500 hover:shadow-md transition cursor-pointer space-y-2.5 group">
+        <div onclick="openCaseDetail('${chaveFicha(c)}')" class="bg-white p-4 rounded-xl border border-slate-200 hover:border-indigo-500 hover:shadow-md transition cursor-pointer space-y-2.5 group">
           <div class="flex items-center justify-between">
             <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-mono">${c.CD_USUARIO}</span>
             <div class="flex items-center gap-1 flex-wrap justify-end">
@@ -3065,7 +3134,7 @@ function solicitarSubirPlanilha() {
       document.getElementById('lista-tbody').innerHTML = cases.length ? cases.map(c => {
         const temSetor = c.DIAS_SETOR !== undefined && c.DIAS_SETOR !== null && c.DIAS_SETOR !== '';
         return `
-        <tr onclick="openCaseDetail('${c.CD_USUARIO}')" class="hover:bg-indigo-50/50 cursor-pointer transition">
+        <tr onclick="openCaseDetail('${chaveFicha(c)}')" class="hover:bg-indigo-50/50 cursor-pointer transition">
           <td class="py-3 px-4 font-mono font-bold text-indigo-700 text-xs">${c.CD_USUARIO}</td>
           <td class="py-3 px-4 font-bold text-slate-900">
             <div class="flex items-center gap-1.5 flex-wrap">
@@ -3111,11 +3180,11 @@ function solicitarSubirPlanilha() {
       const tbodyFin = document.getElementById('finalizados-tbody');
       if (tbodyFin) {
         tbodyFin.innerHTML = listaFinalizados.length ? listaFinalizados.map(c => {
-          const logs = historyLog[c.CD_USUARIO] || [];
+          const logs = historyLog[chaveFicha(c)] || [];
           const ultimoLog = logs[0] ? `${logs[0].text} (${logs[0].date})` : (c.ULTIMO_DESFECHO || 'Sem parecer final');
           const temSetor = c.DIAS_SETOR !== undefined && c.DIAS_SETOR !== null && c.DIAS_SETOR !== '';
           return `
-            <tr onclick="openCaseDetail('${c.CD_USUARIO}')" class="hover:bg-emerald-50/50 cursor-pointer transition">
+            <tr onclick="openCaseDetail('${chaveFicha(c)}')" class="hover:bg-emerald-50/50 cursor-pointer transition">
               <td class="py-3 px-4 font-mono font-bold text-slate-800">${c.CD_USUARIO}</td>
               <td class="py-3 px-4 font-bold text-slate-900">
                 <div class="flex items-center gap-1.5 flex-wrap">
@@ -3152,11 +3221,11 @@ function solicitarSubirPlanilha() {
       });
 
       document.getElementById('historico-tbody').innerHTML = listaCofre.length ? listaCofre.map(c => {
-        const logs = historyLog[c.CD_USUARIO] || [];
+        const logs = historyLog[chaveFicha(c)] || [];
         const ultimoLog = logs[0] ? `${logs[0].text} (${logs[0].date})` : (c.ULTIMO_DESFECHO || 'Sem parecer final');
         const isConcluido = c.STATUS_COFRE === 'CONCLUÃDO';
         return `
-          <tr onclick="openCaseDetail('${c.CD_USUARIO}')" class="hover:bg-emerald-50/50 cursor-pointer transition">
+          <tr onclick="openCaseDetail('${chaveFicha(c)}')" class="hover:bg-emerald-50/50 cursor-pointer transition">
             <td class="py-3 px-4">
               <span class="text-[10px] font-extrabold px-2.5 py-1 rounded-full ${isConcluido ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-indigo-100 text-indigo-800 border border-indigo-200'}">
                 ${isConcluido ? '✔ CONCLUÍDO' : '⏳ EM HISTÓRICO'}
@@ -3193,12 +3262,12 @@ function solicitarSubirPlanilha() {
       const tbodyConsenso = document.getElementById('rubens-consenso-tbody');
       if (tbodyConsenso) {
         tbodyConsenso.innerHTML = listaRubensConsenso.length ? listaRubensConsenso.map(c => {
-          const logs = historyLog[c.CD_USUARIO] || [];
+          const logs = historyLog[chaveFicha(c)] || [];
           const ultimoLog = logs[0] ? `${logs[0].text}` : (c.ULTIMO_DESFECHO || '-');
           const areaExibida = c.AREA || (c.ULTIMO_DESFECHO && c.ULTIMO_DESFECHO.includes('GNMED') ? 'GNMED' : 'Auditoria / GNHAP');
           const desfechoExibido = c.ULTIMO_DESFECHO || (c.MACRO_DESFECHO ? `${c.MACRO_DESFECHO} ➔ ${c.MICRO_DESFECHO || ''} | Encaminhar: ${c.ENCAMINHAR || ''}` : ultimoLog);
           return `
-            <tr onclick="openCaseDetail('${c.CD_USUARIO}')" class="hover:bg-amber-50/60 cursor-pointer transition">
+            <tr onclick="openCaseDetail('${chaveFicha(c)}')" class="hover:bg-amber-50/60 cursor-pointer transition">
               <td class="py-3 px-4 font-mono font-bold text-slate-800">${c.CD_USUARIO}</td>
               <td class="py-3 px-4 font-bold text-slate-900">
                 <div class="flex items-center gap-1.5 flex-wrap">
@@ -3231,10 +3300,10 @@ function solicitarSubirPlanilha() {
       // 4. Renderizar Esteira Médica: Tratamentos Oncológicos Específicos
       const mapaOnco = {};
       Object.values(vaultCases).forEach(c => {
-        if (c.CD_USUARIO && isCasoOncologia(c)) mapaOnco[c.CD_USUARIO] = { ...c, _origem: 'cofre' };
+        if (c.CD_USUARIO && isCasoOncologia(c)) mapaOnco[chaveFicha(c)] = { ...c, _origem: 'cofre' };
       });
       activeCases.forEach(c => {
-        if (c.CD_USUARIO && isCasoOncologia(c)) mapaOnco[c.CD_USUARIO] = { ...(mapaOnco[c.CD_USUARIO] || {}), ...c, _origem: 'ativo' };
+        if (c.CD_USUARIO && isCasoOncologia(c)) mapaOnco[chaveFicha(c)] = { ...(mapaOnco[chaveFicha(c)] || {}), ...c, _origem: 'ativo' };
       });
 
       const listaRubensOnco = Object.values(mapaOnco).filter(c => {
@@ -3251,11 +3320,11 @@ function solicitarSubirPlanilha() {
       const tbodyOnco = document.getElementById('rubens-onco-tbody');
       if (tbodyOnco) {
         tbodyOnco.innerHTML = listaRubensOnco.length ? listaRubensOnco.map(c => {
-          const isAtivo = c._origem === 'ativo' && activeCases.some(a => String(a.CD_USUARIO) === String(c.CD_USUARIO));
+          const isAtivo = c._origem === 'ativo' && activeCases.some(a => chaveFicha(a) === chaveFicha(c));
           const temSetor = c.DIAS_SETOR !== undefined && c.DIAS_SETOR !== null && c.DIAS_SETOR !== '';
           const ultimoDesfecho = c.ULTIMO_DESFECHO || (c.STATUS_COFRE === 'CONCLUÍDO' ? 'Concluído no Cofre' : 'Em análise operacional');
           return `
-            <tr onclick="openCaseDetail('${c.CD_USUARIO}')" class="hover:bg-rose-50/50 cursor-pointer transition">
+            <tr onclick="openCaseDetail('${chaveFicha(c)}')" class="hover:bg-rose-50/50 cursor-pointer transition">
               <td class="py-3 px-4">
                 <span class="text-[10px] font-extrabold px-2.5 py-1 rounded-full ${isAtivo ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-emerald-100 text-emerald-800 border border-emerald-300'}">
                   ${isAtivo ? '⚡ ATIVO NA FILA' : '✔ CONCLUÍDO'}
@@ -3317,7 +3386,7 @@ function solicitarSubirPlanilha() {
         tbodyCriticos.innerHTML = listaRubensCriticos.length ? listaRubensCriticos.map(c => {
           const temSetor = c.DIAS_SETOR !== undefined && c.DIAS_SETOR !== null && c.DIAS_SETOR !== '';
           return `
-            <tr onclick="openCaseDetail('${c.CD_USUARIO}')" class="hover:bg-red-50/60 cursor-pointer transition">
+            <tr onclick="openCaseDetail('${chaveFicha(c)}')" class="hover:bg-red-50/60 cursor-pointer transition">
               <td class="py-3 px-4 text-center">
                 <div class="inline-flex items-center gap-1 justify-center">
                   <span class="text-[10.5px] font-black px-2.5 py-1 rounded-full bg-rose-600 text-white shadow-xs animate-pulse flex items-center gap-1">
@@ -3369,7 +3438,7 @@ function solicitarSubirPlanilha() {
         const cod = decodeURIComponent(hash.split('caso=')[1].split('&')[0]);
         if (cod) {
           const abrirSeExistir = () => {
-            const achou = activeCases.find(c => String(c.CD_USUARIO) === String(cod)) || vaultCases[String(cod)];
+            const achou = buscarFicha(String(cod));
             if (achou) {
               openCaseDetail(cod);
               return true;
