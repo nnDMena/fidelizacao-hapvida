@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
@@ -610,7 +610,7 @@
             <div class="bg-slate-50 p-3.5 sm:p-4 rounded-xl border border-slate-200/80">
               <span class="text-[9.5px] sm:text-[10px] font-bold uppercase text-slate-400 tracking-wider">Procedimento Cirúrgico</span>
               <p id="singleDetailProcedure" class="text-xs font-bold text-slate-800 mt-1 leading-snug">-</p>
-              <p id="singleDetailTUSS" class="text-[11px] font-mono text-slate-500 mt-1">Cód. TUSS: -</p>
+              <p id="singleDetailTUSS" class="text-[11px] font-mono text-slate-500 mt-1">C&oacute;d. TUSS: -</p>
             </div>
             <div class="bg-slate-50 p-3.5 sm:p-4 rounded-xl border border-slate-200/80 space-y-2">
               <div>
@@ -629,33 +629,58 @@
 
           <!-- ORÇAMENTO & PACOTE -->
           <div class="bg-gradient-to-br from-indigo-50/70 via-slate-50 to-violet-50/70 p-3.5 sm:p-4.5 rounded-2xl border-2 border-indigo-200/90 shadow-2xs space-y-3 sm:space-y-3.5">
-            <div class="flex items-center justify-between border-b border-indigo-100/80 pb-2 sm:pb-2.5">
-              <span class="text-[10.5px] sm:text-[11px] font-extrabold uppercase text-indigo-950 tracking-wider flex items-center gap-1.5 sm:gap-2">
-                <i class="fa-solid fa-coins text-indigo-600"></i> Orçamento &amp; Pacote Negociado
-              </span>
+            <div class="flex items-center justify-between flex-wrap gap-2 border-b border-indigo-100/80 pb-2 sm:pb-2.5">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-[10.5px] sm:text-[11px] font-extrabold uppercase text-indigo-950 tracking-wider flex items-center gap-1.5 sm:gap-2">
+                  <i class="fa-solid fa-coins text-indigo-600"></i> Orçamento &amp; Pacote Negociado
+                </span>
+
+                <!-- SELETOR LECOM / PRESTADOR BEM DISCRETO -->
+                <div class="inline-flex items-center gap-1 bg-white border border-indigo-200/90 rounded-md px-1.5 py-0.5 shadow-2xs">
+                  <span class="text-[9px] font-bold text-indigo-500 uppercase tracking-wider">Origem:</span>
+                  <select id="editCaseOrigemValorInicial" onchange="autoSalvarProfissionais()" title="Origem do Valor Inicial (Lecom ou Prestador)" class="text-[10px] font-bold text-slate-800 bg-transparent focus:outline-none cursor-pointer">
+                    <option value="Lecom">Lecom</option>
+                    <option value="Prestador">Prestador</option>
+                  </select>
+                </div>
+              </div>
+
               <span class="text-[9px] sm:text-[9.5px] font-extrabold text-indigo-700 bg-white px-2 sm:px-2.5 py-0.5 rounded-md border border-indigo-200 shadow-2xs">
                 Fidelização de Custos
               </span>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 sm:gap-3 items-end">
-              <div class="sm:col-span-4 bg-indigo-50/70 p-1.5 sm:p-2 rounded-xl border-2 border-indigo-300">
-                <label for="editCaseValorInicial" class="text-[9.5px] sm:text-[10px] font-black uppercase text-indigo-950 tracking-wider block mb-1 sm:mb-1.5 flex items-center gap-1">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 items-stretch">
+              <!-- CARD 1: VALOR INICIAL -->
+              <div class="bg-indigo-50/70 p-2 sm:p-2.5 rounded-xl border-2 border-indigo-300 flex flex-col justify-between">
+                <label for="editCaseValorInicial" class="text-[9.5px] sm:text-[10px] font-black uppercase text-indigo-950 tracking-wider block mb-1 sm:mb-1.5 flex items-center gap-1 truncate">
                   <i class="fa-solid fa-receipt text-indigo-600"></i> Valor Inicial:
                 </label>
-                <input type="text" id="editCaseValorInicial" oninput="autoSalvarProfissionais()" placeholder="Ex: R$ 8.500,00" class="w-full bg-white font-black text-indigo-950 text-xs px-3 py-2 sm:py-2.5 rounded-xl border-2 border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-600 shadow-xs">
+                <input type="text" id="editCaseValorInicial" oninput="formatarMoedaInput(this); autoSalvarProfissionais()" placeholder="R$ 0,00" class="w-full bg-white font-black text-indigo-950 text-xs px-3 py-2 sm:py-2.5 rounded-xl border-2 border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-600 shadow-xs">
               </div>
-              <div class="sm:col-span-4 bg-indigo-50/70 p-1.5 sm:p-2 rounded-xl border-2 border-indigo-300">
-                <label for="editCaseMenorValor" class="text-[9.5px] sm:text-[10px] font-black uppercase text-indigo-950 tracking-wider block mb-1 sm:mb-1.5 flex items-center gap-1">
+
+              <!-- CARD 2: VALOR NEGOCIADO -->
+              <div class="bg-indigo-50/70 p-2 sm:p-2.5 rounded-xl border-2 border-indigo-300 flex flex-col justify-between">
+                <label for="editCaseMenorValor" class="text-[9.5px] sm:text-[10px] font-black uppercase text-indigo-950 tracking-wider block mb-1 sm:mb-1.5 flex items-center gap-1 truncate">
                   <i class="fa-solid fa-handshake text-indigo-600"></i> Valor Negociado:
                 </label>
-                <input type="text" id="editCaseMenorValor" oninput="autoSalvarProfissionais()" placeholder="Ex: R$ 3.200,00" class="w-full bg-white font-black text-indigo-950 text-xs px-3 py-2 sm:py-2.5 rounded-xl border-2 border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-600 shadow-xs">
+                <input type="text" id="editCaseMenorValor" oninput="formatarMoedaInput(this); autoSalvarProfissionais()" placeholder="R$ 0,00" class="w-full bg-white font-black text-indigo-950 text-xs px-3 py-2 sm:py-2.5 rounded-xl border-2 border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-600 shadow-xs">
               </div>
-              <div class="sm:col-span-4 bg-indigo-50/70 p-1.5 sm:p-2 rounded-xl border-2 border-indigo-300">
-                <label for="editCaseValorPacote" class="text-[9.5px] sm:text-[10px] font-black uppercase text-indigo-950 tracking-wider block mb-1 sm:mb-1.5 flex items-center gap-1">
+
+              <!-- CARD 3: VALOR PACOTE -->
+              <div class="bg-indigo-50/70 p-2 sm:p-2.5 rounded-xl border-2 border-indigo-300 flex flex-col justify-between">
+                <label for="editCaseValorPacote" class="text-[9.5px] sm:text-[10px] font-black uppercase text-indigo-950 tracking-wider block mb-1 sm:mb-1.5 flex items-center gap-1 truncate">
                   <i class="fa-solid fa-box-archive text-indigo-600"></i> Valor Pacote:
                 </label>
-                <input type="text" id="editCaseValorPacote" oninput="autoSalvarProfissionais()" placeholder="Ex: R$ 2.900,00" class="w-full bg-white font-black text-indigo-950 text-xs px-3 py-2 sm:py-2.5 rounded-xl border-2 border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-600 shadow-xs">
+                <input type="text" id="editCaseValorPacote" oninput="formatarMoedaInput(this); autoSalvarProfissionais()" placeholder="R$ 0,00" class="w-full bg-white font-black text-indigo-950 text-xs px-3 py-2 sm:py-2.5 rounded-xl border-2 border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-600 shadow-xs">
+              </div>
+
+              <!-- CARD 4: VALOR RESOLUÇÃO -->
+              <div class="bg-indigo-50/70 p-2 sm:p-2.5 rounded-xl border-2 border-indigo-300 flex flex-col justify-between">
+                <label for="editCaseValorResolucao" class="text-[9.5px] sm:text-[10px] font-black uppercase text-indigo-950 tracking-wider block mb-1 sm:mb-1.5 flex items-center gap-1 truncate">
+                  <i class="fa-solid fa-scale-balanced text-indigo-600"></i> Valor Resolu&ccedil;&atilde;o:
+                </label>
+                <input type="text" id="editCaseValorResolucao" oninput="formatarMoedaInput(this); autoSalvarProfissionais()" placeholder="R$ 0,00" class="w-full bg-white font-black text-indigo-950 text-xs px-3 py-2 sm:py-2.5 rounded-xl border-2 border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-600 shadow-xs">
               </div>
             </div>
 
@@ -677,10 +702,25 @@
 
           <!-- EQUIPA DESIGNADA -->
           <div class="pt-3 border-t border-slate-200 text-xs space-y-3">
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between flex-wrap gap-2">
               <span class="text-[10px] sm:text-[10.5px] font-extrabold uppercase text-indigo-950 tracking-wider flex items-center gap-1.5">
                 <i class="fa-solid fa-users-gear text-indigo-600 text-xs"></i> EQUIPA DESIGNADA &amp; CORPO DELIBERATIVO:
               </span>
+
+              <!-- SELETOR DISCRETO DE TROCAR GERENTE MÉDICO -->
+              <div class="flex items-center gap-1.5 bg-indigo-50/70 hover:bg-indigo-50 border border-indigo-200/90 rounded-lg px-2 py-0.5 shadow-2xs transition">
+                <label for="selectTrocarGerenteMedico" class="text-[9px] sm:text-[9.5px] font-bold text-indigo-900 tracking-wider flex items-center gap-1 shrink-0 cursor-pointer">
+                  <i class="fa-solid fa-user-doctor text-indigo-600 text-[10px]"></i> Trocar Gerente:
+                </label>
+                <div class="relative">
+                  <select id="selectTrocarGerenteMedico" onchange="trocarGerenteMedicoCaso(this.value)" class="text-[10px] sm:text-[10.5px] font-bold text-slate-800 bg-white border border-indigo-200 rounded-md pl-1.5 pr-5 py-0.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer shadow-2xs">
+                    <!-- Preenchido dinamicamente via JS -->
+                  </select>
+                  <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1 text-indigo-500">
+                    <i class="fa-solid fa-chevron-down text-[8px]"></i>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-indigo-900 text-white p-3 sm:p-3.5 rounded-xl border border-indigo-900/80 flex items-center justify-between flex-wrap gap-3">
@@ -1035,6 +1075,7 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
       if (modal) {
         modal.classList.remove('hidden');
         modal.classList.add('flex');
+        modal.style.display = 'flex';
         setTimeout(() => {
           if (inputSenha) inputSenha.focus();
         }, 150);
@@ -1046,6 +1087,7 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
       if (modal) {
         modal.classList.add('hidden');
         modal.classList.remove('flex');
+        modal.style.display = 'none';
       }
     }
 
@@ -1201,6 +1243,9 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
       const badge = document.getElementById('cloud-sync-badge');
       const label = document.getElementById('cloud-sync-label');
 
+            if (!config || !config.url || !config.anonKey) {
+        config = DEFAULT_SUPABASE_CONFIG;
+      }
       if (!config || !config.url || !config.anonKey) {
         isCloudConnected = false;
         if (banner) banner.classList.remove('hidden');
@@ -1238,6 +1283,101 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
     }
 
     // Compatibilidade com chamadas
+        function abrirConfigNuvem() {
+      const modal = document.getElementById('modal-nuvem');
+      if (!modal) return;
+      const inputUrl = document.getElementById('inputSupabaseUrl');
+      const inputKey = document.getElementById('inputSupabaseKey');
+      
+      const savedConfig = localStorage.getItem(SUPABASE_CONFIG_KEY);
+      let config = DEFAULT_SUPABASE_CONFIG;
+      if (savedConfig) {
+        try { config = JSON.parse(savedConfig); } catch (_) {}
+      }
+      if (inputUrl) inputUrl.value = (config && config.url) ? config.url : DEFAULT_SUPABASE_CONFIG.url;
+      if (inputKey) inputKey.value = (config && config.anonKey) ? config.anonKey : DEFAULT_SUPABASE_CONFIG.anonKey;
+      
+      const resEl = document.getElementById('diagConexaoResultado');
+      if (resEl) resEl.classList.add('hidden');
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      modal.style.display = 'flex';
+    }
+
+    function fecharConfigNuvem() {
+      const modal = document.getElementById('modal-nuvem');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        modal.style.display = 'none';
+      }
+    }
+
+    async function salvarConfigNuvem() {
+      const url = document.getElementById('inputSupabaseUrl')?.value.trim();
+      const anonKey = document.getElementById('inputSupabaseKey')?.value.trim();
+      if (!url || !anonKey) {
+        alert('Por favor, informe a URL e a Anon Key do Supabase.');
+        return;
+      }
+      const config = { url, anonKey };
+      localStorage.setItem(SUPABASE_CONFIG_KEY, JSON.stringify(config));
+      fecharConfigNuvem();
+      await initSupabase();
+      alert('ConfiguraÃ§Ã£o salva! Conectando ao Supabase...');
+    }
+
+    function limparCredenciaisNuvem() {
+      if (confirm('Deseja redefinir as credenciais para o padrÃ£o oficial do projeto Supabase?')) {
+        localStorage.removeItem(SUPABASE_CONFIG_KEY);
+        fecharConfigNuvem();
+        initSupabase();
+      }
+    }
+
+    async function testarConexaoSupabase() {
+      const resEl = document.getElementById('diagConexaoResultado');
+      if (resEl) {
+        resEl.classList.remove('hidden', 'text-emerald-700', 'text-rose-700');
+        resEl.classList.add('text-indigo-700');
+        resEl.innerText = 'Testando conexÃ£o com o Supabase...';
+      }
+      const url = document.getElementById('inputSupabaseUrl')?.value.trim() || DEFAULT_SUPABASE_CONFIG.url;
+      const key = document.getElementById('inputSupabaseKey')?.value.trim() || DEFAULT_SUPABASE_CONFIG.anonKey;
+      
+      try {
+        if (!window.supabase) {
+          throw new Error('SDK do Supabase ainda nÃ£o foi carregado pelo navegador.');
+        }
+        const testClient = window.supabase.createClient(url, key);
+        const { count, error } = await testClient.from('casos_ativos').select('*', { count: 'exact', head: true });
+        if (error) throw error;
+        
+        if (resEl) {
+          resEl.classList.remove('text-indigo-700', 'text-rose-700');
+          resEl.classList.add('text-emerald-700');
+          resEl.innerHTML = `âœ… <strong>ConexÃ£o bem-sucedida!</strong> Tabela 'casos_ativos' online (${count || 0} registros encontrados).`;
+        }
+      } catch (err) {
+        if (resEl) {
+          resEl.classList.remove('text-indigo-700', 'text-emerald-700');
+          resEl.classList.add('text-rose-700');
+          resEl.innerHTML = `âŒ <strong>Falha na conexÃ£o:</strong> ${err.message || err}`;
+        }
+      }
+    }
+
+    function copiarScriptSqlSupabase() {
+      const pre = document.getElementById('preScriptSqlSupabase');
+      if (!pre) return;
+      navigator.clipboard.writeText(pre.innerText).then(() => {
+        alert('Script SQL copiado com sucesso! Cole no SQL Editor do Supabase.');
+      }).catch(() => {
+        prompt('Copie o script SQL abaixo:', pre.innerText);
+      });
+    }
+
     function initFirebase() { return initSupabase(); }
     function abrirConfigFirebase() { abrirConfigNuvem(); }
     function fecharConfigFirebase() { fecharConfigNuvem(); }
@@ -1267,9 +1407,23 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
           throw atvErr;
         }
 
-        activeCases = (atvData || []).map(r => r.dados);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(activeCases));
-        render();
+        if (atvData && atvData.length > 0) {
+          activeCases = atvData.map(r => r.dados);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(activeCases));
+          render();
+        } else if (activeCases && activeCases.length > 0) {
+          // A nuvem está vazia, mas o operador tem casos locais: envia para o Supabase
+          try {
+            const rows = activeCases.map(c => ({
+              cd_usuario: String(c.CD_USUARIO).trim(),
+              dados: c,
+              updated_at: new Date().toISOString()
+            }));
+            await supabaseClient.from('casos_ativos').upsert(rows);
+          } catch (e) {
+            console.warn('Erro seed ativos:', e);
+          }
+        }
 
         // 2. Cofre de Casos
         const { data: vltData, error: vltErr } = await supabaseClient.from('cofre_casos').select('cd_usuario, dados');
@@ -1349,19 +1503,19 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
           if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
             const caso = payload.new.dados;
             if (!caso || !caso.CD_USUARIO) return;
-            const idx = activeCases.findIndex(c => chaveFicha(c) === chaveFicha(caso));
+            const idx = activeCases.findIndex(c => String(c.CD_USUARIO) === String(caso.CD_USUARIO));
             if (idx !== -1) {
               activeCases[idx] = caso;
             } else {
               activeCases.push(caso);
             }
-            if (currentCase && chaveFicha(currentCase) === chaveFicha(caso)) {
+            if (currentCase && String(currentCase.CD_USUARIO) === String(caso.CD_USUARIO)) {
               currentCase = caso;
             }
           } else if (payload.eventType === 'DELETE') {
             const cd = payload.old.cd_usuario;
-            activeCases = activeCases.filter(c => chaveFicha(c) !== String(cd));
-            if (currentCase && chaveFicha(currentCase) === String(cd)) {
+            activeCases = activeCases.filter(c => String(c.CD_USUARIO) !== String(cd));
+            if (currentCase && String(currentCase.CD_USUARIO) === String(cd)) {
               closeCaseDetail();
             }
           }
@@ -1391,7 +1545,7 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
             const cd = payload.new.cd_usuario;
             historyLog[cd] = payload.new.itens || [];
             localStorage.setItem(HISTORY_KEY, JSON.stringify(historyLog));
-            if (currentCase && chaveFicha(currentCase) === String(cd)) {
+            if (currentCase && String(currentCase.CD_USUARIO) === String(cd)) {
               renderSingleTimeline();
             }
           }
@@ -1401,27 +1555,13 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
 // ==========================================
     // OPERAÇÕES DE DADOS (NUVEM OU LOCAL)
     // ==========================================
-    function chaveFicha(ficha) {
-      return String(ficha?.ID_FICHA || ficha?.CD_USUARIO || '').trim();
-    }
-
-    function buscarFicha(chave) {
-      const exata = activeCases.find(c => chaveFicha(c) === chave) || vaultCases[chave];
-      if (exata) return exata;
-      const correspondencias = new Map();
-      [...Object.values(vaultCases), ...activeCases].forEach(ficha => {
-        if (String(ficha.CD_USUARIO).trim() === chave) correspondencias.set(chaveFicha(ficha), ficha);
-      });
-      return correspondencias.size === 1 ? correspondencias.values().next().value : null;
-    }
-
     function sanitizeDocId(id) {
       return String(id || '').trim().replace(/[\/\.#$\[\]]/g, '_');
     }
 
         function syncToVault(caso) {
       if (!caso || !caso.CD_USUARIO) return;
-      const cod = chaveFicha(caso);
+      const cod = String(caso.CD_USUARIO).trim();
       const payload = {
         ...caso,
         ULTIMA_ATUALIZACAO: new Date().toLocaleString('pt-BR')
@@ -1456,10 +1596,14 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
       }
     }
 
-    function saveState() {
+    function saveState(sincronizarTudo = false) {
       try {
+        if (sincronizarTudo) {
+          activeCases.forEach(c => syncToVault(c));
+        } else if (currentCase) {
+          syncToVault(currentCase);
+        }
         localStorage.setItem(STORAGE_KEY, JSON.stringify(activeCases));
-        localStorage.setItem(HISTORY_KEY, JSON.stringify(historyLog));
         localStorage.setItem(VAULT_CASES_KEY, JSON.stringify(vaultCases));
       } catch (err) {
         console.warn('Alerta de armazenamento:', err);
@@ -1769,47 +1913,15 @@ function solicitarSubirPlanilha() {
       return 0;
     }
 
-    let cargaEmAndamento = false;
-
-    function dataEntradaPlanilha(valor, data1904) {
-      let partes;
-      if (typeof valor === 'number') {
-        const excel = XLSX.SSF.parse_date_code(valor, { date1904: data1904 });
-        if (excel) partes = [excel.y, excel.m, excel.d];
-      } else {
-        const texto = String(valor ?? '').trim();
-        const iso = /^(\d{4})-(\d{2})-(\d{2})$/.exec(texto);
-        const br = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(texto);
-        if (iso) partes = iso.slice(1).map(Number);
-        if (br) partes = [Number(br[3]), Number(br[2]), Number(br[1])];
-      }
-      if (!partes) return '';
-      const [ano, mes, dia] = partes;
-      const data = new Date(Date.UTC(ano, mes - 1, dia));
-      if (data.getUTCFullYear() !== ano || data.getUTCMonth() !== mes - 1 || data.getUTCDate() !== dia) return '';
-      return data.toISOString().slice(0, 10);
-    }
-
     function executarSubirPlanilha(event) {
       const file = (event && event.target && event.target.files) ? event.target.files[0] : null;
       if (!file) return;
-      if (cargaEmAndamento || !isCloudConnected || !supabaseClient) {
-        event.target.value = '';
-        alert(cargaEmAndamento ? 'Aguarde a carga atual.' : 'Conecte ao Supabase antes de carregar a fila.');
-        return;
-      }
-      cargaEmAndamento = true;
-      const liberarCarga = () => {
-        cargaEmAndamento = false;
-        event.target.value = '';
-      };
+
       const reader = new FileReader();
-      reader.onerror = () => { liberarCarga(); alert('Falha ao ler o arquivo. A fila anterior continua disponível.'); };
-      reader.onabort = liberarCarga;
       reader.onload = async function(e) {
         try {
           const data = new Uint8Array(e.target.result);
-          const workbook = XLSX.read(data, { type: 'array', cellDates: false });
+          const workbook = XLSX.read(data, { type: 'array', cellDates: true });
 
           if (!workbook || !workbook.SheetNames || workbook.SheetNames.length === 0) {
             alert('Não foi possível ler o arquivo. O arquivo pode estar vazio ou corrompido.');
@@ -1964,18 +2076,12 @@ function solicitarSubirPlanilha() {
             mapeamentoColunas.DIAS_AUTORIZACAO = colunasDeDias[0];
           }
 
-          const colunaEntrada = headerRow.findIndex(c => normalizarTexto(c) === 'entradanofidelizacao' ||
-            normalizarTexto(c) === 'entradafidelizacao');
-          const colunaProcedimento = headerRow.findIndex(c => ['cdprocedimento','codprocedimento','codigoprocedimento','tuss'].includes(normalizarTexto(c)));
-          if (colunaEntrada < 0 || colunaProcedimento < 0) {
-            throw new Error('A planilha precisa das colunas Entrada Fidelização e Código do Procedimento.');
-          }
           const dataRows = matrixFinal.slice(indiceCabecalho + 1);
-          const novosCasos = new Map();
+          const novosCasos = [];
           const dataHoje = new Date().toLocaleDateString('pt-BR') + ' - Importação Planilha';
-          let duplicadas = 0;
+          let recuperadosDoCofre = 0;
 
-          dataRows.forEach((row, indice) => {
+          dataRows.forEach((row) => {
             if (!row || !Array.isArray(row)) return;
             const temConteudo = row.some(cell => cell !== null && cell !== undefined && String(cell).trim() !== '');
             if (!temConteudo) return;
@@ -2001,12 +2107,9 @@ function solicitarSubirPlanilha() {
               return;
             }
 
-            const procedimento = String(row[colunaProcedimento] ?? '').trim();
-            const entrada = dataEntradaPlanilha(row[colunaEntrada], Boolean(workbook.Workbook?.WBProps?.date1904));
-            if (!codUsuario || !procedimento || !entrada) {
-              throw new Error('Código de usuário, procedimento ou data de entrada inválida na linha ' + (indiceCabecalho + indice + 2) + '.');
-            }
-            if (!nmUsuario) nmUsuario = 'Beneficiário ' + codUsuario;
+            if (!codUsuario && nmUsuario) codUsuario = 'GUIA_' + (novosCasos.length + 1);
+            if (codUsuario && !nmUsuario) nmUsuario = 'Beneficiário ' + codUsuario;
+            if (!codUsuario && !nmUsuario) return;
 
             let diasSla = 0;
             if (mapeamentoColunas.DIAS_AUTORIZACAO !== undefined && row[mapeamentoColunas.DIAS_AUTORIZACAO] !== undefined) {
@@ -2022,88 +2125,107 @@ function solicitarSubirPlanilha() {
             const obsEnfPlan = getVal('OBS_ENF');
             const obsAdmPlan = getVal('OBS_ADM');
 
-            const observacoes = [
-              ['Médico (Planilha)', obsMedPlan], ['Enfermagem (Planilha)', obsEnfPlan], ['ADM (Planilha)', obsAdmPlan]
-            ].filter(([, texto]) => texto).map(([author,text]) => ({ author, text, date: dataHoje }));
+            if (obsMedPlan) addImmutableLog(codUsuario, 'Médico (Planilha)', dataHoje, obsMedPlan);
+            if (obsEnfPlan) addImmutableLog(codUsuario, 'Enfermagem (Planilha)', dataHoje, obsEnfPlan);
+            if (obsAdmPlan) addImmutableLog(codUsuario, 'ADM (Planilha)', dataHoje, obsAdmPlan);
+
+            const salvoNoCofre = vaultCases[codUsuario] || {};
+            if (vaultCases[codUsuario]) recuperadosDoCofre++;
 
             const novoCaso = {
               CD_USUARIO: codUsuario,
-              ENTRADA_FIDELIZACAO: entrada,
-              OBSERVACOES_IMPORTACAO: observacoes,
               NM_USUARIO: nmUsuario,
               DIAS_AUTORIZACAO: diasSla,
-              DIAS_SETOR: diasSetor !== null ? diasSetor : null,
-              ASSUMIU_POR: '',
-              BASE: getVal('BASE', 'NDI'),
-              TIPO_PENDENCIA: getVal('TIPO_PENDENCIA', '69'),
-              GERENTE_MEDICO: getVal('GERENTE_MEDICO', ''),
-              MEDICO_CONSULTOR: getVal('MEDICO_CONSULTOR', ''),
-              STATUS_MED_CONSULTOR: '',
-              OBS_MED_CONSULTOR: obsMedPlan || '',
-              ENF: getVal('ENF', ''),
-              STATUS_ENF: '',
-              OBS_ENF: obsEnfPlan || '',
-              ADM: getVal('ADM', ''),
-              STATUS_ADM: '',
-              OBS_ADM: obsAdmPlan || '',
-              NM_PLANO: getVal('NM_PLANO', '-'),
-              NM_EMPRESA: getVal('NM_EMPRESA', '-'),
-              NM_PRESTADOR: getVal('NM_PRESTADOR', '-'),
-              PROCEDIMENTO_AGRUPADO: getVal('PROCEDIMENTO_AGRUPADO', '-'),
-              CD_PROCEDIMENTO: procedimento,
-              NM_SOLICITANTE: getVal('NM_SOLICITANTE', '-'),
-              CIDADE: getVal('CIDADE', '-'),
-              UF: getVal('UF', '-'),
-              STATUS_ORCAMENTO: getVal('STATUS_ORCAMENTO', ''),
-              VALOR_INICIAL: getVal('VALOR_INICIAL', ''),
-              MENOR_VALOR: getVal('MENOR_VALOR', ''),
-              'QUAL PACOTE?': getVal('QUAL PACOTE?', ''),
-              'VALOR PACOTE': getVal('VALOR PACOTE', ''),
-              PRESTADOR_PACOTE: '',
-              TIPO_DEMANDA: getVal('TIPO_DEMANDA', ''),
-              PRAZO_FINAL_DEMANDA: getVal('PRAZO_FINAL_DEMANDA', ''),
-              OBSERVACAO: '',
-              ENCAMINHAR: getVal('ENCAMINHAR', ''),
-              STATUS_COFRE: 'EM ANDAMENTO',
-              ULTIMO_DESFECHO: ''
+              DIAS_SETOR: diasSetor !== null ? diasSetor : (salvoNoCofre.DIAS_SETOR !== undefined ? salvoNoCofre.DIAS_SETOR : null),
+              ASSUMIU_POR: salvoNoCofre.ASSUMIU_POR || '',
+              BASE: getVal('BASE', salvoNoCofre.BASE || 'NDI'),
+              TIPO_PENDENCIA: getVal('TIPO_PENDENCIA', salvoNoCofre.TIPO_PENDENCIA || '69'),
+              GERENTE_MEDICO: getVal('GERENTE_MEDICO', salvoNoCofre.GERENTE_MEDICO || ''),
+              MEDICO_CONSULTOR: getVal('MEDICO_CONSULTOR', salvoNoCofre.MEDICO_CONSULTOR || ''),
+              STATUS_MED_CONSULTOR: salvoNoCofre.STATUS_MED_CONSULTOR || '',
+              OBS_MED_CONSULTOR: obsMedPlan || salvoNoCofre.OBS_MED_CONSULTOR || '',
+              ENF: getVal('ENF', salvoNoCofre.ENF || ''),
+              STATUS_ENF: salvoNoCofre.STATUS_ENF || '',
+              OBS_ENF: obsEnfPlan || salvoNoCofre.OBS_ENF || '',
+              ADM: getVal('ADM', salvoNoCofre.ADM || ''),
+              STATUS_ADM: salvoNoCofre.STATUS_ADM || '',
+              OBS_ADM: obsAdmPlan || salvoNoCofre.OBS_ADM || '',
+              NM_PLANO: getVal('NM_PLANO', salvoNoCofre.NM_PLANO || '-'),
+              NM_EMPRESA: getVal('NM_EMPRESA', salvoNoCofre.NM_EMPRESA || '-'),
+              NM_PRESTADOR: getVal('NM_PRESTADOR', salvoNoCofre.NM_PRESTADOR || '-'),
+              PROCEDIMENTO_AGRUPADO: getVal('PROCEDIMENTO_AGRUPADO', salvoNoCofre.PROCEDIMENTO_AGRUPADO || '-'),
+              CD_PROCEDIMENTO: getVal('CD_PROCEDIMENTO', salvoNoCofre.CD_PROCEDIMENTO || '-'),
+              NM_SOLICITANTE: getVal('NM_SOLICITANTE', salvoNoCofre.NM_SOLICITANTE || '-'),
+              CIDADE: getVal('CIDADE', salvoNoCofre.CIDADE || '-'),
+              UF: getVal('UF', salvoNoCofre.UF || '-'),
+              STATUS_ORCAMENTO: getVal('STATUS_ORCAMENTO', salvoNoCofre.STATUS_ORCAMENTO || ''),
+              VALOR_INICIAL: getVal('VALOR_INICIAL', salvoNoCofre.VALOR_INICIAL || ''),
+              MENOR_VALOR: getVal('MENOR_VALOR', salvoNoCofre.MENOR_VALOR || ''),
+              'QUAL PACOTE?': getVal('QUAL PACOTE?', salvoNoCofre['QUAL PACOTE?'] || ''),
+              'VALOR PACOTE': getVal('VALOR PACOTE', salvoNoCofre['VALOR PACOTE'] || ''),
+              PRESTADOR_PACOTE: salvoNoCofre.PRESTADOR_PACOTE || '',
+              TIPO_DEMANDA: getVal('TIPO_DEMANDA', salvoNoCofre.TIPO_DEMANDA || ''),
+              PRAZO_FINAL_DEMANDA: getVal('PRAZO_FINAL_DEMANDA', salvoNoCofre.PRAZO_FINAL_DEMANDA || ''),
+              OBSERVACAO: salvoNoCofre.OBSERVACAO || '',
+              ENCAMINHAR: getVal('ENCAMINHAR', salvoNoCofre.ENCAMINHAR || ''),
+              STATUS_COFRE: salvoNoCofre.STATUS_COFRE || 'EM ANDAMENTO',
+              ULTIMO_DESFECHO: salvoNoCofre.ULTIMO_DESFECHO || ''
             };
 
-            const chave = JSON.stringify([codUsuario, procedimento, entrada]);
-            const existente = novosCasos.get(chave);
-            if (existente) {
-              if (JSON.stringify(existente) !== JSON.stringify(novoCaso)) {
-                throw new Error('Duas linhas da mesma ficha têm informações divergentes. Confira a linha ' + (indiceCabecalho + indice + 2) + '.');
-              }
-              duplicadas++;
-            } else {
-              novosCasos.set(chave, novoCaso);
-            }
+            novosCasos.push(novoCaso);
+            syncToVault(novoCaso);
           });
 
-          if (!novosCasos.size) throw new Error('Nenhuma ficha válida foi encontrada.');
-          const { data: gravacao, error } = await supabaseClient.rpc('importar_fila_pendencias_v2', {
-            p_fichas: Array.from(novosCasos.values())
-          });
-          if (error || !Array.isArray(gravacao?.fichas)) {
-            throw error || new Error('Supabase não confirmou a nova fila.');
+          if (novosCasos.length === 0) {
+            alert('Nenhum caso identificado na planilha.');
+            return;
           }
-          activeCases = gravacao.fichas;
-          activeCases.forEach(ficha => { vaultCases[chaveFicha(ficha)] = ficha; });
+
+          // Se estiver conectado na Nuvem, sincroniza em lote para todos os 30 usuários
+          // Se estiver conectado na Nuvem, sincroniza em lote para todos os 30 usuÃ¡rios
+          if (isCloudConnected && supabaseClient) {
+            // Deduplica por cd_usuario para evitar o erro fatal do Postgres 'ON CONFLICT DO UPDATE cannot affect row a second time'
+            const mapaUnicos = new Map();
+            novosCasos.forEach(c => {
+              const cod = String(c.CD_USUARIO).trim();
+              if (cod) mapaUnicos.set(cod, c);
+            });
+
+            const rows = Array.from(mapaUnicos.values()).map(c => ({
+              cd_usuario: String(c.CD_USUARIO).trim(),
+              dados: c,
+              updated_at: new Date().toISOString()
+            }));
+
+            // Envia em lotes de 50 para garantir velocidade e estabilidade
+            let errosEnvio = 0;
+            for (let i = 0; i < rows.length; i += 50) {
+              const chunk = rows.slice(i, i + 50);
+              const { error: upsertErr } = await supabaseClient.from('casos_ativos').upsert(chunk);
+              if (upsertErr) {
+                console.error('Erro ao subir lote no Supabase:', upsertErr);
+                errosEnvio++;
+              }
+            }
+            if (errosEnvio > 0) {
+              alert('âš ï¸ AtenÃ§Ã£o: Ocorreu uma instabilidade ao enviar alguns casos para a Nuvem. Verifique o console.');
+            }
+          }
+
+          activeCases = novosCasos;
           saveState();
           render();
-          alert(`Supabase confirmou ${activeCases.length} fichas na fila.\n${duplicadas} linhas idênticas consolidadas. ${gravacao.finalizadas_preservadas} finalizações preservadas.`);
+          alert(`✅ Sucesso! ${novosCasos.length} casos carregados.\n${isCloudConnected ? '☁️ Sincronizados na Nuvem para todos os operadores!' : '⚠️ Salvos apenas neste navegador.'}\n🔒 ${recuperadosDoCofre} casos vinculados ao histórico existente.`);
         } catch (err) {
-          console.error('Falha na importação:', err);
-          alert('Carga não confirmada. Atualize a página antes de tentar novamente. ' + (err.message || ''));
+          console.error(err);
+          alert('Erro ao processar planilha: ' + (err.message || err));
         } finally {
-          liberarCarga();
+          if (event && event.target) {
+            try { event.target.value = ''; } catch (_) {}
+          }
         }
       };
-      try {
-        reader.readAsArrayBuffer(file);
-      } catch (_) {
-        reader.onerror();
-      }
+      reader.readAsArrayBuffer(file);
     }
 
     function exportarPlanilhaBaseHistorico() {
@@ -2119,8 +2241,6 @@ function solicitarSubirPlanilha() {
         const resumoHistorico = logs.map(l => `[${l.date} - ${l.author}]: ${l.text}`).join(' | ');
         return {
           'STATUS_COFRE': c.STATUS_COFRE || 'ATIVO',
-          'ID_FICHA': cod,
-          'ENTRADA_FIDELIZACAO': c.ENTRADA_FIDELIZACAO || '',
           'CD_USUARIO': c.CD_USUARIO || cod,
           'NM_USUARIO': c.NM_USUARIO || '-',
           'BASE': c.BASE || 'NDI',
@@ -2143,8 +2263,10 @@ function solicitarSubirPlanilha() {
           'OBSERVACAO': c.OBSERVACAO || '',
           'STATUS_ORCAMENTO': c.STATUS_ORCAMENTO || '',
           'VALOR_INICIAL': c.VALOR_INICIAL || '',
+          'ORIGEM_VALOR_INICIAL': c.ORIGEM_VALOR_INICIAL || 'Lecom',
           'MENOR_VALOR': c.MENOR_VALOR || '',
           'VALOR_PACOTE': c['VALOR PACOTE'] || '',
+          'VALOR_RESOLUCAO': c.VALOR_RESOLUCAO || '',
           'QUAL_PACOTE': c['QUAL PACOTE?'] || '',
           'PRESTADOR_PACOTE': c.PRESTADOR_PACOTE || '',
           'PROCEDIMENTO_AGRUPADO': c.PROCEDIMENTO_AGRUPADO || '',
@@ -2168,8 +2290,7 @@ function solicitarSubirPlanilha() {
         const c = vaultCases[cod] || {};
         (historyLog[cod] || []).forEach(l => {
           linhasLogs.push({
-            'ID_FICHA': cod,
-            'CD_USUARIO': c.CD_USUARIO || cod,
+            'CD_USUARIO': cod,
             'NM_USUARIO': c.NM_USUARIO || '-',
             'DATA_HORA': l.date,
             'AUTOR': l.author,
@@ -2206,7 +2327,7 @@ function solicitarSubirPlanilha() {
             const rows = XLSX.utils.sheet_to_json(wb.Sheets['Casos_Consolidados'], { defval: '' });
             rows.forEach(r => {
               if (!r.CD_USUARIO) return;
-              const cod = chaveFicha(r);
+              const cod = String(r.CD_USUARIO).trim();
               vaultCases[cod] = {
                 ...(vaultCases[cod] || {}),
                 ...r,
@@ -2228,13 +2349,13 @@ function solicitarSubirPlanilha() {
             const logs = XLSX.utils.sheet_to_json(wb.Sheets['Linha_do_Tempo_Logs'], { defval: '' });
             logs.forEach(l => {
               if (!l.CD_USUARIO || !l.REGISTRO_HISTORICO) return;
-              addImmutableLog(chaveFicha(l), l.AUTOR || 'Sistema', l.DATA_HORA || '-', l.REGISTRO_HISTORICO);
+              addImmutableLog(l.CD_USUARIO, l.AUTOR || 'Sistema', l.DATA_HORA || '-', l.REGISTRO_HISTORICO);
               logsImportados++;
             });
           }
 
           activeCases = activeCases.map(c => {
-            const salvo = vaultCases[chaveFicha(c)];
+            const salvo = vaultCases[c.CD_USUARIO];
             return salvo ? { ...c, ...salvo } : c;
           });
 
@@ -2305,7 +2426,7 @@ function solicitarSubirPlanilha() {
         c.MICRO_DESFECHO,
         c.ENCAMINHAR,
         c.ULTIMO_DESFECHO,
-        (historyLog[chaveFicha(c)] || []).map(l => l.text || '').join(' ')
+        (historyLog[c.CD_USUARIO] || []).map(l => l.text || '').join(' ')
       ].filter(Boolean).join(' ').toLowerCase();
 
       const temAusencia = texto.includes('ausência completa de consenso') || 
@@ -2385,7 +2506,7 @@ function solicitarSubirPlanilha() {
       if (!termo) return true;
 
       // Coleta todas as observações/logs da linha do tempo deste caso
-      const logsTexto = (historyLog[chaveFicha(c)] || []).map(l => `${l.author || ''} ${l.text || ''}`).join(' ');
+      const logsTexto = (historyLog[c.CD_USUARIO] || []).map(l => `${l.author || ''} ${l.text || ''}`).join(' ');
 
       // Contexto semântico para encontrar mesmo quando o usuário busca termos como "enfermeira", "adm", "demanda"
       let contextoSemantico = '';
@@ -2457,6 +2578,97 @@ function solicitarSubirPlanilha() {
         if (medFiltro && (!c.GERENTE_MEDICO || c.GERENTE_MEDICO.trim() !== medFiltro)) return false;
         return casoCorrespondeBusca(c, q);
       }).sort((a, b) => (b.DIAS_AUTORIZACAO || 0) - (a.DIAS_AUTORIZACAO || 0));
+    }
+
+    const LISTA_GERENTES_MEDICOS_6_OPCOES = [
+      "Amanda",
+      "Diego",
+      "João Henrique",
+      "Lorena Santana",
+      "Marcela Gutierre",
+      "Murilo Fernandes"
+    ];
+
+    function popularSelectTrocarGerente() {
+      const select = document.getElementById('selectTrocarGerenteMedico');
+      if (!select || !currentCase) return;
+
+      const atual = (currentCase.GERENTE_MEDICO || '').trim();
+
+      let html = '<option value="">-- Selecione o Gerente Médico --</option>';
+      LISTA_GERENTES_MEDICOS_6_OPCOES.forEach(m => {
+        let isSelected = false;
+        if (atual) {
+          const atClean = atual.toLowerCase().replace(/dr\(a\)\.?|dr\.?|dra\.?/g, '').trim();
+          const mClean = m.toLowerCase().trim();
+          if (atClean === mClean || atClean.startsWith(mClean) || mClean.startsWith(atClean)) {
+            isSelected = true;
+          }
+        }
+        html += `<option value="${m}" ${isSelected ? 'selected' : ''}>Dr(a). ${m}</option>`;
+      });
+      select.innerHTML = html;
+    }
+
+    async function trocarGerenteMedicoCaso(novoGerente) {
+      if (!currentCase || !novoGerente) {
+        popularSelectTrocarGerente();
+        return;
+      }
+
+      const gerenteAnterior = (currentCase.GERENTE_MEDICO || '').trim() || 'Não atribuído';
+      if (gerenteAnterior.toLowerCase() === novoGerente.toLowerCase()) {
+        return;
+      }
+
+      const formatadoAnterior = gerenteAnterior.startsWith('Dr') ? gerenteAnterior : 'Dr(a). ' + gerenteAnterior;
+      const formatadoNovo = 'Dr(a). ' + novoGerente;
+
+      const confirmou = confirm(`Deseja alterar o Gerente Médico deste caso de:\n${formatadoAnterior}\n\nPara:\n${formatadoNovo}?\n\nEssa alteração ficará gravada na Linha do Tempo.`);
+      if (!confirmou) {
+        popularSelectTrocarGerente();
+        return;
+      }
+
+      // 1. Atualiza no objeto atual
+      currentCase.GERENTE_MEDICO = novoGerente;
+
+      // 2. Atualiza a exibição em EQUIPA DESIGNADA
+      const elMedResp = document.getElementById('singleDetailMedResponsavel');
+      if (elMedResp) {
+        elMedResp.innerText = formatadoNovo;
+      }
+
+      // 3. Atualiza o seletor
+      popularSelectTrocarGerente();
+
+      // 4. Registra na Linha do Tempo (histórico)
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('pt-BR') + ' às ' + now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      const textoLog = `🔄 Troca de Gerente Médico: alterado de "${formatadoAnterior}" para "${formatadoNovo}".`;
+      addImmutableLog(currentCase.CD_USUARIO, `${operadorAtual || 'Operador'} (Troca de Gerente)`, dateStr, textoLog);
+
+      // 5. Salva no cofre e storage
+      syncToVault(currentCase);
+      saveState();
+
+      // 6. Sincroniza casos_ativos no Supabase se conectado
+      if (isCloudConnected && supabaseClient) {
+        try {
+          await supabaseClient.from('casos_ativos').upsert({
+            cd_usuario: String(currentCase.CD_USUARIO).trim(),
+            dados: currentCase,
+            updated_at: new Date().toISOString()
+          });
+        } catch (err) {
+          console.warn('Erro ao sincronizar troca de gerente no Supabase:', err);
+        }
+      }
+
+      // 7. Re-renderiza a Linha do Tempo e Filtro de Médicos
+      renderSingleTimeline();
+      popularFiltroMedicos();
+      render();
     }
 
     function popularSelectAssumiuCaso() {
@@ -2568,12 +2780,12 @@ function solicitarSubirPlanilha() {
     }
 
         function openCaseDetail(cod) {
-      currentCase = buscarFicha(String(cod));
+      currentCase = activeCases.find(c => String(c.CD_USUARIO) === String(cod)) || vaultCases[String(cod)];
       if (!currentCase) return;
 
       // Atualiza o hash da URL para permitir compartilhamento direto por link
       try {
-        history.replaceState(null, null, '#caso=' + encodeURIComponent(chaveFicha(currentCase)));
+        history.replaceState(null, null, '#caso=' + encodeURIComponent(cod));
       } catch (_) {}
 
       document.getElementById('screen-main').classList.add('hidden');
@@ -2658,7 +2870,7 @@ function solicitarSubirPlanilha() {
       if (elProc) elProc.innerText = currentCase.PROCEDIMENTO_AGRUPADO || '-';
 
       const elTuss = document.getElementById('singleDetailTUSS');
-      if (elTuss) elTuss.innerText = 'CÃ³d. TUSS: ' + (currentCase.CD_PROCEDIMENTO || '-');
+      if (elTuss) elTuss.innerText = 'C\u00f3d. TUSS: ' + (currentCase.CD_PROCEDIMENTO || '-');
 
       const elProv = document.getElementById('singleDetailProvider');
       if (elProv) elProv.innerText = currentCase.NM_PRESTADOR || '-';
@@ -2671,13 +2883,19 @@ function solicitarSubirPlanilha() {
 
       // OrÃ§amento
       const elValIni = document.getElementById('editCaseValorInicial');
-      if (elValIni) elValIni.value = currentCase.VALOR_INICIAL || '';
+      if (elValIni) elValIni.value = formatarMoedaTexto(currentCase.VALOR_INICIAL) || currentCase.VALOR_INICIAL || '';
+
+      const elOrigemValIni = document.getElementById('editCaseOrigemValorInicial');
+      if (elOrigemValIni) elOrigemValIni.value = currentCase.ORIGEM_VALOR_INICIAL || 'Lecom';
 
       const elMenorVal = document.getElementById('editCaseMenorValor');
-      if (elMenorVal) elMenorVal.value = currentCase.MENOR_VALOR || '';
+      if (elMenorVal) elMenorVal.value = formatarMoedaTexto(currentCase.MENOR_VALOR) || currentCase.MENOR_VALOR || '';
 
       const elValPac = document.getElementById('editCaseValorPacote');
-      if (elValPac) elValPac.value = currentCase['VALOR PACOTE'] || '';
+      if (elValPac) elValPac.value = formatarMoedaTexto(currentCase['VALOR PACOTE']) || currentCase['VALOR PACOTE'] || '';
+
+      const elValRes = document.getElementById('editCaseValorResolucao');
+      if (elValRes) elValRes.value = formatarMoedaTexto(currentCase.VALOR_RESOLUCAO) || currentCase.VALOR_RESOLUCAO || '';
 
       const elQualPac = document.getElementById('editCaseQualPacote');
       if (elQualPac) elQualPac.value = currentCase['QUAL PACOTE?'] || '';
@@ -2689,6 +2907,7 @@ function solicitarSubirPlanilha() {
       const elMedResp = document.getElementById('singleDetailMedResponsavel');
       if (elMedResp) elMedResp.innerText = currentCase.GERENTE_MEDICO ? 'Dr(a). ' + currentCase.GERENTE_MEDICO : 'NÃ£o AtribuÃ­do';
 
+      popularSelectTrocarGerente();
       popularSelectAssumiuCaso();
       const elAssumiu = document.getElementById('editCaseAssumiuPor');
       if (elAssumiu) elAssumiu.value = currentCase.ASSUMIU_POR || '';
@@ -2729,7 +2948,7 @@ function solicitarSubirPlanilha() {
     function renderSingleTimeline() {
       if (!currentCase) return;
       const container = document.getElementById('singleTimelineContainer');
-      const logs = historyLog[chaveFicha(currentCase)] || [];
+      const logs = historyLog[currentCase.CD_USUARIO] || [];
       document.getElementById('singleTimelineCount').innerText = logs.length + ' registos blindados';
 
       if (logs.length === 0) {
@@ -2799,20 +3018,62 @@ function solicitarSubirPlanilha() {
 
       const now = new Date();
       const dateStr = now.toLocaleDateString('pt-BR') + ' às ' + now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-      addImmutableLog(chaveFicha(currentCase), `${operadorAtual} (Andamento)`, dateStr, texto);
+      addImmutableLog(currentCase.CD_USUARIO, `${operadorAtual} (Andamento)`, dateStr, texto);
       syncToVault(currentCase);
       saveState();
       input.value = '';
       renderSingleTimeline();
     }
 
+    function formatarMoedaInput(el) {
+      if (!el) return;
+      let v = el.value.replace(/\D/g, '');
+      if (!v) {
+        el.value = '';
+        return;
+      }
+      const num = (parseInt(v, 10) / 100).toFixed(2);
+      const partes = num.split('.');
+      const intPart = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+      el.value = 'R$ ' + intPart + ',' + partes[1];
+    }
+
+    function parseMoedaBR(str) {
+      if (!str) return 0;
+      if (typeof str === 'number') return str;
+      const limpo = String(str).replace(/[^\d,-]/g, '').replace(',', '.');
+      const n = parseFloat(limpo);
+      return isNaN(n) ? 0 : n;
+    }
+
+    function formatarMoedaTexto(valor) {
+      if (valor === undefined || valor === null || valor === '') return '';
+      const str = String(valor).trim();
+      if (!str) return '';
+      if (str.startsWith('R$')) return str;
+      const n = parseMoedaBR(str);
+      if (isNaN(n) || n === 0) return str;
+      return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    let timerAutoSalvarProfissionais = null;
+
     function autoSalvarProfissionais() {
+      if (timerAutoSalvarProfissionais) clearTimeout(timerAutoSalvarProfissionais);
+      timerAutoSalvarProfissionais = setTimeout(() => {
+        executarSalvarProfissionaisAgora();
+      }, 300);
+    }
+
+    function executarSalvarProfissionaisAgora() {
       if (!currentCase) return;
-      currentCase.VALOR_INICIAL = document.getElementById('editCaseValorInicial').value;
-      currentCase.MENOR_VALOR = document.getElementById('editCaseMenorValor').value;
-      currentCase['VALOR PACOTE'] = document.getElementById('editCaseValorPacote').value;
-      currentCase['QUAL PACOTE?'] = document.getElementById('editCaseQualPacote').value;
-      currentCase.PRESTADOR_PACOTE = document.getElementById('editCasePrestadorPacote').value;
+      currentCase.VALOR_INICIAL = document.getElementById('editCaseValorInicial')?.value || '';
+      currentCase.ORIGEM_VALOR_INICIAL = document.getElementById('editCaseOrigemValorInicial')?.value || 'Lecom';
+      currentCase.MENOR_VALOR = document.getElementById('editCaseMenorValor')?.value || '';
+      currentCase['VALOR PACOTE'] = document.getElementById('editCaseValorPacote')?.value || '';
+      currentCase.VALOR_RESOLUCAO = document.getElementById('editCaseValorResolucao')?.value || '';
+      currentCase['QUAL PACOTE?'] = document.getElementById('editCaseQualPacote')?.value || '';
+      currentCase.PRESTADOR_PACOTE = document.getElementById('editCasePrestadorPacote')?.value || '';
 
       if (document.getElementById('editCaseObservacao')) {
         currentCase.OBSERVACAO = document.getElementById('editCaseObservacao').value;
@@ -2834,13 +3095,13 @@ function solicitarSubirPlanilha() {
         currentCase.ENCAMINHAR = document.getElementById('singleSelectEncaminhar').value;
       }
       
-      const idx = activeCases.findIndex(c => chaveFicha(c) === chaveFicha(currentCase));
+      const idx = activeCases.findIndex(c => String(c.CD_USUARIO) === String(currentCase.CD_USUARIO));
       if (idx !== -1) activeCases[idx] = { ...currentCase };
       
-      // Salva no Supabase instantaneamente para que os outros 29 vejam
+      // Salva no Supabase em segundo plano
       if (isCloudConnected && supabaseClient) {
         supabaseClient.from('casos_ativos').upsert({
-          cd_usuario: chaveFicha(currentCase),
+          cd_usuario: String(currentCase.CD_USUARIO).trim(),
           dados: currentCase,
           updated_at: new Date().toISOString()
         }).then(({ error }) => { if (error) console.error('Erro save caso ativo:', error); });
@@ -2880,40 +3141,43 @@ function solicitarSubirPlanilha() {
       "P75 (Novo Formato enviado para acolhimento na Rede Credenciada)": "ENVIO \u00c0 P75 PARA TRATATIVA DE NOVO FORMATO, COM AS SEGUINTES INFORMA\u00c7\u00d5ES: M\u00c9DICO INDICADO: [NOME DO M\u00c9DICO]. ESPECIALIDADE: [ESPECIALIDADE]. REDE: [PR\u00d3PRIA OU CREDENCIADA]. CONSULTA AGENDADA PARA [DATA] \u00c0S [HOR\u00c1RIO]. PRESTADOR/LOCAL DE ATENDIMENTO: [NOME DO PRESTADOR]. ENDERE\u00c7O: [ENDERE\u00c7O COMPLETO]. EVID\u00caNCIA DE ORIENTA\u00c7\u00c3O PR\u00c9VIA DO M\u00c9DICO FIDELIZADO SOBRE O CASO: [DESCREVER OU ANEXAR EVID\u00caNCIA]."
     };
 
+    const mapaNormalizadoModelosSIGO = {};
+    for (const k in modelosFinalizacaoSIGO) {
+      const nK = String(k).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+      mapaNormalizadoModelosSIGO[nK] = modelosFinalizacaoSIGO[k];
+    }
+
     function buscarTextoModeloFinalizacao(desfecho) {
       if (!desfecho) return '';
       if (modelosFinalizacaoSIGO[desfecho]) return modelosFinalizacaoSIGO[desfecho];
-      
-      const norm = function(s) {
-        return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
-      };
-      const target = norm(desfecho);
-      for (const key in modelosFinalizacaoSIGO) {
-        if (norm(key) === target) return modelosFinalizacaoSIGO[key];
-      }
-      return '';
+      const target = String(desfecho).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+      return mapaNormalizadoModelosSIGO[target] || '';
     }
 
     function aoMudarDesfecho(valor) {
       const val = valor || document.getElementById('singleSelectDesfecho')?.value || '';
+      
+      // 1. Atualização instantânea na tela (zero atraso para o usuário)
+      const notaEl = document.getElementById('singleInputNota');
+      if (notaEl) {
+        if (val) {
+          const textoModelo = buscarTextoModeloFinalizacao(val);
+          notaEl.value = textoModelo || '';
+        } else {
+          notaEl.value = '';
+        }
+      }
+
+      // 2. Gravação em memória e salvamento assíncrono em segundo plano
       if (currentCase) {
         currentCase.DESFECHO = val;
         autoSalvarProfissionais();
       }
-      const notaEl = document.getElementById('singleInputNota');
-      if (notaEl && val) {
-        const textoModelo = buscarTextoModeloFinalizacao(val);
-        if (textoModelo) {
-          notaEl.value = textoModelo;
-        }
-      }
     }
 
-    let finalizacaoEmAndamento = false;
-    let tentativaFinalizacao = null;
-
-    async function singleConcluirCasoOK() {
-      if (!currentCase || finalizacaoEmAndamento || currentCase.STATUS_COFRE === 'CONCLU\u00cdDO') return;
+    function singleConcluirCasoOK() {
+      if (!currentCase) return;
+      if (timerAutoSalvarProfissionais) clearTimeout(timerAutoSalvarProfissionais);
       const desfecho = document.getElementById('singleSelectDesfecho')?.value || '';
       const nota = document.getElementById('singleInputNota')?.value.trim() || '';
 
@@ -2926,60 +3190,63 @@ function solicitarSubirPlanilha() {
         return;
       }
 
-      if (!isCloudConnected || !supabaseClient) {
-        alert('Conecte ao Supabase para finalizar a ficha.');
+      const desfechoCompleto = desfecho;
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('pt-BR') + ' \u00e0s ' + now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+      addImmutableLog(
+        currentCase.CD_USUARIO,
+        operadorAtual + ' (Finaliza\u00e7\u00e3o)',
+        dateStr,
+        '[DESFECHO: ' + desfechoCompleto + '] - ' + nota,
+        { desfecho: desfechoCompleto, sigo: nota }
+      );
+
+      currentCase.DESFECHO = desfecho;
+      currentCase.MICRO_DESFECHO = desfecho;
+      currentCase.FINALIZACAO_SIGO = nota;
+      currentCase.STATUS_COFRE = 'CONCLU\u00cdDO';
+      currentCase.ULTIMO_DESFECHO = desfechoCompleto + ' (' + nota + ')';
+      syncToVault(currentCase);
+
+      const dUpper = (desfecho || '').toUpperCase();
+      const permaneceNaEsteira = dUpper.includes('GNMED') || dUpper.includes('CONG\u00caNERE') || dUpper.includes('CONGENERE');
+
+      if (permaneceNaEsteira) {
+        currentCase.STATUS_ESTEIRA = desfecho;
+        const idx = activeCases.findIndex(function(c) {
+          return String(c.CD_USUARIO) === String(currentCase.CD_USUARIO);
+        });
+        if (idx !== -1) activeCases[idx] = { ...currentCase };
+        
+        if (isCloudConnected && supabaseClient) {
+          supabaseClient.from('casos_ativos').upsert({
+            cd_usuario: String(currentCase.CD_USUARIO).trim(),
+            dados: currentCase,
+            updated_at: new Date().toISOString()
+          }).then(function(res) {
+            if (res && res.error) console.error('Erro ao atualizar casos_ativos:', res.error);
+          });
+        }
+        saveState();
+        alert('Desfecho registrado com sucesso! Por ser ' + (dUpper.includes('GNMED') ? 'GNMED' : 'Cong\u00eanere') + ', o caso continua na Esteira Ativa.');
+        closeCaseDetail();
         return;
       }
 
-      const codigo = chaveFicha(currentCase);
-      const ficha = {
-        ...currentCase,
-        DESFECHO: desfecho,
-        MICRO_DESFECHO: desfecho,
-        FINALIZACAO_SIGO: nota,
-        STATUS_COFRE: 'CONCLU\u00cdDO',
-        ULTIMO_DESFECHO: desfecho + ' (' + nota + ')',
-        FINALIZADO_POR: operadorAtual,
-        ULTIMA_ATUALIZACAO: new Date().toLocaleString('pt-BR')
-      };
-      const evento = {
-        author: operadorAtual + ' (Finaliza\u00e7\u00e3o)',
-        text: '[DESFECHO: ' + desfecho + '] - ' + nota,
-        desfecho,
-        sigo: nota
-      };
-      const assinatura = JSON.stringify([codigo, desfecho, nota, operadorAtual]);
-      if (tentativaFinalizacao?.assinatura !== assinatura) {
-        tentativaFinalizacao = { assinatura, id: crypto.randomUUID() };
+      // Demais desfechos: Remove de casos_ativos na Nuvem
+      if (isCloudConnected && supabaseClient) {
+        supabaseClient.from('casos_ativos').delete().eq('cd_usuario', String(currentCase.CD_USUARIO).trim()).then(function(res) {
+          if (res && res.error) console.error('Erro ao remover de casos_ativos:', res.error);
+        });
       }
 
-      finalizacaoEmAndamento = true;
-      try {
-        const { data, error } = await supabaseClient.rpc('finalizar_ficha_painel_v2', {
-          p_dados: ficha, p_evento: evento, p_requisicao: tentativaFinalizacao.id
-        });
-        if (error || !data?.ficha || !Array.isArray(data.eventos)) {
-          throw error || new Error('Resposta incompleta do Supabase');
-        }
-        vaultCases[codigo] = data.ficha;
-        historyLog[codigo] = data.eventos;
-        activeCases = activeCases.filter(c => chaveFicha(c) !== codigo);
-        tentativaFinalizacao = null;
-        try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(activeCases));
-          localStorage.setItem(VAULT_CASES_KEY, JSON.stringify(vaultCases));
-          localStorage.setItem(HISTORY_KEY, JSON.stringify(historyLog));
-        } catch (erroLocal) {
-          console.warn('Finalização confirmada, cache local indisponível.', erroLocal);
-        }
-        alert('Supabase confirmou a finalização. O desfecho e a nota SIGO foram salvos.');
-        if (chaveFicha(currentCase) === codigo) closeCaseDetail();
-      } catch (erro) {
-        console.error('O Supabase não confirmou a finalização:', erro);
-        alert('O Supabase não confirmou a finalização. Confira a conexão e tente novamente.');
-      } finally {
-        finalizacaoEmAndamento = false;
-      }
+      activeCases = activeCases.filter(function(c) {
+        return String(c.CD_USUARIO) !== String(currentCase.CD_USUARIO);
+      });
+      saveState();
+      alert('Guia finalizada e arquivada permanentemente no Cofre de Hist\u00f3rico!');
+      closeCaseDetail();
     }
 
     function copiarFichaCasoAtual() {
@@ -2988,15 +3255,17 @@ function solicitarSubirPlanilha() {
       // Gerar link direto para este caso (funciona na web hospedada ou localmente)
       let linkDireto = '';
       if (window.location.protocol.startsWith('http')) {
-        linkDireto = `${window.location.origin}${window.location.pathname}#caso=${encodeURIComponent(chaveFicha(currentCase))}`;
+        linkDireto = `${window.location.origin}${window.location.pathname}#caso=${encodeURIComponent(currentCase.CD_USUARIO)}`;
       } else {
-        linkDireto = `${window.location.href.split('#')[0]}#caso=${encodeURIComponent(chaveFicha(currentCase))}`;
+        linkDireto = `${window.location.href.split('#')[0]}#caso=${encodeURIComponent(currentCase.CD_USUARIO)}`;
       }
 
       // Coleta dados dos inputs em tempo real para garantir que pegou o que foi preenchido
       const valorInicial = document.getElementById('editCaseValorInicial')?.value || currentCase.VALOR_INICIAL || 'Não informado';
+      const origemValorInicial = document.getElementById('editCaseOrigemValorInicial')?.value || currentCase.ORIGEM_VALOR_INICIAL || 'Lecom';
       const menorValor = document.getElementById('editCaseMenorValor')?.value || currentCase.MENOR_VALOR || 'Não informado';
       const valorPacote = document.getElementById('editCaseValorPacote')?.value || currentCase['VALOR PACOTE'] || 'Não informado';
+      const valorResolucao = document.getElementById('editCaseValorResolucao')?.value || currentCase.VALOR_RESOLUCAO || 'Não informado';
       const qualPacote = document.getElementById('editCaseQualPacote')?.value || currentCase['QUAL PACOTE?'] || 'Não informado';
       const prestadorPacote = document.getElementById('editCasePrestadorPacote')?.value || currentCase.PRESTADOR_PACOTE || 'Não informado';
       const solicitante = document.getElementById('editCaseSolicitante')?.value || currentCase.NM_SOLICITANTE || '-';
@@ -3006,7 +3275,7 @@ function solicitarSubirPlanilha() {
       const obsLegadas = [currentCase.OBS_MED_CONSULTOR, currentCase.OBS_ENF, currentCase.OBS_ADM].filter(Boolean).join('\n').trim();
       const observacaoFinal = observacaoInput;
 
-      const logs = historyLog[chaveFicha(currentCase)] || [];
+      const logs = historyLog[currentCase.CD_USUARIO] || [];
       const ultimosLogs = logs.slice(0, 3).map(l => `• [${l.date}] ${l.author}: ${l.text}`).join('\n');
 
       let txt = `📋 *FICHA DE CASO - FIDELIZAÇÃO HAPVIDA NDI*\n`;
@@ -3029,9 +3298,10 @@ function solicitarSubirPlanilha() {
       txt += `• *Local:* ${currentCase.CIDADE || '-'} - ${currentCase.UF || '-'}\n`;
       txt += `• *Solicitante:* ${solicitante}\n`;
       txt += `\n💰 *ORÇAMENTO & PACOTE NEGOCIADO*\n`;
-      txt += `• *Valor Inicial:* ${valorInicial}\n`;
+      txt += `• *Valor Inicial (${origemValorInicial}):* ${valorInicial}\n`;
       txt += `• *Valor Negociado:* ${menorValor}\n`;
       txt += `• *Valor Pacote:* ${valorPacote}\n`;
+      txt += `• *Valor Resolução:* ${valorResolucao}\n`;
       txt += `• *Qual Pacote:* ${qualPacote}\n`;
       txt += `• *Prestador Pacote:* ${prestadorPacote}\n`;
       txt += `\n👥 *EQUIPE DESIGNADA*\n`;
@@ -3087,10 +3357,10 @@ function solicitarSubirPlanilha() {
       document.getElementById('kpi-concluidas').innerText = totalNoCofre;
 
       const buildCard = (c) => {
-        const qtdLogs = (historyLog[chaveFicha(c)] || []).length;
+        const qtdLogs = (historyLog[c.CD_USUARIO] || []).length;
         const temSetor = c.DIAS_SETOR !== undefined && c.DIAS_SETOR !== null && c.DIAS_SETOR !== '';
         return `
-        <div onclick="openCaseDetail('${chaveFicha(c)}')" class="bg-white p-4 rounded-xl border border-slate-200 hover:border-indigo-500 hover:shadow-md transition cursor-pointer space-y-2.5 group">
+        <div onclick="openCaseDetail('${c.CD_USUARIO}')" class="bg-white p-4 rounded-xl border border-slate-200 hover:border-indigo-500 hover:shadow-md transition cursor-pointer space-y-2.5 group">
           <div class="flex items-center justify-between">
             <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-mono">${c.CD_USUARIO}</span>
             <div class="flex items-center gap-1 flex-wrap justify-end">
@@ -3134,7 +3404,7 @@ function solicitarSubirPlanilha() {
       document.getElementById('lista-tbody').innerHTML = cases.length ? cases.map(c => {
         const temSetor = c.DIAS_SETOR !== undefined && c.DIAS_SETOR !== null && c.DIAS_SETOR !== '';
         return `
-        <tr onclick="openCaseDetail('${chaveFicha(c)}')" class="hover:bg-indigo-50/50 cursor-pointer transition">
+        <tr onclick="openCaseDetail('${c.CD_USUARIO}')" class="hover:bg-indigo-50/50 cursor-pointer transition">
           <td class="py-3 px-4 font-mono font-bold text-indigo-700 text-xs">${c.CD_USUARIO}</td>
           <td class="py-3 px-4 font-bold text-slate-900">
             <div class="flex items-center gap-1.5 flex-wrap">
@@ -3180,11 +3450,11 @@ function solicitarSubirPlanilha() {
       const tbodyFin = document.getElementById('finalizados-tbody');
       if (tbodyFin) {
         tbodyFin.innerHTML = listaFinalizados.length ? listaFinalizados.map(c => {
-          const logs = historyLog[chaveFicha(c)] || [];
+          const logs = historyLog[c.CD_USUARIO] || [];
           const ultimoLog = logs[0] ? `${logs[0].text} (${logs[0].date})` : (c.ULTIMO_DESFECHO || 'Sem parecer final');
           const temSetor = c.DIAS_SETOR !== undefined && c.DIAS_SETOR !== null && c.DIAS_SETOR !== '';
           return `
-            <tr onclick="openCaseDetail('${chaveFicha(c)}')" class="hover:bg-emerald-50/50 cursor-pointer transition">
+            <tr onclick="openCaseDetail('${c.CD_USUARIO}')" class="hover:bg-emerald-50/50 cursor-pointer transition">
               <td class="py-3 px-4 font-mono font-bold text-slate-800">${c.CD_USUARIO}</td>
               <td class="py-3 px-4 font-bold text-slate-900">
                 <div class="flex items-center gap-1.5 flex-wrap">
@@ -3221,11 +3491,11 @@ function solicitarSubirPlanilha() {
       });
 
       document.getElementById('historico-tbody').innerHTML = listaCofre.length ? listaCofre.map(c => {
-        const logs = historyLog[chaveFicha(c)] || [];
+        const logs = historyLog[c.CD_USUARIO] || [];
         const ultimoLog = logs[0] ? `${logs[0].text} (${logs[0].date})` : (c.ULTIMO_DESFECHO || 'Sem parecer final');
         const isConcluido = c.STATUS_COFRE === 'CONCLUÃDO';
         return `
-          <tr onclick="openCaseDetail('${chaveFicha(c)}')" class="hover:bg-emerald-50/50 cursor-pointer transition">
+          <tr onclick="openCaseDetail('${c.CD_USUARIO}')" class="hover:bg-emerald-50/50 cursor-pointer transition">
             <td class="py-3 px-4">
               <span class="text-[10px] font-extrabold px-2.5 py-1 rounded-full ${isConcluido ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-indigo-100 text-indigo-800 border border-indigo-200'}">
                 ${isConcluido ? '✔ CONCLUÍDO' : '⏳ EM HISTÓRICO'}
@@ -3262,12 +3532,12 @@ function solicitarSubirPlanilha() {
       const tbodyConsenso = document.getElementById('rubens-consenso-tbody');
       if (tbodyConsenso) {
         tbodyConsenso.innerHTML = listaRubensConsenso.length ? listaRubensConsenso.map(c => {
-          const logs = historyLog[chaveFicha(c)] || [];
+          const logs = historyLog[c.CD_USUARIO] || [];
           const ultimoLog = logs[0] ? `${logs[0].text}` : (c.ULTIMO_DESFECHO || '-');
           const areaExibida = c.AREA || (c.ULTIMO_DESFECHO && c.ULTIMO_DESFECHO.includes('GNMED') ? 'GNMED' : 'Auditoria / GNHAP');
           const desfechoExibido = c.ULTIMO_DESFECHO || (c.MACRO_DESFECHO ? `${c.MACRO_DESFECHO} ➔ ${c.MICRO_DESFECHO || ''} | Encaminhar: ${c.ENCAMINHAR || ''}` : ultimoLog);
           return `
-            <tr onclick="openCaseDetail('${chaveFicha(c)}')" class="hover:bg-amber-50/60 cursor-pointer transition">
+            <tr onclick="openCaseDetail('${c.CD_USUARIO}')" class="hover:bg-amber-50/60 cursor-pointer transition">
               <td class="py-3 px-4 font-mono font-bold text-slate-800">${c.CD_USUARIO}</td>
               <td class="py-3 px-4 font-bold text-slate-900">
                 <div class="flex items-center gap-1.5 flex-wrap">
@@ -3300,10 +3570,10 @@ function solicitarSubirPlanilha() {
       // 4. Renderizar Esteira Médica: Tratamentos Oncológicos Específicos
       const mapaOnco = {};
       Object.values(vaultCases).forEach(c => {
-        if (c.CD_USUARIO && isCasoOncologia(c)) mapaOnco[chaveFicha(c)] = { ...c, _origem: 'cofre' };
+        if (c.CD_USUARIO && isCasoOncologia(c)) mapaOnco[c.CD_USUARIO] = { ...c, _origem: 'cofre' };
       });
       activeCases.forEach(c => {
-        if (c.CD_USUARIO && isCasoOncologia(c)) mapaOnco[chaveFicha(c)] = { ...(mapaOnco[chaveFicha(c)] || {}), ...c, _origem: 'ativo' };
+        if (c.CD_USUARIO && isCasoOncologia(c)) mapaOnco[c.CD_USUARIO] = { ...(mapaOnco[c.CD_USUARIO] || {}), ...c, _origem: 'ativo' };
       });
 
       const listaRubensOnco = Object.values(mapaOnco).filter(c => {
@@ -3320,11 +3590,11 @@ function solicitarSubirPlanilha() {
       const tbodyOnco = document.getElementById('rubens-onco-tbody');
       if (tbodyOnco) {
         tbodyOnco.innerHTML = listaRubensOnco.length ? listaRubensOnco.map(c => {
-          const isAtivo = c._origem === 'ativo' && activeCases.some(a => chaveFicha(a) === chaveFicha(c));
+          const isAtivo = c._origem === 'ativo' && activeCases.some(a => String(a.CD_USUARIO) === String(c.CD_USUARIO));
           const temSetor = c.DIAS_SETOR !== undefined && c.DIAS_SETOR !== null && c.DIAS_SETOR !== '';
           const ultimoDesfecho = c.ULTIMO_DESFECHO || (c.STATUS_COFRE === 'CONCLUÍDO' ? 'Concluído no Cofre' : 'Em análise operacional');
           return `
-            <tr onclick="openCaseDetail('${chaveFicha(c)}')" class="hover:bg-rose-50/50 cursor-pointer transition">
+            <tr onclick="openCaseDetail('${c.CD_USUARIO}')" class="hover:bg-rose-50/50 cursor-pointer transition">
               <td class="py-3 px-4">
                 <span class="text-[10px] font-extrabold px-2.5 py-1 rounded-full ${isAtivo ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-emerald-100 text-emerald-800 border border-emerald-300'}">
                   ${isAtivo ? '⚡ ATIVO NA FILA' : '✔ CONCLUÍDO'}
@@ -3386,7 +3656,7 @@ function solicitarSubirPlanilha() {
         tbodyCriticos.innerHTML = listaRubensCriticos.length ? listaRubensCriticos.map(c => {
           const temSetor = c.DIAS_SETOR !== undefined && c.DIAS_SETOR !== null && c.DIAS_SETOR !== '';
           return `
-            <tr onclick="openCaseDetail('${chaveFicha(c)}')" class="hover:bg-red-50/60 cursor-pointer transition">
+            <tr onclick="openCaseDetail('${c.CD_USUARIO}')" class="hover:bg-red-50/60 cursor-pointer transition">
               <td class="py-3 px-4 text-center">
                 <div class="inline-flex items-center gap-1 justify-center">
                   <span class="text-[10.5px] font-black px-2.5 py-1 rounded-full bg-rose-600 text-white shadow-xs animate-pulse flex items-center gap-1">
@@ -3438,7 +3708,7 @@ function solicitarSubirPlanilha() {
         const cod = decodeURIComponent(hash.split('caso=')[1].split('&')[0]);
         if (cod) {
           const abrirSeExistir = () => {
-            const achou = buscarFicha(String(cod));
+            const achou = activeCases.find(c => String(c.CD_USUARIO) === String(cod)) || vaultCases[String(cod)];
             if (achou) {
               openCaseDetail(cod);
               return true;
