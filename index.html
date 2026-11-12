@@ -50,6 +50,15 @@
         <span id="cloud-sync-badge" onclick="abrirConfigNuvem()" class="text-[9px] sm:text-[10px] bg-slate-800 text-slate-300 font-bold px-2 py-0.5 rounded-full border border-slate-700 flex items-center gap-1 shrink-0 cursor-pointer hover:opacity-80 transition" title="Clique para ver o status da conexão em Nuvem">
           <i class="fa-solid fa-bolt text-[8px] sm:text-[9px]"></i> <span id="cloud-sync-label">Local</span>
         </span>
+        <a href="https://hapvida.sharepoint.com/:u:/r/sites/DadosFidelizaoRedeCredenciada/Shared%20Documents/M%C3%A9dicos%20Credenciados/Cadastro%20M%C3%A9dico%20-%20Fideliza%C3%A7%C3%A3o%20Rede%20Credenciada%20v2.html?d=w7a3771a90c59435a856a6affd54da819&csf=1&web=1&e=Smiyoh" 
+           target="_blank" 
+           rel="noopener noreferrer" 
+           class="text-[9.5px] sm:text-[10px] font-bold bg-[#004b97] hover:bg-[#003b78] text-white px-2.5 py-0.5 rounded-full border border-sky-400/40 hover:border-sky-300 flex items-center gap-1.5 shrink-0 shadow-2xs transition active:scale-95 cursor-pointer no-underline" 
+           title="Abrir Cadastro Médico - Fidelização Rede Credenciada v2">
+          <i class="fa-solid fa-user-doctor text-amber-400 text-[10px]"></i>
+          <span>Médicos Credenciados</span>
+          <i class="fa-solid fa-arrow-up-right-from-square text-[8px] text-sky-200"></i>
+        </a>
       </div>
     </div>
 
@@ -317,7 +326,7 @@
                   <th class="py-2.5 sm:py-3 px-3 sm:px-4">Cód. Utente</th>
                   <th class="py-2.5 sm:py-3 px-3 sm:px-4">Beneficiário</th>
                   <th class="py-2.5 sm:py-3 px-3 sm:px-4">Procedimento</th>
-                  <th class="py-2.5 sm:py-3 px-3 sm:px-4">Assumiu o Caso</th>
+                  <th class="py-2.5 sm:py-3 px-3 sm:px-4">Equipe Técnica / ADM</th>
                   <th class="py-2.5 sm:py-3 px-3 sm:px-4">Desfecho &amp; Parecer</th>
                   <th class="py-2.5 sm:py-3 px-3 sm:px-4 text-center">Prazos</th>
                   <th class="py-2.5 sm:py-3 px-3 sm:px-4 text-right">Ação</th>
@@ -723,35 +732,56 @@
               </div>
             </div>
 
-            <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-indigo-900 text-white p-3 sm:p-3.5 rounded-xl border border-indigo-900/80 flex items-center justify-between flex-wrap gap-3">
-              <div class="flex items-center gap-2.5 sm:gap-3">
-                <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-indigo-600/60 border border-indigo-400/30 flex items-center justify-center text-indigo-200 text-sm sm:text-base shrink-0 shadow-inner">
-                  <i class="fa-solid fa-user-doctor"></i>
+            <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-indigo-900 text-white p-3 sm:p-3.5 rounded-xl border border-indigo-900/80 space-y-3">
+              <!-- Linha superior: Gerente Médico e Base / Regional -->
+              <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-indigo-800/60">
+                <div class="flex items-center gap-2.5 sm:gap-3">
+                  <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-indigo-600/60 border border-indigo-400/30 flex items-center justify-center text-indigo-200 text-sm sm:text-base shrink-0 shadow-inner">
+                    <i class="fa-solid fa-user-doctor"></i>
+                  </div>
+                  <div>
+                    <span class="text-[9.5px] sm:text-[10px] font-extrabold uppercase text-indigo-300 tracking-wider">Gerente Médico</span>
+                    <p id="singleDetailMedResponsavel" class="text-xs sm:text-sm font-extrabold text-white mt-0.5">-</p>
+                  </div>
                 </div>
-                <div>
-                  <span class="text-[9.5px] sm:text-[10px] font-extrabold uppercase text-indigo-300 tracking-wider">Gerente Médico</span>
-                  <p id="singleDetailMedResponsavel" class="text-xs sm:text-sm font-extrabold text-white mt-0.5">-</p>
+
+                <div class="text-right">
+                  <span class="text-[9.5px] sm:text-[10px] text-indigo-300/80 font-medium block">Base / Regional:</span>
+                  <span id="singleDetailBase" class="text-[11px] sm:text-xs font-bold text-indigo-100 block">-</span>
                 </div>
               </div>
 
-              <!-- LISTA: ASSUMIU O CASO (Ao lado do Gerente Médico) -->
-              <div class="flex-1 min-w-[240px] max-w-md bg-white/10 hover:bg-white/15 p-2 rounded-xl border border-white/20 transition">
-                <div class="flex items-center justify-between gap-1 mb-1">
-                  <label for="editCaseAssumiuPor" class="text-[9.5px] sm:text-[10px] font-extrabold uppercase text-amber-300 tracking-wider flex items-center gap-1">
-                    <i class="fa-solid fa-user-check text-amber-400"></i> Assumiu o Caso
-                  </label>
-                  <button type="button" onclick="assumirCasoEuMesmo()" class="text-[9.5px] font-bold bg-amber-400/25 hover:bg-amber-400/40 text-amber-200 px-2 py-0.5 rounded transition cursor-pointer" title="Preencher com o meu usuário logado">
-                    <i class="fa-solid fa-hand"></i> Assumir eu
-                  </button>
+              <!-- Linha inferior: EQUIPE TÉCNICA & ADMINISTRATIVO (Lado a Lado, layout harmônico) -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <!-- EQUIPE TÉCNICA -->
+                <div class="bg-white/10 hover:bg-white/15 p-2 sm:p-2.5 rounded-xl border border-white/20 transition">
+                  <div class="flex items-center justify-between gap-1 mb-1">
+                    <label for="editCaseAssumiuPor" class="text-[9.5px] sm:text-[10px] font-extrabold uppercase text-amber-300 tracking-wider flex items-center gap-1">
+                      <i class="fa-solid fa-user-gear text-amber-400"></i> Equipe Técnica
+                    </label>
+                    <button type="button" onclick="assumirCasoEuMesmo()" class="text-[9px] sm:text-[9.5px] font-bold bg-amber-400/25 hover:bg-amber-400/40 text-amber-200 px-2 py-0.5 rounded transition cursor-pointer flex items-center gap-1" title="Preencher com o meu usuário logado">
+                      <i class="fa-solid fa-hand text-[9px]"></i> Assumir eu
+                    </button>
+                  </div>
+                  <select id="editCaseAssumiuPor" onchange="autoSalvarProfissionais()" class="w-full bg-slate-900 text-white font-bold text-xs px-2.5 py-1.5 rounded-lg border border-indigo-400/60 focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer">
+                    <option value="">Selecione a equipe técnica...</option>
+                  </select>
                 </div>
-                <select id="editCaseAssumiuPor" onchange="autoSalvarProfissionais()" class="w-full bg-slate-900 text-white font-bold text-xs px-2.5 py-1.5 rounded-lg border border-indigo-400/60 focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer">
-                  <option value="">Selecione quem assumiu o caso...</option>
-                </select>
-              </div>
 
-              <div class="text-right">
-                <span class="text-[9.5px] sm:text-[10px] text-indigo-300/80 font-medium block">Base / Regional:</span>
-                <span id="singleDetailBase" class="text-[11px] sm:text-xs font-bold text-indigo-100 block">-</span>
+                <!-- ADMINISTRATIVO -->
+                <div class="bg-white/10 hover:bg-white/15 p-2 sm:p-2.5 rounded-xl border border-white/20 transition">
+                  <div class="flex items-center justify-between gap-1 mb-1">
+                    <label for="editCaseAdministrativo" class="text-[9.5px] sm:text-[10px] font-extrabold uppercase text-sky-300 tracking-wider flex items-center gap-1">
+                      <i class="fa-solid fa-user-tie text-sky-400"></i> Administrativo
+                    </label>
+                    <button type="button" onclick="assumirAdministrativoEuMesmo()" class="text-[9px] sm:text-[9.5px] font-bold bg-sky-400/25 hover:bg-sky-400/40 text-sky-200 px-2 py-0.5 rounded transition cursor-pointer flex items-center gap-1" title="Preencher com o meu usuário logado">
+                      <i class="fa-solid fa-hand text-[9px]"></i> Assumir eu
+                    </button>
+                  </div>
+                  <select id="editCaseAdministrativo" onchange="autoSalvarProfissionais()" class="w-full bg-slate-900 text-white font-bold text-xs px-2.5 py-1.5 rounded-lg border border-indigo-400/60 focus:outline-none focus:ring-2 focus:ring-sky-400 cursor-pointer">
+                    <option value="">Selecione o administrativo...</option>
+                  </select>
+                </div>
               </div>
             </div>
             
@@ -793,6 +823,7 @@
                   <option value="GNMED - Consulta agendada, sem cancelamento do pedido">GNMED - Consulta agendada, sem cancelamento do pedido</option>
                   <option value="Cong&#234;nere">Cong&#234;nere</option>
                   <option value="P1 (Finalizado com consenso integral)">P1 (Finalizado com consenso integral)</option>
+                  <option value="P1 (Devolvido AMM)">P1 (Devolvido AMM)</option>
                   <option value="P3 (Finalizado com carta de rede)">P3 (Finalizado com carta de rede)</option>
                   <option value="P18 (Enviado por pedido realizado em hospital ou ambulat&#243;rio da Rede Pr&#243;pria)">P18 (Enviado por pedido realizado em hospital ou ambulat&#243;rio da Rede Pr&#243;pria)</option>
                   <option value="P28 (GNMED finalizado com consenso integral)">P28 (GNMED finalizado com consenso integral)</option>
@@ -997,8 +1028,8 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
     // ==========================================
     const SENHA_MESTRE = 'fidelizacao';
 
-    // Lista exclusiva de usuários para login
-    const LISTA_OPERADORES_UNICA = [
+    // Lista de Equipe Técnica (sem os nomes do Administrativo)
+    const LISTA_EQUIPE_TECNICA = [
       "Talita Costa Freire de Oliveira",
       "Rubens Augusto Zapponi Nathan",
       "Diego Godoi Bernardes da Silva",
@@ -1021,7 +1052,11 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
       "Jaqueline Rocha Nascimento Sousa",
       "Natália Santos do Carmo",
       "Claudionice Aparecida Silva",
-      "Mauricio de Almeida Gomes",
+      "Mauricio de Almeida Gomes"
+    ];
+
+    // Lista exclusiva de Administrativo
+    const LISTA_ADMINISTRATIVO = [
       "Anna Carolina de Souza Hanna",
       "Willian Lima Fogaça",
       "Luciene de Paulo Borges",
@@ -1032,6 +1067,12 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
       "Christiane Aparecida Balthazar",
       "Fernando Henrique Pires Mena",
       "Vitor Hugo de Almeida"
+    ];
+
+    // Lista unificada para login e autenticação
+    const LISTA_OPERADORES_UNICA = [
+      ...LISTA_EQUIPE_TECNICA,
+      ...LISTA_ADMINISTRATIVO
     ];
 
     let operadorAtual = localStorage.getItem('hapvida_operador_ativo') || '';
@@ -2138,6 +2179,7 @@ function solicitarSubirPlanilha() {
               DIAS_AUTORIZACAO: diasSla,
               DIAS_SETOR: diasSetor !== null ? diasSetor : (salvoNoCofre.DIAS_SETOR !== undefined ? salvoNoCofre.DIAS_SETOR : null),
               ASSUMIU_POR: salvoNoCofre.ASSUMIU_POR || '',
+              ADMINISTRATIVO: salvoNoCofre.ADMINISTRATIVO || '',
               BASE: getVal('BASE', salvoNoCofre.BASE || 'NDI'),
               TIPO_PENDENCIA: getVal('TIPO_PENDENCIA', salvoNoCofre.TIPO_PENDENCIA || '69'),
               GERENTE_MEDICO: getVal('GERENTE_MEDICO', salvoNoCofre.GERENTE_MEDICO || ''),
@@ -2251,6 +2293,7 @@ function solicitarSubirPlanilha() {
           'PRAZO_FINAL_DEMANDA': c.PRAZO_FINAL_DEMANDA || '',
           'GERENTE_MEDICO': c.GERENTE_MEDICO || '',
           'ASSUMIU_POR': c.ASSUMIU_POR || '',
+          'ADMINISTRATIVO': c.ADMINISTRATIVO || '',
           'MEDICO_CONSULTOR': c.MEDICO_CONSULTOR || '',
           'STATUS_MED_CONSULTOR': c.STATUS_MED_CONSULTOR || '',
           'OBS_MED_CONSULTOR': c.OBS_MED_CONSULTOR || '',
@@ -2513,7 +2556,8 @@ function solicitarSubirPlanilha() {
       if (c.ENF) contextoSemantico += ` enfermeira enfermagem enf ${c.ENF} ${c.OBS_ENF || ''}`;
       if (c.ADM) contextoSemantico += ` administrativo adm ${c.ADM} ${c.OBS_ADM || ''}`;
       if (c.MEDICO_CONSULTOR) contextoSemantico += ` medico consultor ${c.MEDICO_CONSULTOR} ${c.OBS_MED_CONSULTOR || ''}`;
-      if (c.ASSUMIU_POR) contextoSemantico += ` assumiu assumido operador responsavel ${c.ASSUMIU_POR}`;
+      if (c.ASSUMIU_POR) contextoSemantico += ` equipe tecnica assumiu assumido operador responsavel ${c.ASSUMIU_POR}`;
+      if (c.ADMINISTRATIVO) contextoSemantico += ` administrativo adm ${c.ADMINISTRATIVO}`;
       if (c.GERENTE_MEDICO) contextoSemantico += ` gerente medico dr dra ${c.GERENTE_MEDICO}`;
       if (c.TIPO_DEMANDA) contextoSemantico += ` demanda especial sac nip ouvidoria liminar ${c.TIPO_DEMANDA}`;
       if (c.PRAZO_FINAL_DEMANDA) contextoSemantico += ` prazo final demanda ${c.PRAZO_FINAL_DEMANDA}`;
@@ -2534,6 +2578,7 @@ function solicitarSubirPlanilha() {
         c.NM_PLANO,
         c.GERENTE_MEDICO,
         c.ASSUMIU_POR,
+        c.ADMINISTRATIVO,
         c.OBSERVACAO,
         c.ENCAMINHAR,
         c.ENF,
@@ -2675,9 +2720,28 @@ function solicitarSubirPlanilha() {
       const select = document.getElementById('editCaseAssumiuPor');
       if (!select) return;
       const valAtual = select.value;
-      select.innerHTML = '<option value="">Selecione quem assumiu o caso...</option>' +
-        LISTA_OPERADORES_UNICA.map(nome => `<option value="${nome}">${nome}</option>`).join('');
-      if (valAtual) select.value = valAtual;
+      select.innerHTML = '<option value="">Selecione a equipe técnica...</option>' +
+        LISTA_EQUIPE_TECNICA.map(nome => `<option value="${nome}">${nome}</option>`).join('');
+      if (valAtual) {
+        if (!LISTA_EQUIPE_TECNICA.includes(valAtual) && valAtual !== '') {
+          select.innerHTML += `<option value="${valAtual}">${valAtual}</option>`;
+        }
+        select.value = valAtual;
+      }
+    }
+
+    function popularSelectAdministrativo() {
+      const select = document.getElementById('editCaseAdministrativo');
+      if (!select) return;
+      const valAtual = select.value;
+      select.innerHTML = '<option value="">Selecione o administrativo...</option>' +
+        LISTA_ADMINISTRATIVO.map(nome => `<option value="${nome}">${nome}</option>`).join('');
+      if (valAtual) {
+        if (!LISTA_ADMINISTRATIVO.includes(valAtual) && valAtual !== '') {
+          select.innerHTML += `<option value="${valAtual}">${valAtual}</option>`;
+        }
+        select.value = valAtual;
+      }
     }
 
     function assumirCasoEuMesmo() {
@@ -2685,6 +2749,22 @@ function solicitarSubirPlanilha() {
       const select = document.getElementById('editCaseAssumiuPor');
       if (!select) return;
       if (operadorAtual && operadorAtual !== 'Anônimo') {
+        if (!Array.from(select.options).some(o => o.value === operadorAtual)) {
+          select.innerHTML += `<option value="${operadorAtual}">${operadorAtual}</option>`;
+        }
+        select.value = operadorAtual;
+      }
+      autoSalvarProfissionais();
+    }
+
+    function assumirAdministrativoEuMesmo() {
+      if (!currentCase) return;
+      const select = document.getElementById('editCaseAdministrativo');
+      if (!select) return;
+      if (operadorAtual && operadorAtual !== 'Anônimo') {
+        if (!Array.from(select.options).some(o => o.value === operadorAtual)) {
+          select.innerHTML += `<option value="${operadorAtual}">${operadorAtual}</option>`;
+        }
         select.value = operadorAtual;
       }
       autoSalvarProfissionais();
@@ -2905,12 +2985,15 @@ function solicitarSubirPlanilha() {
 
       // Equipe
       const elMedResp = document.getElementById('singleDetailMedResponsavel');
-      if (elMedResp) elMedResp.innerText = currentCase.GERENTE_MEDICO ? 'Dr(a). ' + currentCase.GERENTE_MEDICO : 'NÃ£o AtribuÃ­do';
+      if (elMedResp) elMedResp.innerText = currentCase.GERENTE_MEDICO ? 'Dr(a). ' + currentCase.GERENTE_MEDICO : 'Não Atribuído';
 
       popularSelectTrocarGerente();
       popularSelectAssumiuCaso();
+      popularSelectAdministrativo();
       const elAssumiu = document.getElementById('editCaseAssumiuPor');
       if (elAssumiu) elAssumiu.value = currentCase.ASSUMIU_POR || '';
+      const elAdm = document.getElementById('editCaseAdministrativo');
+      if (elAdm) elAdm.value = currentCase.ADMINISTRATIVO || '';
 
       const elObs = document.getElementById('editCaseObservacao');
       if (elObs) elObs.value = currentCase.OBSERVACAO || '';
@@ -3084,6 +3167,7 @@ function solicitarSubirPlanilha() {
       }
 
       currentCase.ASSUMIU_POR = document.getElementById('editCaseAssumiuPor')?.value || '';
+      currentCase.ADMINISTRATIVO = document.getElementById('editCaseAdministrativo')?.value || '';
       
       if (document.getElementById('editCaseTipoDemanda')) {
         currentCase.TIPO_DEMANDA = document.getElementById('editCaseTipoDemanda').value;
@@ -3116,6 +3200,7 @@ function solicitarSubirPlanilha() {
       "GNMED - Consulta agendada, sem cancelamento do pedido": "CONSULTA AGENDADA  COM [NOME] EM [LOCAL] [DATA] [HORA]",
       "Cong\u00eanere": "REALIZADO CONTATO COM EQUIPE DO CONG\u00caNERE SOBRE O CASO. EMAIL ENVIADO [T\u00cdTULO DO E-MAIL]",
       "P1 (Finalizado com consenso integral)": "SOLICITANTE ACEITOU ADEQUA\u00c7\u00c3O COMPLETA SUGERIDA PELA AUDITORIA [QUAIS C\u00d3DIGOS E/OU OPME ADEQUADOS].",
+      "P1 (Devolvido AMM)": "[PROVA DESCRITA DAS INCONSIST\u00caNCIAS ENCONTRADAS]. DEVOLVIDO PARA REVIS\u00c3O PELA AUDITORIA, PARA REAVALIA\u00c7\u00c3O DE POSSIVEIS DIVERG\u00caNCIAS NA AN\u00c1LISE.",
       "P3 (Finalizado com carta de rede)": "CASO ACORDADO COM CREDENCIAMENTO E AUDITORIA PARA SEGUIR COM AUTORIZA\u00c7\u00c3O E PAGAMENTO VIA EMISS\u00c3O DE CARTA DE REDE. E-MAIL ENVIADO PARA FORMALIZAR O PEDIDO DA CARTA DE REDE [T\u00cdTULO DO E-MAIL]",
       "P18 (Enviado por pedido realizado em hospital ou ambulat\u00f3rio da Rede Pr\u00f3pria)": "PEDIDO REALIZADO EM HOSPITAL E/OU AMBULAT\u00d3RIO DA REDE PR\u00d3PRIA.",
       "P28 (GNMED finalizado com consenso integral)": "SOLICITANTE ACEITOU ADEQUA\u00c7\u00c3O DE MEDICAMENTO SUGERIDA PELA OPERADORA [QUAL MEDICAMENTO ADEQUADOS].",
@@ -3306,7 +3391,8 @@ function solicitarSubirPlanilha() {
       txt += `• *Prestador Pacote:* ${prestadorPacote}\n`;
       txt += `\n👥 *EQUIPE DESIGNADA*\n`;
       txt += `• *Gerente Médico:* ${medResponsavel}\n`;
-      if (currentCase.ASSUMIU_POR) txt += `• *Assumiu o Caso:* ${currentCase.ASSUMIU_POR}\n`;
+      if (currentCase.ASSUMIU_POR) txt += `• *Equipe Técnica:* ${currentCase.ASSUMIU_POR}\n`;
+      if (currentCase.ADMINISTRATIVO) txt += `• *Administrativo:* ${currentCase.ADMINISTRATIVO}\n`;
 
       if (observacaoFinal) {
         txt += `\n💬 *OBSERVAÇÃO:*\n${observacaoFinal}\n`;
@@ -3388,7 +3474,8 @@ function solicitarSubirPlanilha() {
           <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] flex-wrap gap-1">
             <div class="flex items-center gap-1 flex-wrap">
               <span class="text-indigo-600 font-bold bg-indigo-50 px-2 py-0.5 rounded-md">${c.GERENTE_MEDICO ? 'Dr(a). ' + c.GERENTE_MEDICO : 'Sem Resp.'}</span>
-              ${c.ASSUMIU_POR ? `<span class="inline-flex items-center gap-1 text-[9.5px] font-extrabold bg-amber-50 text-amber-800 border border-amber-200 px-1.5 py-0.5 rounded-md" title="Assumiu o Caso: ${c.ASSUMIU_POR}"><i class="fa-solid fa-user-check text-amber-600 text-[8.5px]"></i> ${c.ASSUMIU_POR.split(' ')[0]}</span>` : ''}
+              ${c.ASSUMIU_POR ? `<span class="inline-flex items-center gap-1 text-[9.5px] font-extrabold bg-amber-50 text-amber-800 border border-amber-200 px-1.5 py-0.5 rounded-md" title="Equipe Técnica: ${c.ASSUMIU_POR}"><i class="fa-solid fa-user-gear text-amber-600 text-[8.5px]"></i> ${c.ASSUMIU_POR.split(' ')[0]}</span>` : ''}
+              ${c.ADMINISTRATIVO ? `<span class="inline-flex items-center gap-1 text-[9.5px] font-extrabold bg-sky-50 text-sky-800 border border-sky-200 px-1.5 py-0.5 rounded-md" title="Administrativo: ${c.ADMINISTRATIVO}"><i class="fa-solid fa-user-tie text-sky-600 text-[8.5px]"></i> ${c.ADMINISTRATIVO.split(' ')[0]}</span>` : ''}
             </div>
             <span class="font-bold text-indigo-600">Abrir ➔</span>
           </div>
@@ -3468,7 +3555,11 @@ function solicitarSubirPlanilha() {
               </td>
               <td class="py-3 px-4 text-slate-600 truncate max-w-xs">${c.PROCEDIMENTO_AGRUPADO || '-'}</td>
               <td class="py-3 px-4 text-xs">
-                ${c.ASSUMIU_POR ? `<span class="inline-flex items-center gap-1 font-extrabold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md"><i class="fa-solid fa-user-check text-amber-600 text-[9px]"></i> ${c.ASSUMIU_POR}</span>` : `<span class="text-slate-400 font-medium">${c.GERENTE_MEDICO || '-'}</span>`}
+                <div class="flex flex-col gap-0.5">
+                  ${c.ASSUMIU_POR ? `<span class="inline-flex items-center gap-1 font-extrabold text-amber-800 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-md text-[10px] w-fit" title="Equipe Técnica: ${c.ASSUMIU_POR}"><i class="fa-solid fa-user-gear text-amber-600 text-[8.5px]"></i> ${c.ASSUMIU_POR.split(' ')[0]}</span>` : ''}
+                  ${c.ADMINISTRATIVO ? `<span class="inline-flex items-center gap-1 font-extrabold text-sky-800 bg-sky-50 border border-sky-200 px-1.5 py-0.5 rounded-md text-[10px] w-fit" title="Administrativo: ${c.ADMINISTRATIVO}"><i class="fa-solid fa-user-tie text-sky-600 text-[8.5px]"></i> ${c.ADMINISTRATIVO.split(' ')[0]}</span>` : ''}
+                  ${!c.ASSUMIU_POR && !c.ADMINISTRATIVO ? `<span class="text-slate-400 font-medium">${c.GERENTE_MEDICO || '-'}</span>` : ''}
+                </div>
               </td>
               <td class="py-3 px-4 text-slate-700 truncate max-w-sm">
                 <span class="font-bold text-emerald-800">${c.ULTIMO_DESFECHO || ultimoLog}</span>
@@ -3559,7 +3650,11 @@ function solicitarSubirPlanilha() {
                 <span class="font-bold text-amber-900">${desfechoExibido}</span>
               </td>
               <td class="py-3 px-4 text-xs">
-                ${c.ASSUMIU_POR ? `<span class="inline-flex items-center gap-1 font-extrabold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md"><i class="fa-solid fa-user-check text-amber-600 text-[9px]"></i> ${c.ASSUMIU_POR}</span>` : `<span class="text-slate-400 font-medium">${c.GERENTE_MEDICO || '-'}</span>`}
+                <div class="flex flex-col gap-0.5">
+                  ${c.ASSUMIU_POR ? `<span class="inline-flex items-center gap-1 font-extrabold text-amber-800 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-md text-[10px] w-fit" title="Equipe Técnica: ${c.ASSUMIU_POR}"><i class="fa-solid fa-user-gear text-amber-600 text-[8.5px]"></i> ${c.ASSUMIU_POR.split(' ')[0]}</span>` : ''}
+                  ${c.ADMINISTRATIVO ? `<span class="inline-flex items-center gap-1 font-extrabold text-sky-800 bg-sky-50 border border-sky-200 px-1.5 py-0.5 rounded-md text-[10px] w-fit" title="Administrativo: ${c.ADMINISTRATIVO}"><i class="fa-solid fa-user-tie text-sky-600 text-[8.5px]"></i> ${c.ADMINISTRATIVO.split(' ')[0]}</span>` : ''}
+                  ${!c.ASSUMIU_POR && !c.ADMINISTRATIVO ? `<span class="text-slate-400 font-medium">${c.GERENTE_MEDICO || '-'}</span>` : ''}
+                </div>
               </td>
               <td class="py-3 px-4 text-right font-bold text-amber-700 hover:text-amber-900">Ver Ficha ➔</td>
             </tr>
@@ -3685,7 +3780,11 @@ function solicitarSubirPlanilha() {
                 ${c.CIDADE ? `<div class="text-[10px] text-slate-400">${c.CIDADE} - ${c.UF || ''}</div>` : ''}
               </td>
               <td class="py-3 px-4 text-xs">
-                ${c.ASSUMIU_POR ? `<span class="inline-flex items-center gap-1 font-extrabold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md"><i class="fa-solid fa-user-check text-amber-600 text-[9px]"></i> ${c.ASSUMIU_POR}</span>` : `<span class="text-slate-400 font-medium">${c.GERENTE_MEDICO || '-'}</span>`}
+                <div class="flex flex-col gap-0.5">
+                  ${c.ASSUMIU_POR ? `<span class="inline-flex items-center gap-1 font-extrabold text-amber-800 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-md text-[10px] w-fit" title="Equipe Técnica: ${c.ASSUMIU_POR}"><i class="fa-solid fa-user-gear text-amber-600 text-[8.5px]"></i> ${c.ASSUMIU_POR.split(' ')[0]}</span>` : ''}
+                  ${c.ADMINISTRATIVO ? `<span class="inline-flex items-center gap-1 font-extrabold text-sky-800 bg-sky-50 border border-sky-200 px-1.5 py-0.5 rounded-md text-[10px] w-fit" title="Administrativo: ${c.ADMINISTRATIVO}"><i class="fa-solid fa-user-tie text-sky-600 text-[8.5px]"></i> ${c.ADMINISTRATIVO.split(' ')[0]}</span>` : ''}
+                  ${!c.ASSUMIU_POR && !c.ADMINISTRATIVO ? `<span class="text-slate-400 font-medium">${c.GERENTE_MEDICO || '-'}</span>` : ''}
+                </div>
               </td>
               <td class="py-3 px-4 text-right font-bold text-red-600 hover:text-red-800">Ver Ficha ➔</td>
             </tr>
@@ -3734,6 +3833,7 @@ function solicitarSubirPlanilha() {
     // Inicialização da Aplicação e Conexão Supabase
     initSupabase();
     popularSelectAssumiuCaso();
+    popularSelectAdministrativo();
     render();
     verificarCasoNaURL();
     atualizarLabelOperador();
