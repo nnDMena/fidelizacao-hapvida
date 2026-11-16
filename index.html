@@ -615,23 +615,62 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-            <div class="bg-slate-50 p-3.5 sm:p-4 rounded-xl border border-slate-200/80">
-              <span class="text-[9.5px] sm:text-[10px] font-bold uppercase text-slate-400 tracking-wider">Procedimento Cirúrgico</span>
-              <p id="singleDetailProcedure" class="text-xs font-bold text-slate-800 mt-1 leading-snug">-</p>
-              <p id="singleDetailTUSS" class="text-[11px] font-mono text-slate-500 mt-1">C&oacute;d. TUSS: -</p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 items-stretch">
+            <div class="bg-slate-50 p-3.5 sm:p-4 rounded-xl border border-slate-200/80 flex flex-col justify-between">
+              <div>
+                <span class="text-[9.5px] sm:text-[10px] font-bold uppercase text-slate-400 tracking-wider">Procedimento Cirúrgico</span>
+                <p id="singleDetailProcedure" class="text-xs font-bold text-slate-800 mt-1 leading-snug">-</p>
+              </div>
+              <p id="singleDetailTUSS" class="text-[11px] font-mono text-slate-500 mt-2 pt-2 border-t border-slate-200/60">C&oacute;d. TUSS: -</p>
             </div>
-            <div class="bg-slate-50 p-3.5 sm:p-4 rounded-xl border border-slate-200/80 space-y-2">
+            <div class="bg-slate-50 p-3.5 sm:p-4 rounded-xl border border-slate-200/80 space-y-2 flex flex-col justify-between">
               <div>
                 <span class="text-[9.5px] sm:text-[10px] font-bold uppercase text-slate-400 tracking-wider">Prestador Solicitante</span>
                 <p id="singleDetailProvider" class="text-xs font-bold text-slate-800 mt-0.5 leading-snug">-</p>
                 <p id="singleDetailCity" class="text-[11px] text-slate-500 mt-0.5"><i class="fa-solid fa-location-dot text-rose-500"></i> -</p>
               </div>
-              <div class="pt-2 border-t border-slate-200/60">
-                <label for="editCaseSolicitante" class="text-[9.5px] sm:text-[10px] font-extrabold uppercase text-indigo-900 tracking-wider flex items-center gap-1 mb-1">
-                  <i class="fa-solid fa-user-pen text-indigo-600"></i> Nome do Solicitante:
-                </label>
-                <input type="text" id="editCaseSolicitante" oninput="autoSalvarProfissionais()" placeholder="Nome do Solicitante..." class="w-full bg-white font-bold text-slate-900 text-xs px-2.5 py-1.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-2xs">
+              <div class="pt-2 border-t border-slate-200/60 space-y-2">
+                <div>
+                  <label for="editCaseSolicitante" class="text-[9.5px] sm:text-[10px] font-extrabold uppercase text-indigo-900 tracking-wider flex items-center gap-1 mb-1">
+                    <i class="fa-solid fa-user-pen text-indigo-600"></i> Nome do Solicitante:
+                  </label>
+                  <input type="text" id="editCaseSolicitante" oninput="autoSalvarProfissionais()" placeholder="Nome do Solicitante..." class="w-full bg-white font-bold text-slate-900 text-xs px-2.5 py-1.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-2xs">
+                </div>
+
+                <!-- CONTATOS DO MÉDICO SOLICITANTE (PESSOAL / CLÍNICA OU SECRETÁRIA) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <!-- Tel. Pessoal / Celular -->
+                  <div>
+                    <div class="flex items-center justify-between mb-1">
+                      <label for="editCaseTelPessoal" class="text-[9px] sm:text-[9.5px] font-extrabold uppercase text-emerald-900 tracking-wider flex items-center gap-1">
+                        <i class="fa-solid fa-phone text-emerald-600 text-[10px]"></i> Tel. Pessoal:
+                      </label>
+                      <a id="btnLinkWhatsPessoal" href="javascript:void(0)" onclick="abrirWhatsPessoal()" class="hidden text-[8.5px] font-bold text-emerald-600 hover:text-emerald-700 items-center gap-0.5 transition cursor-pointer" title="Conversar no WhatsApp">
+                        <i class="fa-brands fa-whatsapp text-emerald-500 text-[11px]"></i> WhatsApp
+                      </a>
+                    </div>
+                    <div class="relative">
+                      <input type="text" id="editCaseTelPessoal" oninput="formatarTelefone(this); autoSalvarProfissionais(); atualizarLinksTelefone();" placeholder="(00) 00000-0000" maxlength="15" class="w-full bg-white font-bold text-slate-900 text-xs pl-7 pr-2 py-1.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-2xs">
+                      <i class="fa-solid fa-mobile-screen absolute left-2.5 top-2.5 text-slate-400 text-[10px]"></i>
+                    </div>
+                  </div>
+
+                  <!-- Tel. Clínica / Secretária -->
+                  <div>
+                    <div class="flex items-center justify-between mb-1">
+                      <label for="editCaseTelClinica" class="text-[9px] sm:text-[9.5px] font-extrabold uppercase text-indigo-900 tracking-wider flex items-center gap-1">
+                        <i class="fa-solid fa-headset text-indigo-600 text-[10px]"></i> Tel. Clínica / Secr:
+                      </label>
+                      <a id="btnLinkLigarClinica" href="javascript:void(0)" onclick="ligarParaClinica()" class="hidden text-[8.5px] font-bold text-indigo-600 hover:text-indigo-700 items-center gap-0.5 transition cursor-pointer" title="Ligar para clínica/secretária">
+                        <i class="fa-solid fa-phone-volume text-indigo-500 text-[10px]"></i> Ligar
+                      </a>
+                    </div>
+                    <div class="relative">
+                      <input type="text" id="editCaseTelClinica" oninput="formatarTelefone(this); autoSalvarProfissionais(); atualizarLinksTelefone();" placeholder="(00) 0000-0000" maxlength="15" class="w-full bg-white font-bold text-slate-900 text-xs pl-7 pr-2 py-1.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-2xs">
+                      <i class="fa-solid fa-building-user absolute left-2.5 top-2.5 text-slate-400 text-[10px]"></i>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -644,11 +683,12 @@
                   <i class="fa-solid fa-coins text-indigo-600"></i> Orçamento &amp; Pacote Negociado
                 </span>
 
-                <!-- SELETOR LECOM / PRESTADOR BEM DISCRETO -->
+                <!-- SELETOR LECON / PRESTADOR BEM DISCRETO COM ESPAÇO VAZIO INICIAL -->
                 <div class="inline-flex items-center gap-1 bg-white border border-indigo-200/90 rounded-md px-1.5 py-0.5 shadow-2xs">
                   <span class="text-[9px] font-bold text-indigo-500 uppercase tracking-wider">Origem:</span>
-                  <select id="editCaseOrigemValorInicial" onchange="autoSalvarProfissionais()" title="Origem do Valor Inicial (Lecom ou Prestador)" class="text-[10px] font-bold text-slate-800 bg-transparent focus:outline-none cursor-pointer">
-                    <option value="Lecom">Lecom</option>
+                  <select id="editCaseOrigemValorInicial" onchange="autoSalvarProfissionais()" title="Origem do Valor Inicial (Lecon ou Prestador)" class="text-[10px] font-bold text-slate-800 bg-transparent focus:outline-none cursor-pointer">
+                    <option value="">Selecione...</option>
+                    <option value="Lecon">Lecon</option>
                     <option value="Prestador">Prestador</option>
                   </select>
                 </div>
@@ -1516,7 +1556,7 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
         isCloudConnected = true;
         if (banner) banner.classList.add('hidden');
         if (badge) badge.className = 'text-[9px] sm:text-[10px] bg-emerald-900/90 text-emerald-300 font-bold px-2 py-0.5 rounded-full border border-emerald-700/60 flex items-center gap-1 shrink-0';
-        if (label) label.innerText = '⚡ Supabase Conectado';
+        if (label) label.innerText = 'Conectado';
 
       } catch (err) {
         console.warn('Erro ao carregar dados do Supabase:', err);
@@ -1862,6 +1902,14 @@ function solicitarSubirPlanilha() {
         'medicosolicitante', 'drsolicitante', 'profissionalsolicitante',
         'crmsolicitante', 'prescritor', 'medicosolic'
       ],
+      TEL_PESSOAL: [
+        'telpessoal', 'celular', 'telefonepessoal', 'whatsapp', 'telmedico', 'celularmedico',
+        'telcelular', 'contatomedico', 'telsolicitante', 'celularsolicitante'
+      ],
+      TEL_CLINICA: [
+        'telclinica', 'telefoneclinica', 'telsecretaria', 'secretaria', 'telefone',
+        'telconsultorio', 'consultorio', 'contatoclinica', 'telprestador'
+      ],
       NM_PLANO: [
         'nmplano', 'plano', 'nomeplano', 'nomedoplano', 'contrato', 'produto',
         'nmproduto', 'tipoplano', 'segmentacao'
@@ -2198,6 +2246,8 @@ function solicitarSubirPlanilha() {
               PROCEDIMENTO_AGRUPADO: getVal('PROCEDIMENTO_AGRUPADO', salvoNoCofre.PROCEDIMENTO_AGRUPADO || '-'),
               CD_PROCEDIMENTO: getVal('CD_PROCEDIMENTO', salvoNoCofre.CD_PROCEDIMENTO || '-'),
               NM_SOLICITANTE: getVal('NM_SOLICITANTE', salvoNoCofre.NM_SOLICITANTE || '-'),
+              TEL_PESSOAL: getVal('TEL_PESSOAL', salvoNoCofre.TEL_PESSOAL || ''),
+              TEL_CLINICA: getVal('TEL_CLINICA', salvoNoCofre.TEL_CLINICA || ''),
               CIDADE: getVal('CIDADE', salvoNoCofre.CIDADE || '-'),
               UF: getVal('UF', salvoNoCofre.UF || '-'),
               STATUS_ORCAMENTO: getVal('STATUS_ORCAMENTO', salvoNoCofre.STATUS_ORCAMENTO || ''),
@@ -2306,7 +2356,7 @@ function solicitarSubirPlanilha() {
           'OBSERVACAO': c.OBSERVACAO || '',
           'STATUS_ORCAMENTO': c.STATUS_ORCAMENTO || '',
           'VALOR_INICIAL': c.VALOR_INICIAL || '',
-          'ORIGEM_VALOR_INICIAL': c.ORIGEM_VALOR_INICIAL || 'Lecom',
+          'ORIGEM_VALOR_INICIAL': c.ORIGEM_VALOR_INICIAL || '',
           'MENOR_VALOR': c.MENOR_VALOR || '',
           'VALOR_PACOTE': c['VALOR PACOTE'] || '',
           'VALOR_RESOLUCAO': c.VALOR_RESOLUCAO || '',
@@ -2316,6 +2366,8 @@ function solicitarSubirPlanilha() {
           'CD_PROCEDIMENTO': c.CD_PROCEDIMENTO || '',
           'NM_PRESTADOR': c.NM_PRESTADOR || '',
           'NM_SOLICITANTE': c.NM_SOLICITANTE || '',
+          'TEL_PESSOAL': c.TEL_PESSOAL || '',
+          'TEL_CLINICA': c.TEL_CLINICA || '',
           'CIDADE': c.CIDADE || '',
           'UF': c.UF || '',
           'AREA': c.AREA || '',
@@ -2961,12 +3013,27 @@ function solicitarSubirPlanilha() {
       const elSolic = document.getElementById('editCaseSolicitante');
       if (elSolic) elSolic.value = currentCase.SOLICITANTE || currentCase.NM_SOLICITANTE || '';
 
-      // OrÃ§amento
+      const elTelPessoal = document.getElementById('editCaseTelPessoal');
+      if (elTelPessoal) {
+        elTelPessoal.value = formatarTelefoneValor(currentCase.TEL_PESSOAL || currentCase.CELULAR || '');
+      }
+
+      const elTelClinica = document.getElementById('editCaseTelClinica');
+      if (elTelClinica) {
+        elTelClinica.value = formatarTelefoneValor(currentCase.TEL_CLINICA || currentCase.TELEFONE || currentCase.TEL_SECRETARIA || '');
+      }
+      atualizarLinksTelefone();
+
+      // Orçamento
       const elValIni = document.getElementById('editCaseValorInicial');
       if (elValIni) elValIni.value = formatarMoedaTexto(currentCase.VALOR_INICIAL) || currentCase.VALOR_INICIAL || '';
 
       const elOrigemValIni = document.getElementById('editCaseOrigemValorInicial');
-      if (elOrigemValIni) elOrigemValIni.value = currentCase.ORIGEM_VALOR_INICIAL || 'Lecom';
+      if (elOrigemValIni) {
+        let orig = currentCase.ORIGEM_VALOR_INICIAL || '';
+        if (orig === 'Lecom') orig = 'Lecon';
+        elOrigemValIni.value = orig;
+      }
 
       const elMenorVal = document.getElementById('editCaseMenorValor');
       if (elMenorVal) elMenorVal.value = formatarMoedaTexto(currentCase.MENOR_VALOR) || currentCase.MENOR_VALOR || '';
@@ -3139,6 +3206,69 @@ function solicitarSubirPlanilha() {
       return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     }
 
+    function formatarTelefoneValor(v) {
+      if (!v) return '';
+      let r = String(v).replace(/\D/g, '');
+      if (r.length > 11) r = r.substring(0, 11);
+      if (r.length === 11) {
+        return `(${r.substring(0, 2)}) ${r.substring(2, 7)}-${r.substring(7)}`;
+      } else if (r.length === 10) {
+        return `(${r.substring(0, 2)}) ${r.substring(2, 6)}-${r.substring(6)}`;
+      } else if (r.length > 6) {
+        return `(${r.substring(0, 2)}) ${r.substring(2, 6)}-${r.substring(6)}`;
+      } else if (r.length > 2) {
+        return `(${r.substring(0, 2)}) ${r.substring(2)}`;
+      } else if (r.length > 0) {
+        return `(${r}`;
+      }
+      return '';
+    }
+
+    function formatarTelefone(input) {
+      if (!input) return;
+      input.value = formatarTelefoneValor(input.value);
+    }
+
+    function atualizarLinksTelefone() {
+      const telP = (document.getElementById('editCaseTelPessoal')?.value || '').replace(/\D/g, '');
+      const telC = (document.getElementById('editCaseTelClinica')?.value || '').replace(/\D/g, '');
+      const btnW = document.getElementById('btnLinkWhatsPessoal');
+      const btnL = document.getElementById('btnLinkLigarClinica');
+      if (btnW) {
+        if (telP.length >= 10) {
+          btnW.classList.remove('hidden');
+          btnW.classList.add('inline-flex');
+        } else {
+          btnW.classList.add('hidden');
+          btnW.classList.remove('inline-flex');
+        }
+      }
+      if (btnL) {
+        if (telC.length >= 8) {
+          btnL.classList.remove('hidden');
+          btnL.classList.add('inline-flex');
+        } else {
+          btnL.classList.add('hidden');
+          btnL.classList.remove('inline-flex');
+        }
+      }
+    }
+
+    function abrirWhatsPessoal() {
+      const telP = (document.getElementById('editCaseTelPessoal')?.value || '').replace(/\D/g, '');
+      if (!telP) return;
+      const numComDDI = telP.startsWith('55') && telP.length > 11 ? telP : ('55' + telP);
+      const nomeSolic = document.getElementById('editCaseSolicitante')?.value || 'Doutor(a)';
+      const msg = encodeURIComponent(`Olá, Dr(a). ${nomeSolic}! Entramos em contato referente à demanda de fidelização / auditoria.`);
+      window.open(`https://wa.me/${numComDDI}?text=${msg}`, '_blank');
+    }
+
+    function ligarParaClinica() {
+      const telC = (document.getElementById('editCaseTelClinica')?.value || '').replace(/\D/g, '');
+      if (!telC) return;
+      window.open(`tel:${telC}`, '_self');
+    }
+
     let timerAutoSalvarProfissionais = null;
 
     function autoSalvarProfissionais() {
@@ -3151,7 +3281,7 @@ function solicitarSubirPlanilha() {
     function executarSalvarProfissionaisAgora() {
       if (!currentCase) return;
       currentCase.VALOR_INICIAL = document.getElementById('editCaseValorInicial')?.value || '';
-      currentCase.ORIGEM_VALOR_INICIAL = document.getElementById('editCaseOrigemValorInicial')?.value || 'Lecom';
+      currentCase.ORIGEM_VALOR_INICIAL = document.getElementById('editCaseOrigemValorInicial')?.value || '';
       currentCase.MENOR_VALOR = document.getElementById('editCaseMenorValor')?.value || '';
       currentCase['VALOR PACOTE'] = document.getElementById('editCaseValorPacote')?.value || '';
       currentCase.VALOR_RESOLUCAO = document.getElementById('editCaseValorResolucao')?.value || '';
@@ -3164,6 +3294,12 @@ function solicitarSubirPlanilha() {
 
       if (document.getElementById('editCaseSolicitante')) {
         currentCase.NM_SOLICITANTE = document.getElementById('editCaseSolicitante').value;
+      }
+      if (document.getElementById('editCaseTelPessoal')) {
+        currentCase.TEL_PESSOAL = document.getElementById('editCaseTelPessoal').value;
+      }
+      if (document.getElementById('editCaseTelClinica')) {
+        currentCase.TEL_CLINICA = document.getElementById('editCaseTelClinica').value;
       }
 
       currentCase.ASSUMIU_POR = document.getElementById('editCaseAssumiuPor')?.value || '';
@@ -3211,14 +3347,14 @@ function solicitarSubirPlanilha() {
       "P67 (Negocia\u00e7\u00e3o Einstein - HIAE)": "EINSTEIN POSSUI NEGOCIA\u00c7\u00c3O DE PAGAMENTO ANALISADO PELO AUDITOR DE CONTAS MEDICAS, N\u00c3O PASSA PELO GNHAP",
       "P67 (Negocia\u00e7\u00e3o Einstein)": "EINSTEIN POSSUI NEGOCIA\u00c7\u00c3O DE PAGAMENTO ANALISADO PELO AUDITOR DE CONTAS MEDICAS, N\u00c3O PASSA PELO GNHAP",
       "P67 (Finalizado devido guia cancelada por contrato inativo)": "PLANO CANCELADO/INATIVO. ENVIAMOS PARA SETOR DE AUTORIZA\u00c7\u00d5ES PARA AVALIA\u00c7\u00c3O DO CANCELAMENTO ADMINISTRATIVO POR PLANO CANCELADO/INATIVO ANTES DA DATA DA AUTORIZA\u00c7\u00c3O. PEDIDO M\u00c9DICO EMITIDO ANTES DO CANCELAMENTO N\u00c3O MANT\u00caM COBERTURA PARA PROCEDIMENTO N\u00c3O REALIZAO AP\u00d3S ENCERRAMENTO REGULAR DO V\u00cdNCULO CONTRATUAL QUANDO PLANO FOR CANCELADO PELO PR\u00d3PRIO BENEFICI\u00c1RIO, DE ACORDO COM ARTIGO 15, DA RN 412, DE 2016.",
-      "P67 (Finalizado com PACOTE)": "C\u00d3DIGOS: [QUAL(IS) C\u00d3DIGOS ACORDADOS]. OPME: [QUAL(IS) OPME ACORDADOS]. AUTORIZAR C\u00d3DIGO DE PACOTE [0000000]. O(S) C\u00d3DIGO(S) TUSS CONSIDERADO(S) PERTINENTE PELA AUDITORIA DEVEM SER AUTORIZADO CONFORME ACORDADO EM PACOTE, APENAS PARA FINALIDADE DE HONOR\u00c1RIOS M\u00c9DICOS (VISTO QUE O PAGAMENTO DO HONOR\u00c1RIO N\u00c3O EST\u00c1 CONTEMPLADO NO PACOTE) | DEMAIS TUSS MANTIDO EM GUIA PARA CONTINUIDADE DO FLUXO ASSISTENCIAL E AN\u00c1LISE P\u00d3S-CONTA.",
-      "P67 (Finalizado com PACOTE endosc\u00f3pica de coluna no BLANC)": "C\u00d3DIGOS: [QUAL(IS) C\u00d3DIGOS ACORDADOS]. OPME: [QUAL(IS) OPME ACORDADOS]. AUTORIZAR 2 VEZES O C\u00d3DIGO DE PACOTE [98600580], VISTO QUE EST\u00c1 ACORDADO O PAGAMENTO DE 1,7 VEZES O PACOTE DE 98600580 PACOTE HERNIA DE DISCO LOMBAR TTO CIR S/ INSTRUMENTACAO 1 NIVEL S/ HM. O(S) C\u00d3DIGO(S) TUSS CONSIDERADO(S) PERTINENTE PELA AUDITORIA DEVEM SER AUTORIZADO CONFORME ACORDADO EM PACOTE, APENAS PARA FINALIDADE DE HONOR\u00c1RIOS M\u00c9DICOS (VISTO QUE O PAGAMENTO DO HONOR\u00c1RIO N\u00c3O EST\u00c1 CONTEMPLADO NO PACOTE). DEMAIS TUSS MANTIDO EM GUIA PARA CONTINUIDADE DO FLUXO ASSISTENCIAL E AN\u00c1LISE P\u00d3S-CONTA.",
+      "P67 (Finalizado com PACOTE)": "C\u00d3DIGOS: [QUAL(IS) C\u00d3DIGOS ACORDADOS]. AUTORIZAR C\u00d3DIGO DE PACOTE [0000000]. O(S) C\u00d3DIGO(S) TUSS CONSIDERADO(S) PERTINENTE PELA AUDITORIA DEVEM SER AUTORIZADO CONFORME ACORDADO EM PACOTE, APENAS PARA FINALIDADE DE HONOR\u00c1RIOS M\u00c9DICOS (VISTO QUE O PAGAMENTO DO HONOR\u00c1RIO N\u00c3O EST\u00c1 CONTEMPLADO NO PACOTE) | DEMAIS TUSS MANTIDO EM GUIA PARA CONTINUIDADE DO FLUXO ASSISTENCIAL E AN\u00c1LISE P\u00d3S-CONTA.",
+      "P67 (Finalizado com PACOTE endosc\u00f3pica de coluna no BLANC)": "C\u00d3DIGOS: [QUAL(IS) C\u00d3DIGOS ACORDADOS]. AUTORIZAR 2 VEZES O C\u00d3DIGO DE PACOTE [98600580], VISTO QUE EST\u00c1 ACORDADO O PAGAMENTO DE 1,7 VEZES O PACOTE DE 98600580 PACOTE HERNIA DE DISCO LOMBAR TTO CIR S/ INSTRUMENTACAO 1 NIVEL S/ HM. O(S) C\u00d3DIGO(S) TUSS CONSIDERADO(S) PERTINENTE PELA AUDITORIA DEVEM SER AUTORIZADO CONFORME ACORDADO EM PACOTE, APENAS PARA FINALIDADE DE HONOR\u00c1RIOS M\u00c9DICOS (VISTO QUE O PAGAMENTO DO HONOR\u00c1RIO N\u00c3O EST\u00c1 CONTEMPLADO NO PACOTE). DEMAIS TUSS MANTIDO EM GUIA PARA CONTINUIDADE DO FLUXO ASSISTENCIAL E AN\u00c1LISE P\u00d3S-CONTA.",
       "P67 (Finalizado por prestador CAPTATION)": "PRESTADOR POSSUI NEGOCIA\u00c7\u00c3O CAPTATION - O QUAL INCLUI C\u00d3DIGOS E OPME'S. TUSS MANTIDO EM GUIA PARA CONTINUIDADE DO FLUXO ASSISTENCIAL E AN\u00c1LISE P\u00d3S-CONTA.",
       "P67 (Finalizado com REGRA de OPME autorizado at\u00e9 6 vezes o valor do OPME indicado na Rede Pr\u00f3pria)": "C\u00d3DIGOS: [QUAL(IS) C\u00d3DIGOS ACORDADOS]. OPME: [QUAL(IS) OPME ACORDADOS]. CASO ENQUADRADO NA REGRA DE CUSTO DE OPME (FORA DO PROTOCOLO) MENOR QUE 6 VEZES O OPME NA REDE PR\u00d3PRIA. SEGUIR COM AUTORIZA\u00c7\u00c3O NAS REGRAS. CUSTO OPME INICIAL OU AP\u00d3S NEGOCIA\u00c7\u00c3O: R$ [VALOR]. CUSTO DO OPME NA REDE PR\u00d3PRIA: R$ [VALOR].",
       "P67 (Finalizado com REGRA de OPME com valor menor que o menor pacote)": "C\u00d3DIGOS: [QUAL(IS) C\u00d3DIGOS ACORDADOS]. OPME: [QUAL(IS) OPME ACORDADOS]. CASO ENQUADRADO NA REGRA DE CUSTO DE OPME (FORA DO PROTOCOLO) MENOR QUE NOSSO MENOR PACOTE PARA A INDICA\u00c7\u00c3O. SEGUIR COM AUTORIZA\u00c7\u00c3O NAS REGRAS. CUSTO OPME INICIAL OU AP\u00d3S NEGOCIA\u00c7\u00c3O: R$ [VALOR]. CUSTO MENOR PACOTE: R$ [VALOR] [PRESTADOR]",
-      "P67 (Finalizado com REGRA de OPME menor que 3.000 reais)": "CASO SEM CONSENSO. O CASO EQUADRA-SE NA LISTA DE PROCEDIMENTOS AT\u00c9 3.000 REAIS. SEGUIR COM AUTORIZA\u00c7\u00c3O ESTRAT\u00c9GICA, BASEADA EM ANALISE DE DADOS, COM A FINALIDADE DE EVITAR BACKLOG, DEMANDAS REGULAT\u00d3RIAS E LIMINARES.",
+      "P67 (Finalizado com REGRA de OPME menor que 3.000 reais)": "C\u00d3DIGOS: [QUAL(IS) C\u00d3DIGOS ACORDADOS]. OPME: [QUAL(IS) OPME ACORDADOS]. CASO SEM CONSENSO. O CASO EQUADRA-SE NA LISTA DE PROCEDIMENTOS AT\u00c9 3.000 REAIS. SEGUIR COM AUTORIZA\u00c7\u00c3O ESTRAT\u00c9GICA, BASEADA EM ANALISE DE DADOS, COM A FINALIDADE DE EVITAR BACKLOG, DEMANDAS REGULAT\u00d3RIAS E LIMINARES.",
       "P67 (Delibera\u00e7\u00e3o de interna\u00e7\u00e3o, exame ou procedimento sem OPME, por aus\u00eancia de adequa\u00e7\u00e3o)": "AUTORIZAR TUSS CONSIDERADOS PERTINENTES PALA AUDITORIA ELETIVA. DEMAIS TUSS MANTIDO(S) EM GUIA PARA CONTINUIDADE DO FLUXO ASSISTENCIAL E AN\u00c1LISE P\u00d3S-CONTA.",
-      "P67 (Resolu\u00e7\u00e3o)": "CASO SEM CONSENSO, N\u00c3O PASS\u00cdVEL DE AUTORIZA\u00c7\u00c3O DENTRO DAS REGRAS ADMINISTRATIVAS. COM O OBJETIVO DE MITIGAR RISCOS REGULAT\u00d3RIOS, SEGUIR COM AUTORIZA\u00c7\u00c3O E RESOLU\u00c7\u00c3O DA DIFEREN\u00c7A DO OPME FORA DO PROTOCOLO E OPME CONSIDERADO PERTINENTE. [VALOR OPME NEGOCIADO COM SOLICITANTE] - [VALOR OPME AUTORIZADO] = [VALOR DA RESOLU\u00c7\u00c3O].",
+      "P67 (Resolu\u00e7\u00e3o)": "C\u00d3DIGOS: [QUAL(IS) C\u00d3DIGOS ACORDADOS]. OPME: [QUAL(IS) OPME ACORDADOS]. CASO SEM CONSENSO INTEGRAL, N\u00c3O PASS\u00cdVEL DE AUTORIZA\u00c7\u00c3O DENTRO DAS REGRAS ADMINISTRATIVAS. COM O OBJETIVO DE MITIGAR RISCOS REGULAT\u00d3RIOS, SEGUIR COM AUTORIZA\u00c7\u00c3O E RESOLU\u00c7\u00c3O DA DIFEREN\u00c7A DO OPME FORA DO PROTOCOLO E OPME CONSIDERADO PERTINENTE. [VALOR OPME NEGOCIADO COM SOLICITANTE] - [VALOR OPME DENTRO DO PROTOCOLO] = [VALOR DA RESOLU\u00c7\u00c3O].",
       "P67 (Verticalizado contratual com possibilidade de JUNTA M\u00c9DICA, se falha da verticaliza\u00e7\u00e3o, por OPME alto custo)": "CASO PASS\u00cdVEL DE JUNTA SE FALHA NA VERTICALIZA\u00c7\u00c3O. FORA DAS REGRAS DE AUTORIZA\u00c7\u00c3O. SEM CONSENSO. PACIENTE EM PLANOS PASS\u00cdVEIS DE VERTICALIZA\u00c7\u00c3O (HMO \"N\u00c3O LICITA\u00c7\u00c3O\", PPO ADVANCE 600/700 ENF). SINALIZAMOS PARA TRANSLADO/VERTICALIZA\u00c7\u00c3O. SUGERIMOS [ESPECIALIDADE]  [M\u00c9DICO/CL\u00cdNICA 00 00000000], QUE ATENDE NA CIDADE [CIDADE].",
       "P67 (Verticalizado contratual com possibilidade de RESOLU\u00c7\u00c3O do valor, se falha da verticaliza\u00e7\u00e3o, por OPME baixo custo)": "CASO FORA DAS REGRAS DE AUTORIZA\u00c7\u00c3O. SEM CONSENSO. PACIENTE EM PLANOS PASS\u00cdVEIS DE VERTICALIZA\u00c7\u00c3O (HMO \"N\u00c3O LICITA\u00c7\u00c3O\", PPO ADVANCE 600/700 ENF). SINALIZAMOS PARA TRANSLADO/VERTICALIZA\u00c7\u00c3O. SUGERIMOS [ESPECIALIDADE]  [M\u00c9DICO/CL\u00cdNICA 00 00000000], QUE ATENDE NA CIDADE [CIDADE].",
       "P71 (Direcionado com possibilidade de JUNTA M\u00c9DICA, se falha do direcionamento de rede, por OPME alto custo)": "CASO PASS\u00cdVEL DE JUNTA SE FALHA NO DIRECIONAMENTO. FORA DAS REGRAS DE AUTORIZA\u00c7\u00c3O. SEM CONSENSO. PACIENTE EM PLANOS PASS\u00cdVEIS DE DIRECIONAMENTO DE REDE (HMO LICITA\u00c7\u00c3O, PPO - ADVANCE 600/700 APTO, PREMIUM E INFINITY). SUGERIMOS  [ESPECIALIDADE]  [M\u00c9DICO/CL\u00cdNICA 00 00000000], QUE ATENDE NA CIDADE [CIDADE].",
@@ -3347,13 +3483,15 @@ function solicitarSubirPlanilha() {
 
       // Coleta dados dos inputs em tempo real para garantir que pegou o que foi preenchido
       const valorInicial = document.getElementById('editCaseValorInicial')?.value || currentCase.VALOR_INICIAL || 'Não informado';
-      const origemValorInicial = document.getElementById('editCaseOrigemValorInicial')?.value || currentCase.ORIGEM_VALOR_INICIAL || 'Lecom';
+      const origemValorInicial = document.getElementById('editCaseOrigemValorInicial')?.value || currentCase.ORIGEM_VALOR_INICIAL || '';
       const menorValor = document.getElementById('editCaseMenorValor')?.value || currentCase.MENOR_VALOR || 'Não informado';
       const valorPacote = document.getElementById('editCaseValorPacote')?.value || currentCase['VALOR PACOTE'] || 'Não informado';
       const valorResolucao = document.getElementById('editCaseValorResolucao')?.value || currentCase.VALOR_RESOLUCAO || 'Não informado';
       const qualPacote = document.getElementById('editCaseQualPacote')?.value || currentCase['QUAL PACOTE?'] || 'Não informado';
       const prestadorPacote = document.getElementById('editCasePrestadorPacote')?.value || currentCase.PRESTADOR_PACOTE || 'Não informado';
       const solicitante = document.getElementById('editCaseSolicitante')?.value || currentCase.NM_SOLICITANTE || '-';
+      const telPessoal = document.getElementById('editCaseTelPessoal')?.value || currentCase.TEL_PESSOAL || '';
+      const telClinica = document.getElementById('editCaseTelClinica')?.value || currentCase.TEL_CLINICA || '';
 
       const medResponsavel = currentCase.GERENTE_MEDICO ? `Dr(a). ${currentCase.GERENTE_MEDICO}` : 'Não atribuído';
       const observacaoInput = (document.getElementById('editCaseObservacao')?.value || currentCase.OBSERVACAO || '').trim();
@@ -3382,8 +3520,11 @@ function solicitarSubirPlanilha() {
       txt += `• *Prestador:* ${currentCase.NM_PRESTADOR || '-'}\n`;
       txt += `• *Local:* ${currentCase.CIDADE || '-'} - ${currentCase.UF || '-'}\n`;
       txt += `• *Solicitante:* ${solicitante}\n`;
+      if (telPessoal) txt += `  - Tel. Pessoal / Celular: ${telPessoal}\n`;
+      if (telClinica) txt += `  - Tel. Clínica / Secretária: ${telClinica}\n`;
       txt += `\n💰 *ORÇAMENTO & PACOTE NEGOCIADO*\n`;
-      txt += `• *Valor Inicial (${origemValorInicial}):* ${valorInicial}\n`;
+      const rotuloOrigem = origemValorInicial ? ` (${origemValorInicial})` : '';
+      txt += `• *Valor Inicial${rotuloOrigem}:* ${valorInicial}\n`;
       txt += `• *Valor Negociado:* ${menorValor}\n`;
       txt += `• *Valor Pacote:* ${valorPacote}\n`;
       txt += `• *Valor Resolução:* ${valorResolucao}\n`;
