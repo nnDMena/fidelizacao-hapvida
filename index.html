@@ -277,12 +277,14 @@
       <!-- 2. LIST VIEW (Rolável horizontalmente no celular) -->
       <div id="view-lista" class="hidden bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
         <div class="overflow-x-auto w-full">
-          <table class="w-full text-left border-collapse text-xs whitespace-nowrap sm:whitespace-normal min-w-[600px] sm:min-w-0">
+          <table class="w-full text-left border-collapse text-xs whitespace-nowrap sm:whitespace-normal min-w-[700px] sm:min-w-0">
             <thead>
               <tr class="bg-slate-50 text-slate-500 uppercase tracking-wider font-bold border-b border-slate-200/80 text-[10.5px] sm:text-[11px]">
                 <th class="py-2.5 sm:py-3 px-3 sm:px-4">Cód. Utente</th>
                 <th class="py-2.5 sm:py-3 px-3 sm:px-4">Beneficiário</th>
-                <th class="py-2.5 sm:py-3 px-3 sm:px-4">Procedimento / TUSS</th>
+                <th class="py-2.5 sm:py-3 px-3 sm:px-4">Gerente Médico</th>
+                <th class="py-2.5 sm:py-3 px-3 sm:px-4">Eq. Técnica</th>
+                <th class="py-2.5 sm:py-3 px-3 sm:px-4">Administrativo</th>
                 <th class="py-2.5 sm:py-3 px-3 sm:px-4">Prestador Solicitante</th>
                 <th class="py-2.5 sm:py-3 px-3 sm:px-4 text-center">Prazos</th>
                 <th class="py-2.5 sm:py-3 px-3 sm:px-4 text-right">Ação</th>
@@ -3206,6 +3208,23 @@ function solicitarSubirPlanilha() {
       return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     }
 
+    function mascararNomeBeneficiario(nomeCompleto) {
+      if (!nomeCompleto || typeof nomeCompleto !== 'string') return '';
+      const partes = nomeCompleto.trim().split(/\s+/);
+      if (partes.length === 0) return '';
+      if (partes.length === 1) return partes[0];
+      const preposicoes = new Set(['de', 'da', 'do', 'dos', 'das', 'e', "d'", 'del']);
+      return partes.map((parte, index) => {
+        if (index === 0) return parte;
+        if (preposicoes.has(parte.toLowerCase())) return parte;
+        const len = parte.length;
+        if (len > 3) {
+          return parte.slice(0, len - 3) + '***';
+        }
+        return '***';
+      }).join(' ');
+    }
+
     function formatarTelefoneValor(v) {
       if (!v) return '';
       let r = String(v).replace(/\D/g, '');
@@ -3603,7 +3622,7 @@ function solicitarSubirPlanilha() {
                 <span>${c.TIPO_DEMANDA || 'DEMANDA CRÍTICA'}${c.PRAZO_FINAL_DEMANDA ? ' | Prazo: ' + formatarDataBR(c.PRAZO_FINAL_DEMANDA) : ''}</span>
               </div>
             ` : ''}
-            <h3 class="font-bold text-slate-800 text-xs leading-snug group-hover:text-indigo-600 transition mb-1">${c.NM_USUARIO}</h3>
+            <h3 class="font-bold text-slate-800 text-xs leading-snug group-hover:text-indigo-600 transition mb-1" title="${c.NM_USUARIO || ''}">${mascararNomeBeneficiario(c.NM_USUARIO)}</h3>
             <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200 font-extrabold text-[10px]">
               Pendência: <strong>${c.TIPO_PENDENCIA || '-'}</strong>
             </div>
@@ -3636,7 +3655,7 @@ function solicitarSubirPlanilha() {
           <td class="py-3 px-4 font-mono font-bold text-indigo-700 text-xs">${c.CD_USUARIO}</td>
           <td class="py-3 px-4 font-bold text-slate-900">
             <div class="flex items-center gap-1.5 flex-wrap">
-              <span>${c.NM_USUARIO}</span>
+              <span title="${c.NM_USUARIO || ''}">${mascararNomeBeneficiario(c.NM_USUARIO)}</span>
               ${(c.TIPO_DEMANDA || c.PRAZO_FINAL_DEMANDA) ? `
                 <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-600 text-white text-[9.5px] font-black">
                   <i class="fa-solid fa-triangle-exclamation text-[8px]"></i> ${c.TIPO_DEMANDA || 'DEMANDA'}${c.PRAZO_FINAL_DEMANDA ? ' (' + formatarDataBR(c.PRAZO_FINAL_DEMANDA) + ')' : ''}
@@ -3644,7 +3663,15 @@ function solicitarSubirPlanilha() {
               ` : ''}
             </div>
           </td>
-          <td class="py-3 px-4 text-slate-600 truncate max-w-xs">${c.PROCEDIMENTO_AGRUPADO}</td>
+          <td class="py-3 px-4 text-xs whitespace-nowrap">
+            ${c.GERENTE_MEDICO ? `<span class="inline-flex items-center gap-1 text-indigo-900 bg-indigo-50 border border-indigo-200/70 px-2 py-0.5 rounded-md font-bold text-[10.5px]"><i class="fa-solid fa-user-doctor text-indigo-600 text-[9px]"></i> ${c.GERENTE_MEDICO.startsWith('Dr') ? c.GERENTE_MEDICO : 'Dr(a). ' + c.GERENTE_MEDICO}</span>` : '<span class="text-slate-400 italic">-</span>'}
+          </td>
+          <td class="py-3 px-4 text-xs whitespace-nowrap">
+            ${c.ASSUMIU_POR ? `<span class="inline-flex items-center gap-1 font-bold text-amber-900 bg-amber-50 border border-amber-200/80 px-2 py-0.5 rounded-md text-[10.5px] max-w-[170px] truncate" title="Equipe Técnica: ${c.ASSUMIU_POR}"><i class="fa-solid fa-user-gear text-amber-600 text-[9px] shrink-0"></i> <span class="truncate">${c.ASSUMIU_POR}</span></span>` : '<span class="text-slate-400 italic">-</span>'}
+          </td>
+          <td class="py-3 px-4 text-xs whitespace-nowrap">
+            ${c.ADMINISTRATIVO ? `<span class="inline-flex items-center gap-1 font-bold text-sky-900 bg-sky-50 border border-sky-200/80 px-2 py-0.5 rounded-md text-[10.5px] max-w-[170px] truncate" title="Administrativo: ${c.ADMINISTRATIVO}"><i class="fa-solid fa-user-tie text-sky-600 text-[9px] shrink-0"></i> <span class="truncate">${c.ADMINISTRATIVO}</span></span>` : '<span class="text-slate-400 italic">-</span>'}
+          </td>
           <td class="py-3 px-4 text-slate-500 truncate max-w-xs">${c.NM_PRESTADOR}</td>
           <td class="py-3 px-4 text-center">
             <div class="inline-flex items-center gap-1 justify-center">
@@ -3654,7 +3681,7 @@ function solicitarSubirPlanilha() {
           </td>
           <td class="py-3 px-4 text-right font-bold text-indigo-600">Abrir ➔</td>
         </tr>
-      `}).join('') : `<tr><td colspan="6" class="py-8 text-center text-slate-400 italic">Suba a planilha do dia no botão verde acima.</td></tr>`;
+      `}).join('') : `<tr><td colspan="8" class="py-8 text-center text-slate-400 italic">Suba a planilha do dia no botão verde acima.</td></tr>`;
 
       document.getElementById('view-fichas').innerHTML = cases.length ? cases.map(buildCard).join('') : `<div class="col-span-3">${emptyMsg('Nenhum caso carregado.')}</div>`;
 
@@ -3686,7 +3713,7 @@ function solicitarSubirPlanilha() {
               <td class="py-3 px-4 font-mono font-bold text-slate-800">${c.CD_USUARIO}</td>
               <td class="py-3 px-4 font-bold text-slate-900">
                 <div class="flex items-center gap-1.5 flex-wrap">
-                  <span>${c.NM_USUARIO}</span>
+                  <span title="${c.NM_USUARIO || ''}">${mascararNomeBeneficiario(c.NM_USUARIO)}</span>
                   ${(c.TIPO_DEMANDA || c.PRAZO_FINAL_DEMANDA) ? `
                     <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-600 text-white text-[9.5px] font-black">
                       <i class="fa-solid fa-triangle-exclamation text-[8px]"></i> ${c.TIPO_DEMANDA || 'DEMANDA'}${c.PRAZO_FINAL_DEMANDA ? ' (' + formatarDataBR(c.PRAZO_FINAL_DEMANDA) + ')' : ''}
@@ -3734,7 +3761,7 @@ function solicitarSubirPlanilha() {
               </span>
             </td>
             <td class="py-3 px-4 font-mono font-bold text-slate-800">${c.CD_USUARIO}</td>
-            <td class="py-3 px-4 font-bold text-slate-900">${c.NM_USUARIO}</td>
+            <td class="py-3 px-4 font-bold text-slate-900" title="${c.NM_USUARIO || ''}">${mascararNomeBeneficiario(c.NM_USUARIO)}</td>
             <td class="py-3 px-4 text-slate-600 truncate max-w-xs">${c.PROCEDIMENTO_AGRUPADO || '-'}</td>
             <td class="py-3 px-4 text-xs">
               <span class="font-bold text-indigo-700">${c.MEDICO_CONSULTOR || c.GERENTE_MEDICO || '-'}</span>
@@ -3773,7 +3800,7 @@ function solicitarSubirPlanilha() {
               <td class="py-3 px-4 font-mono font-bold text-slate-800">${c.CD_USUARIO}</td>
               <td class="py-3 px-4 font-bold text-slate-900">
                 <div class="flex items-center gap-1.5 flex-wrap">
-                  <span>${c.NM_USUARIO}</span>
+                  <span title="${c.NM_USUARIO || ''}">${mascararNomeBeneficiario(c.NM_USUARIO)}</span>
                   ${(c.TIPO_DEMANDA || c.PRAZO_FINAL_DEMANDA) ? `
                     <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-600 text-white text-[9.5px] font-black">
                       <i class="fa-solid fa-triangle-exclamation text-[8px]"></i> ${c.TIPO_DEMANDA || 'DEMANDA'}
@@ -3839,7 +3866,7 @@ function solicitarSubirPlanilha() {
               <td class="py-3 px-4 font-mono font-bold text-slate-800">${c.CD_USUARIO}</td>
               <td class="py-3 px-4 font-bold text-slate-900">
                 <div class="flex items-center gap-1.5 flex-wrap">
-                  <span>${c.NM_USUARIO}</span>
+                  <span title="${c.NM_USUARIO || ''}">${mascararNomeBeneficiario(c.NM_USUARIO)}</span>
                   ${(c.TIPO_DEMANDA || c.PRAZO_FINAL_DEMANDA) ? `
                     <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-600 text-white text-[9.5px] font-black">
                       <i class="fa-solid fa-triangle-exclamation text-[8px]"></i> ${c.TIPO_DEMANDA || 'DEMANDA'}
@@ -3904,7 +3931,7 @@ function solicitarSubirPlanilha() {
               <td class="py-3 px-4 font-mono font-bold text-slate-800">${c.CD_USUARIO}</td>
               <td class="py-3 px-4 font-bold text-slate-900">
                 <div class="flex items-center gap-1.5 flex-wrap">
-                  <span>${c.NM_USUARIO}</span>
+                  <span title="${c.NM_USUARIO || ''}">${mascararNomeBeneficiario(c.NM_USUARIO)}</span>
                   ${(c.TIPO_DEMANDA || c.PRAZO_FINAL_DEMANDA) ? `
                     <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-600 text-white text-[9.5px] font-black">
                       <i class="fa-solid fa-triangle-exclamation text-[8px]"></i> ${c.TIPO_DEMANDA || 'DEMANDA'}
