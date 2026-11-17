@@ -71,7 +71,7 @@
       </div>
     </div>
 
-    <!-- ABAS DE GESTÃO MÉDICA (DR. RUBENS & DR. VINICIUS) -->
+    <!-- ABAS DE GESTÃO MÉDICA (DRA. TALITA, DR. RUBENS & DR. VINICIUS) -->
     <div id="containerAbasDrRubens" class="hidden items-center flex-wrap gap-1.5 sm:gap-2">
       <!-- Aba 1: Ausência de Consenso GNHAP / GNMED -->
       <button onclick="alternarEsteiraRubens('rubens_consenso')" id="btn-view-rubens_consenso" 
@@ -106,10 +106,10 @@
         <span id="badge-rubens-criticos" class="bg-red-500 text-white text-[9.5px] font-black px-1.5 py-0.2 rounded-full shrink-0">0</span>
       </button>
 
-      <!-- Aba 4: Junta Médica (Dr. Rubens & Dr. Vinicius) -->
+      <!-- Aba 4: Junta Médica (Dra. Talita, Dr. Rubens & Dr. Vinicius) -->
       <button onclick="alternarEsteiraRubens('rubens_junta')" id="btn-view-rubens_junta" 
         class="h-9 w-[170px] sm:w-[185px] text-[11px] font-bold px-3 py-1.5 rounded-lg border border-purple-400/50 bg-purple-500/20 hover:bg-purple-600 hover:text-white text-purple-200 flex items-center justify-between gap-1.5 transition active:scale-[0.98] shadow-xs cursor-pointer" 
-        title="Casos finalizados com desfecho de Junta Médica (Fila Dr. Rubens e Dr. Vinicius)">
+        title="Casos finalizados com desfecho de Junta Médica (Fila Dra. Talita, Dr. Rubens e Dr. Vinicius)">
         <div class="flex items-center gap-1.5 truncate">
           <i class="fa-solid fa-gavel text-purple-400 text-xs shrink-0"></i>
           <span class="truncate">Junta Médica</span>
@@ -532,7 +532,7 @@
         </div>
       </div>
 
-      <!-- 9. ESTEIRA DR. RUBENS & DR. VINICIUS: JUNTA MÉDICA -->
+      <!-- 9. ESTEIRA DRA. TALITA, DR. RUBENS & DR. VINICIUS: JUNTA MÉDICA -->
       <div id="view-rubens_junta" class="hidden space-y-4">
         <div class="bg-gradient-to-r from-purple-950 via-slate-900 to-indigo-950 text-white p-3.5 sm:p-4 rounded-2xl shadow-xs flex flex-wrap items-center justify-between gap-3 sm:gap-4 border border-purple-500/30">
           <div class="flex items-center gap-3">
@@ -541,7 +541,7 @@
             </div>
             <div>
               <h2 class="text-xs sm:text-sm font-extrabold flex items-center gap-2 flex-wrap">
-                Esteira de Junta Médica — Dr. Rubens &amp; Dr. Vinicius
+                Esteira de Junta Médica — Dra. Talita, Dr. Rubens &amp; Dr. Vinicius
               </h2>
               <p class="text-[11px] sm:text-xs text-purple-200/90 mt-0.5">Casos finalizados com desfecho de Junta Médica ativos na janela de 48h para deliberação técnica.</p>
             </div>
@@ -1323,8 +1323,14 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
       return op.includes('vinicius') || op.includes('azevedo') || isOperadorAdmin();
     }
 
+    function isDraTalita() {
+      if (!operadorAtual) return false;
+      const op = operadorAtual.trim().toLowerCase();
+      return op.includes('talita') || op.includes('freire') || isOperadorAdmin();
+    }
+
     function isPainelGestaoMedica() {
-      return isDrRubens() || isDrVinicius() || isOperadorAdmin();
+      return isDrRubens() || isDrVinicius() || isDraTalita() || isOperadorAdmin();
     }
 
     function atualizarPermissoesOperador() {
@@ -1818,6 +1824,7 @@ function solicitarSubirPlanilha() {
 
     async function executarLimparFila() {
       if (confirm('Deseja limpar apenas a fila de trabalho do dia para TODOS os usuários?\n\n🔒 O Histórico e o Cofre permanecerão salvos na Nuvem.')) {
+        localStorage.setItem('hapvida_fila_limpa_manual', 'true');
         if (isCloudConnected && supabaseClient) {
           try {
             await supabaseClient.from('casos_ativos').delete().neq('cd_usuario', '_none_');
@@ -2315,6 +2322,37 @@ function solicitarSubirPlanilha() {
             const salvoNoCofre = vaultCases[codUsuario] || {};
             if (vaultCases[codUsuario]) recuperadosDoCofre++;
 
+            // Se tiver histórico anterior, puxa o que tiver de descrição e vai direto para o campo observação
+            let obsExistente = (salvoNoCofre.OBSERVACAO || '').trim();
+            const partesHistorico = [];
+
+            if (salvoNoCofre.ULTIMO_DESFECHO && salvoNoCofre.ULTIMO_DESFECHO.trim()) {
+              partesHistorico.push(`[HISTÓRICO ANTERIOR - DESFECHO]: ${salvoNoCofre.ULTIMO_DESFECHO.trim()}`);
+            }
+            if (salvoNoCofre.FINALIZACAO_SIGO && salvoNoCofre.FINALIZACAO_SIGO.trim() && (!salvoNoCofre.ULTIMO_DESFECHO || !salvoNoCofre.ULTIMO_DESFECHO.includes(salvoNoCofre.FINALIZACAO_SIGO.trim()))) {
+              partesHistorico.push(`[HISTÓRICO ANTERIOR - SIGO]: ${salvoNoCofre.FINALIZACAO_SIGO.trim()}`);
+            }
+
+            const logsAnteriores = historyLog[codUsuario] || [];
+            if (logsAnteriores.length > 0) {
+              const resumoLogs = logsAnteriores.map(l => `• [${l.date}] ${l.author}: ${l.text}`).join('\n');
+              if (resumoLogs) {
+                partesHistorico.push(`[HISTÓRICO ANTERIOR - REGISTROS]:\n${resumoLogs}`);
+              }
+            }
+
+            let observacaoFinal = obsExistente;
+            if (partesHistorico.length > 0) {
+              const blocoHistorico = partesHistorico.join('\n\n');
+              if (observacaoFinal) {
+                if (!observacaoFinal.includes(blocoHistorico)) {
+                  observacaoFinal = `${observacaoFinal}\n\n${blocoHistorico}`;
+                }
+              } else {
+                observacaoFinal = blocoHistorico;
+              }
+            }
+
             const novoCaso = {
               CD_USUARIO: codUsuario,
               NM_USUARIO: nmUsuario,
@@ -2354,14 +2392,32 @@ function solicitarSubirPlanilha() {
               PRESTADOR_PACOTE: salvoNoCofre.PRESTADOR_PACOTE || '',
               TIPO_DEMANDA: getVal('TIPO_DEMANDA', salvoNoCofre.TIPO_DEMANDA || ''),
               PRAZO_FINAL_DEMANDA: getVal('PRAZO_FINAL_DEMANDA', salvoNoCofre.PRAZO_FINAL_DEMANDA || ''),
-              OBSERVACAO: salvoNoCofre.OBSERVACAO || '',
+              OBSERVACAO: observacaoFinal,
               ENCAMINHAR: getVal('ENCAMINHAR', salvoNoCofre.ENCAMINHAR || ''),
-              STATUS_COFRE: salvoNoCofre.STATUS_COFRE || 'EM ANDAMENTO',
-              ULTIMO_DESFECHO: salvoNoCofre.ULTIMO_DESFECHO || ''
+              STATUS_COFRE: 'EM ANDAMENTO',
+              ULTIMO_DESFECHO: ''
             };
 
+            // Se o caso já possui finalização/desfecho prévio no cofre ou no histórico de logs,
+            // ele NÃO deve ir para a esteira ativa: ele pertence ao Histórico!
+            const jaFinalizado = isCasoComDesfechoOuFinalizado(salvoNoCofre) || 
+                                 (historyLog[codUsuario] && historyLog[codUsuario].some(l => {
+                                   const aut = String(l.author || '').toLowerCase();
+                                   const txt = String(l.text || '').toUpperCase();
+                                   return aut.includes('finaliza') || txt.includes('[DESFECHO:') || txt.includes('PARECER & DESFECHO');
+                                 }));
+
+            if (jaFinalizado) {
+              novoCaso.STATUS_COFRE = salvoNoCofre.STATUS_COFRE || 'CONCLUÍDO';
+              novoCaso.DESFECHO = salvoNoCofre.DESFECHO || '';
+              novoCaso.MICRO_DESFECHO = salvoNoCofre.MICRO_DESFECHO || '';
+              novoCaso.FINALIZACAO_SIGO = salvoNoCofre.FINALIZACAO_SIGO || '';
+              novoCaso.ULTIMO_DESFECHO = salvoNoCofre.ULTIMO_DESFECHO || '';
+              syncToVault(novoCaso);
+              return; // NÃO adiciona na esteira ativa! Permanece no histórico
+            }
+
             novosCasos.push(novoCaso);
-            syncToVault(novoCaso);
           });
 
           if (novosCasos.length === 0) {
@@ -2369,17 +2425,26 @@ function solicitarSubirPlanilha() {
             return;
           }
 
-          // Se estiver conectado na Nuvem, sincroniza em lote para todos os 30 usuários
-          // Se estiver conectado na Nuvem, sincroniza em lote para todos os 30 usuÃ¡rios
-          if (isCloudConnected && supabaseClient) {
-            // Deduplica por cd_usuario para evitar o erro fatal do Postgres 'ON CONFLICT DO UPDATE cannot affect row a second time'
-            const mapaUnicos = new Map();
-            novosCasos.forEach(c => {
-              const cod = String(c.CD_USUARIO).trim();
-              if (cod) mapaUnicos.set(cod, c);
-            });
+          localStorage.removeItem('hapvida_fila_limpa_manual');
 
-            const rows = Array.from(mapaUnicos.values()).map(c => ({
+          // Deduplica os casos da planilha por cd_usuario
+          const mapaUnicos = new Map();
+          novosCasos.forEach(c => {
+            const cod = String(c.CD_USUARIO || '').trim();
+            if (cod) mapaUnicos.set(cod, c);
+          });
+          const listaPlanilha = Array.from(mapaUnicos.values());
+
+          // Se estiver conectado na Nuvem, sincroniza em lote para todos os 30 usuários
+          if (isCloudConnected && supabaseClient) {
+            try {
+              // Limpa a fila anterior na nuvem para refletir exatamente a esteira da nova planilha carregada
+              await supabaseClient.from('casos_ativos').delete().neq('cd_usuario', '_none_');
+            } catch (delErr) {
+              console.warn('Aviso ao sincronizar esteira com Supabase:', delErr);
+            }
+
+            const rows = listaPlanilha.map(c => ({
               cd_usuario: String(c.CD_USUARIO).trim(),
               dados: c,
               updated_at: new Date().toISOString()
@@ -2396,14 +2461,14 @@ function solicitarSubirPlanilha() {
               }
             }
             if (errosEnvio > 0) {
-              alert('âš ï¸ AtenÃ§Ã£o: Ocorreu uma instabilidade ao enviar alguns casos para a Nuvem. Verifique o console.');
+              console.warn('Atenção: Houve instabilidade ao sincronizar casos na Nuvem.');
             }
           }
 
-          activeCases = novosCasos;
+          activeCases = listaPlanilha;
           saveState();
           render();
-          alert(`✅ Sucesso! ${novosCasos.length} casos carregados.\n${isCloudConnected ? '☁️ Sincronizados na Nuvem para todos os operadores!' : '⚠️ Salvos apenas neste navegador.'}\n🔒 ${recuperadosDoCofre} casos vinculados ao histórico existente.`);
+          alert('✅ Sucesso! ' + novosCasos.length + ' casos carregados da planilha.\nTotal na esteira ativa: ' + activeCases.length + ' casos.\n' + (isCloudConnected ? '☁️ Sincronizados na Nuvem para todos os operadores!' : '⚠️ Salvos apenas neste navegador.') + '\n🔒 ' + recuperadosDoCofre + ' casos vinculados ao histórico existente.');
         } catch (err) {
           console.error(err);
           alert('Erro ao processar planilha: ' + (err.message || err));
@@ -2608,6 +2673,39 @@ function solicitarSubirPlanilha() {
         }
       }
       render();
+    }
+
+    function isCasoComDesfechoOuFinalizado(c) {
+      if (!c) return false;
+      const cod = String(c.CD_USUARIO || '').trim();
+      const isConcluido = (c.STATUS_COFRE && String(c.STATUS_COFRE).toUpperCase().includes('CONCLU'));
+      const temUltimoDesfecho = c.ULTIMO_DESFECHO && String(c.ULTIMO_DESFECHO).trim() !== '';
+      const temDesfecho = c.DESFECHO && String(c.DESFECHO).trim() !== '';
+      const temFinalizacaoSigo = c.FINALIZACAO_SIGO && String(c.FINALIZACAO_SIGO).trim() !== '';
+      if (isConcluido || temUltimoDesfecho || temDesfecho || temFinalizacaoSigo) return true;
+
+      // Se constar no Cofre já como concluído ou com desfecho
+      if (cod && typeof vaultCases !== 'undefined' && vaultCases[cod] && vaultCases[cod] !== c) {
+        const salvo = vaultCases[cod];
+        if ((salvo.STATUS_COFRE && String(salvo.STATUS_COFRE).toUpperCase().includes('CONCLU')) ||
+            (salvo.ULTIMO_DESFECHO && String(salvo.ULTIMO_DESFECHO).trim() !== '') ||
+            (salvo.DESFECHO && String(salvo.DESFECHO).trim() !== '') ||
+            (salvo.FINALIZACAO_SIGO && String(salvo.FINALIZACAO_SIGO).trim() !== '')) {
+          return true;
+        }
+      }
+
+      // Se constar na Linha do Tempo blindada log de finalização ou [DESFECHO: ...]
+      if (cod && typeof historyLog !== 'undefined' && historyLog[cod] && historyLog[cod].length > 0) {
+        const temLogFin = historyLog[cod].some(l => {
+          const aut = String(l.author || '').toLowerCase();
+          const txt = String(l.text || '').toUpperCase();
+          return aut.includes('finaliza') || txt.includes('[DESFECHO:') || txt.includes('PARECER & DESFECHO');
+        });
+        if (temLogFin) return true;
+      }
+
+      return false;
     }
 
     function isCasoAusenciaConsenso(c) {
@@ -2940,6 +3038,16 @@ function solicitarSubirPlanilha() {
       }
 
       return activeCases.filter(c => {
+        // Se o caso já possui finalização/desfecho (e não for GNMED/Congênere), NÃO deve aparecer na fila ativa
+        if (isCasoComDesfechoOuFinalizado(c)) {
+          const d = String(c.DESFECHO || c.ULTIMO_DESFECHO || '').toUpperCase();
+          const logs = (c.CD_USUARIO && historyLog[String(c.CD_USUARIO).trim()]) || [];
+          const logTxt = logs.map(l => String(l.text || '')).join(' ').toUpperCase();
+          const ehGnmedCongenere = d.includes('GNMED') || d.includes('CONGÊNERE') || d.includes('CONGENERE') || 
+                                   logTxt.includes('GNMED') || logTxt.includes('CONGÊNERE') || logTxt.includes('CONGENERE');
+          if (!ehGnmedCongenere) return false;
+        }
+
         if (medFiltro && (!c.GERENTE_MEDICO || c.GERENTE_MEDICO.trim() !== medFiltro)) return false;
         return casoCorrespondeBusca(c, q);
       }).sort((a, b) => (b.DIAS_AUTORIZACAO || 0) - (a.DIAS_AUTORIZACAO || 0));
@@ -3416,10 +3524,41 @@ function solicitarSubirPlanilha() {
 
       // Desfechos
       const elDesfecho = document.getElementById('singleSelectDesfecho');
-      if (elDesfecho) elDesfecho.value = currentCase.DESFECHO || currentCase.MICRO_DESFECHO || '';
+      if (elDesfecho) {
+        let desfechoRestaurado = currentCase.DESFECHO || currentCase.MICRO_DESFECHO || (vaultCases[String(cod)] && (vaultCases[String(cod)].DESFECHO || vaultCases[String(cod)].MICRO_DESFECHO)) || '';
+        if (!desfechoRestaurado) {
+          const logs = historyLog[String(cod)] || [];
+          for (const l of logs) {
+            if (l.desfecho) { desfechoRestaurado = l.desfecho; break; }
+            if (l.text && String(l.text).startsWith('[DESFECHO:')) {
+              const idx = l.text.indexOf('] - ');
+              if (idx !== -1) { desfechoRestaurado = l.text.substring('[DESFECHO:'.length, idx).trim(); break; }
+            }
+          }
+        }
+        currentCase.DESFECHO = desfechoRestaurado;
+        elDesfecho.value = desfechoRestaurado;
+        if (!elDesfecho.value && desfechoRestaurado) {
+          const matchOpt = Array.from(elDesfecho.options).find(o => o.value && (desfechoRestaurado.startsWith(o.value) || o.value.startsWith(desfechoRestaurado)));
+          if (matchOpt) elDesfecho.value = matchOpt.value;
+        }
+      }
 
       const elNota = document.getElementById('singleInputNota');
-      if (elNota) elNota.value = '';
+      if (elNota) {
+        let notaRestaurada = currentCase.FINALIZACAO_SIGO || (vaultCases[String(cod)] && vaultCases[String(cod)].FINALIZACAO_SIGO) || '';
+        if (!notaRestaurada) {
+          const logs = historyLog[String(cod)] || [];
+          for (const l of logs) {
+            if (l.sigo) { notaRestaurada = l.sigo; break; }
+            if (l.text && String(l.text).startsWith('[DESFECHO:')) {
+              const idx = l.text.indexOf('] - ');
+              if (idx !== -1) { notaRestaurada = l.text.substring(idx + 4).trim(); break; }
+            }
+          }
+        }
+        elNota.value = notaRestaurada;
+      }
 
       renderSingleTimeline();
     }
@@ -3841,90 +3980,154 @@ function solicitarSubirPlanilha() {
     function copiarFichaCasoAtual() {
       if (!currentCase) return;
 
-      // Gerar link direto para este caso (funciona na web hospedada ou localmente)
+      const hasVal = (val) => {
+        if (val === null || val === undefined) return false;
+        const s = String(val).trim();
+        if (!s || s === '-' || s === '--' || s === '---') return false;
+        const low = s.toLowerCase();
+        if (low === 'não informado' || low === 'nao informado' || low === 'não atribuído' || low === 'nao atribuido' || low === 'não atribuida' || low === 'nao atribuida' || low === 'n/a' || low === 'null' || low === 'undefined') return false;
+        return true;
+      };
+
+      // Gerar link direto para este caso (se rodando localmente, gera o link de produção da Vercel)
       let linkDireto = '';
-      if (window.location.protocol.startsWith('http')) {
+      if (window.location.protocol.startsWith('http') && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1')) {
         linkDireto = `${window.location.origin}${window.location.pathname}#caso=${encodeURIComponent(currentCase.CD_USUARIO)}`;
       } else {
-        linkDireto = `${window.location.href.split('#')[0]}#caso=${encodeURIComponent(currentCase.CD_USUARIO)}`;
+        linkDireto = `https://fidelizacao-hapvida.vercel.app/#caso=${encodeURIComponent(currentCase.CD_USUARIO)}`;
       }
 
-      // Coleta dados dos inputs em tempo real para garantir que pegou o que foi preenchido
-      const valorInicial = document.getElementById('editCaseValorInicial')?.value || currentCase.VALOR_INICIAL || 'Não informado';
-      const origemValorInicial = document.getElementById('editCaseOrigemValorInicial')?.value || currentCase.ORIGEM_VALOR_INICIAL || '';
-      const menorValor = document.getElementById('editCaseMenorValor')?.value || currentCase.MENOR_VALOR || 'Não informado';
-      const valorPacote = document.getElementById('editCaseValorPacote')?.value || currentCase['VALOR PACOTE'] || 'Não informado';
-      const valorResolucao = document.getElementById('editCaseValorResolucao')?.value || currentCase.VALOR_RESOLUCAO || 'Não informado';
-      const qualPacote = document.getElementById('editCaseQualPacote')?.value || currentCase['QUAL PACOTE?'] || 'Não informado';
-      const prestadorPacote = document.getElementById('editCasePrestadorPacote')?.value || currentCase.PRESTADOR_PACOTE || 'Não informado';
-      const solicitante = document.getElementById('editCaseSolicitante')?.value || currentCase.NM_SOLICITANTE || '-';
-      const telPessoal = document.getElementById('editCaseTelPessoal')?.value || currentCase.TEL_PESSOAL || '';
-      const telClinica = document.getElementById('editCaseTelClinica')?.value || currentCase.TEL_CLINICA || '';
+      const secoes = [];
 
-      const medResponsavel = currentCase.GERENTE_MEDICO ? `Dr(a). ${currentCase.GERENTE_MEDICO}` : 'Não atribuído';
-      const observacaoInput = (document.getElementById('editCaseObservacao')?.value || currentCase.OBSERVACAO || '').trim();
-      const obsLegadas = [currentCase.OBS_MED_CONSULTOR, currentCase.OBS_ENF, currentCase.OBS_ADM].filter(Boolean).join('\n').trim();
-      const observacaoFinal = observacaoInput;
+      // 1. CABEÇALHO DA FICHA
+      const cabecalho = ['FICHA DE CASO - FIDELIZAÇÃO HAPVIDA NDI'];
 
-      const logs = historyLog[currentCase.CD_USUARIO] || [];
-      const ultimosLogs = logs.slice(0, 3).map(l => `• [${l.date}] ${l.author}: ${l.text}`).join('\n');
-
-      let txt = `📋 *FICHA DE CASO - FIDELIZAÇÃO HAPVIDA NDI*\n`;
-      txt += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
       const tipoDemandaAtual = document.getElementById('editCaseTipoDemanda')?.value || currentCase.TIPO_DEMANDA || '';
       const prazoDemandaAtual = document.getElementById('editCasePrazoDemanda')?.value || currentCase.PRAZO_FINAL_DEMANDA || '';
-      if (tipoDemandaAtual || prazoDemandaAtual) {
-        txt += `🚨 *DEMANDA CRÍTICA:* ${tipoDemandaAtual || 'SINALIZADA'}${prazoDemandaAtual ? ` | *Prazo Final:* ${formatarDataBR(prazoDemandaAtual)}` : ''}\n`;
-        txt += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
-      }
-      txt += `👤 *Beneficiário:* ${currentCase.NM_USUARIO || '-'}\n`;
-      txt += `🔢 *Cód. Utente / Carteira:* ${currentCase.CD_USUARIO || '-'}\n`;
-      txt += `📄 *Plano:* ${currentCase.NM_PLANO || '-'}\n`;
-      txt += `🏢 *Base:* ${currentCase.BASE || 'NDI'}\n`;
-      txt += `⏱ *Prazo / SLA:* ${currentCase.DIAS_AUTORIZACAO || 0}d${currentCase.DIAS_SETOR !== undefined && currentCase.DIAS_SETOR !== null && currentCase.DIAS_SETOR !== '' ? ` | Setor: ${currentCase.DIAS_SETOR}d` : ''} (Pendência: #${currentCase.TIPO_PENDENCIA || '-'})\n`;
-      txt += `\n🏥 *DADOS DO PROCEDIMENTO & PRESTADOR*\n`;
-      txt += `• *Procedimento:* ${currentCase.PROCEDIMENTO_AGRUPADO || '-'}\n`;
-      txt += `• *Cód. TUSS:* ${currentCase.CD_PROCEDIMENTO || '-'}\n`;
-      txt += `• *Prestador:* ${currentCase.NM_PRESTADOR || '-'}\n`;
-      txt += `• *Local:* ${currentCase.CIDADE || '-'} - ${currentCase.UF || '-'}\n`;
-      txt += `• *Solicitante:* ${solicitante}\n`;
-      if (telPessoal) txt += `  - Tel. Pessoal / Celular: ${telPessoal}\n`;
-      if (telClinica) txt += `  - Tel. Clínica / Secretária: ${telClinica}\n`;
-      txt += `\n💰 *ORÇAMENTO & PACOTE NEGOCIADO*\n`;
-      const rotuloOrigem = origemValorInicial ? ` (${origemValorInicial})` : '';
-      txt += `• *Valor Inicial${rotuloOrigem}:* ${valorInicial}\n`;
-      txt += `• *Valor Negociado:* ${menorValor}\n`;
-      txt += `• *Valor Pacote:* ${valorPacote}\n`;
-      txt += `• *Valor Resolução:* ${valorResolucao}\n`;
-      txt += `• *Qual Pacote:* ${qualPacote}\n`;
-      txt += `• *Prestador Pacote:* ${prestadorPacote}\n`;
-      txt += `\n👥 *EQUIPE DESIGNADA*\n`;
-      txt += `• *Gerente Médico:* ${medResponsavel}\n`;
-      if (currentCase.ASSUMIU_POR) txt += `• *Equipe Técnica:* ${currentCase.ASSUMIU_POR}\n`;
-      if (currentCase.ADMINISTRATIVO) txt += `• *Administrativo:* ${currentCase.ADMINISTRATIVO}\n`;
-
-      if (observacaoFinal) {
-        txt += `\n💬 *OBSERVAÇÃO:*\n${observacaoFinal}\n`;
+      const partesDemanda = [];
+      if (hasVal(tipoDemandaAtual)) partesDemanda.push(tipoDemandaAtual.trim());
+      if (hasVal(prazoDemandaAtual)) partesDemanda.push(`Prazo Final: ${formatarDataBR(prazoDemandaAtual)}`);
+      if (partesDemanda.length > 0) {
+        cabecalho.push(`Demanda Crítica: ${partesDemanda.join(' | ')}`);
       }
 
-      const enc = document.getElementById('singleSelectEncaminhar')?.value || currentCase.ENCAMINHAR || '';
-      if (enc) {
-        txt += `📤 *Encaminhar:* ${enc}\n`;
+      if (hasVal(currentCase.NM_USUARIO)) {
+        cabecalho.push(`Beneficiário: ${currentCase.NM_USUARIO.trim()}`);
+      }
+      if (hasVal(currentCase.CD_USUARIO)) {
+        cabecalho.push(`Cód. Utente / Carteira: ${currentCase.CD_USUARIO.trim()}`);
+      }
+      if (hasVal(currentCase.NM_PLANO)) {
+        cabecalho.push(`Plano: ${currentCase.NM_PLANO.trim()}`);
+      }
+      if (hasVal(currentCase.BASE)) {
+        cabecalho.push(`Base: ${currentCase.BASE.trim()}`);
       }
 
-      if (currentCase.ULTIMO_DESFECHO) {
-        txt += `\n🏁 *Último Desfecho:* ${currentCase.ULTIMO_DESFECHO}\n`;
+      const diasAuto = currentCase.DIAS_AUTORIZACAO !== undefined && currentCase.DIAS_AUTORIZACAO !== null && currentCase.DIAS_AUTORIZACAO !== '' ? `${currentCase.DIAS_AUTORIZACAO}d` : '';
+      const diasSetor = currentCase.DIAS_SETOR !== undefined && currentCase.DIAS_SETOR !== null && currentCase.DIAS_SETOR !== '' ? `Setor: ${currentCase.DIAS_SETOR}d` : '';
+      const pendencia = hasVal(currentCase.TIPO_PENDENCIA) ? `(Pendência: #${currentCase.TIPO_PENDENCIA})` : '';
+
+      const partesSla = [];
+      if (diasAuto) partesSla.push(diasAuto);
+      if (diasSetor) partesSla.push(diasSetor);
+
+      let linhaPrazo = '';
+      if (partesSla.length > 0) {
+        linhaPrazo = `Prazo / SLA: ${partesSla.join(' | ')}`;
+        if (pendencia) linhaPrazo += ` ${pendencia}`;
+      } else if (pendencia) {
+        linhaPrazo = `Pendência: #${currentCase.TIPO_PENDENCIA}`;
+      }
+      if (linhaPrazo) {
+        cabecalho.push(linhaPrazo);
       }
 
-      if (ultimosLogs) {
-        txt += `\n📝 *Últimos Registros Blindados:*\n${ultimosLogs}\n`;
+      secoes.push(cabecalho.join('\n'));
+
+      // 2. DADOS DO PROCEDIMENTO & PRESTADOR
+      const linhasProc = [];
+      const proc = currentCase.PROCEDIMENTO_AGRUPADO || currentCase.DS_PROCEDIMENTO || '';
+      if (hasVal(proc)) {
+        linhasProc.push(`* Procedimento: ${proc.trim()}`);
+      }
+      if (hasVal(currentCase.CD_PROCEDIMENTO)) {
+        linhasProc.push(`* Cód. TUSS: ${String(currentCase.CD_PROCEDIMENTO).trim()}`);
+      }
+      if (hasVal(currentCase.NM_PRESTADOR)) {
+        linhasProc.push(`* Prestador: ${currentCase.NM_PRESTADOR.trim()}`);
       }
 
-      txt += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
-      txt += `🔗 *Acesse a ficha deste caso diretamente no link:*\n${linkDireto}\n`;
+      const cid = hasVal(currentCase.CIDADE) ? currentCase.CIDADE.trim() : '';
+      const uf = hasVal(currentCase.UF) ? currentCase.UF.trim() : '';
+      if (cid || uf) {
+        const localFormatado = [cid, uf].filter(Boolean).join(' - ');
+        linhasProc.push(`* Local: ${localFormatado}`);
+      }
+
+      const solicitante = (document.getElementById('editCaseSolicitante')?.value || currentCase.NM_SOLICITANTE || '').trim();
+      if (hasVal(solicitante)) {
+        linhasProc.push(`* Solicitante: ${solicitante}`);
+      }
+
+      const telPessoal = (document.getElementById('editCaseTelPessoal')?.value || currentCase.TEL_PESSOAL || '').trim();
+      if (hasVal(telPessoal)) {
+        linhasProc.push(`* Tel. Pessoal / Celular: ${telPessoal}`);
+      }
+
+      const telClinica = (document.getElementById('editCaseTelClinica')?.value || currentCase.TEL_CLINICA || '').trim();
+      if (hasVal(telClinica)) {
+        linhasProc.push(`* Tel. Clínica / Secretária: ${telClinica}`);
+      }
+
+      if (linhasProc.length > 0) {
+        secoes.push(['DADOS DO PROCEDIMENTO & PRESTADOR', ...linhasProc].join('\n'));
+      }
+
+      // 3. EQUIPE DESIGNADA
+      const linhasEquipe = [];
+      if (hasVal(currentCase.GERENTE_MEDICO)) {
+        const gm = currentCase.GERENTE_MEDICO.trim();
+        const gmFormatado = gm.toLowerCase().startsWith('dr') ? gm : `Dr(a). ${gm}`;
+        linhasEquipe.push(`* Gerente Médico: ${gmFormatado}`);
+      }
+      if (hasVal(currentCase.ASSUMIU_POR)) {
+        linhasEquipe.push(`* Eq. Técnica: ${currentCase.ASSUMIU_POR.trim()}`);
+      }
+      if (hasVal(currentCase.ADMINISTRATIVO)) {
+        linhasEquipe.push(`* Administrativo: ${currentCase.ADMINISTRATIVO.trim()}`);
+      }
+
+      if (linhasEquipe.length > 0) {
+        secoes.push(['EQUIPE DESIGNADA', ...linhasEquipe].join('\n'));
+      }
+
+      // 4. OBSERVAÇÃO (se houver)
+      const observacaoInput = (document.getElementById('editCaseObservacao')?.value || currentCase.OBSERVACAO || '').trim();
+      if (hasVal(observacaoInput)) {
+        secoes.push(`Observação:\n${observacaoInput}`);
+      }
+
+      // 5. ENCAMINHAR (se houver)
+      const enc = (document.getElementById('singleSelectEncaminhar')?.value || currentCase.ENCAMINHAR || '').trim();
+      if (hasVal(enc)) {
+        secoes.push(`Encaminhar: ${enc}`);
+      }
+
+      // 6. ÚLTIMOS REGISTROS BLINDADOS (se houver)
+      const logs = historyLog[currentCase.CD_USUARIO] || [];
+      if (logs && logs.length > 0) {
+        const ultimosLogs = logs.slice(0, 3).map(l => `* [${l.date}] ${l.author}: ${l.text}`).join('\n');
+        secoes.push(`Últimos Registros Blindados:\n${ultimosLogs}`);
+      }
+
+      // 7. LINK DIRETO
+      secoes.push(`Acesse a ficha deste caso diretamente no link:\n${linkDireto}`);
+
+      const txt = secoes.join('\n\n');
 
       navigator.clipboard.writeText(txt).then(() => {
-        alert('✅ Ficha completa e link direto copiados com sucesso!\n\nPronto para colar no Teams ou WhatsApp.');
+        alert('✅ Ficha copiada com sucesso!\n\nPronta para colar no Teams ou WhatsApp.');
       }).catch(err => {
         console.error('Erro ao copiar ficha:', err);
         prompt('Copie o texto da ficha abaixo:', txt);
@@ -3932,6 +4135,29 @@ function solicitarSubirPlanilha() {
     }
 
     function render() {
+      // Remove da esteira ativa qualquer caso que já possua desfecho ou finalização registrada
+      // (a menos que o desfecho seja GNMED ou Congênere, que a regra de negócio mantém na esteira)
+      const totalAntesFiltro = activeCases.length;
+      activeCases = activeCases.filter(c => {
+        if (!isCasoComDesfechoOuFinalizado(c)) return true;
+        const d = String(c.DESFECHO || c.ULTIMO_DESFECHO || '').toUpperCase();
+        const logs = (c.CD_USUARIO && historyLog[String(c.CD_USUARIO).trim()]) || [];
+        const logTxt = logs.map(l => String(l.text || '')).join(' ').toUpperCase();
+        if (d.includes('GNMED') || d.includes('CONGÊNERE') || d.includes('CONGENERE') || logTxt.includes('GNMED') || logTxt.includes('CONGÊNERE') || logTxt.includes('CONGENERE')) {
+          return true; // permanece na esteira ativa por regra específica de GNMED/Congênere
+        }
+        // Garante sincronização no cofre
+        syncToVault(c);
+        // Remove do Supabase casos_ativos
+        if (isCloudConnected && supabaseClient && c.CD_USUARIO) {
+          supabaseClient.from('casos_ativos').delete().eq('cd_usuario', String(c.CD_USUARIO).trim()).then(() => {});
+        }
+        return false;
+      });
+      if (activeCases.length !== totalAntesFiltro) {
+        saveState();
+      }
+
       popularFiltroMedicos();
       const cases = getFilteredCases();
       
@@ -3939,7 +4165,7 @@ function solicitarSubirPlanilha() {
       const atencao = cases.filter(c => (c.DIAS_AUTORIZACAO || 0) >= 7 && (c.DIAS_AUTORIZACAO || 0) <= 10);
       const regular = cases.filter(c => (c.DIAS_AUTORIZACAO || 0) <= 6);
 
-      const totalNoCofre = Object.keys(vaultCases).length;
+      const totalNoCofre = Object.values(vaultCases).filter(isCasoComDesfechoOuFinalizado).length;
 
       document.getElementById('badgeTotalTop').innerText = `${activeCases.length} Casos na Esteira`;
       document.getElementById('kpi-total').innerText = cases.length;
@@ -4055,12 +4281,11 @@ function solicitarSubirPlanilha() {
       
       // 1. Renderizar Casos Finalizados
       const listaFinalizados = Object.values(vaultCases).filter(c => {
-        const isFin = (c.STATUS_COFRE && c.STATUS_COFRE.includes('CONCLU')) || (c.ULTIMO_DESFECHO && c.ULTIMO_DESFECHO.trim() !== '');
-        if (!isFin) return false;
+        if (!isCasoComDesfechoOuFinalizado(c)) return false;
         return casoCorrespondeBusca(c, q);
       });
 
-      const countFinalizadosTotal = Object.values(vaultCases).filter(c => (c.STATUS_COFRE && c.STATUS_COFRE.includes('CONCLU')) || (c.ULTIMO_DESFECHO && c.ULTIMO_DESFECHO.trim() !== '')).length;
+      const countFinalizadosTotal = Object.values(vaultCases).filter(isCasoComDesfechoOuFinalizado).length;
       const badgeTabFin = document.getElementById('tab-count-finalizados');
       if (badgeTabFin) badgeTabFin.innerText = countFinalizadosTotal;
       const kpiFin = document.getElementById('kpi-concluidas');
@@ -4110,6 +4335,7 @@ function solicitarSubirPlanilha() {
 
       // 2. Renderizar Histórico Completo (Cofre)
       const listaCofre = Object.values(vaultCases).filter(c => {
+        if (!isCasoComDesfechoOuFinalizado(c)) return false;
         return casoCorrespondeBusca(c, q);
       });
 
