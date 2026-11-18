@@ -180,7 +180,7 @@
           Esteira Operacional Fidelização
           <span id="badgeTotalTop" class="text-[10px] sm:text-[11px] font-extrabold text-indigo-600 px-2 py-0.5 bg-indigo-50 rounded-md border border-indigo-200/60">0 Casos</span>
         </h1>
-        <p class="text-[11px] sm:text-xs text-slate-500 mt-0.5">Sincronização <strong>em tempo real na Nuvem</strong>.</p>
+        <p id="subTitleEsteira" class="text-[11px] sm:text-xs text-slate-500 mt-0.5">Sincronização <strong>em tempo real na Nuvem</strong>.</p>
       </div>
 
       <!-- Barra de Pesquisa Mobile -->
@@ -1402,7 +1402,36 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
     let currentCase = null;
     let currentView = 'kanban';
 
+    const isAmbienteLocal = typeof window !== 'undefined' && (
+      window.location.protocol === 'file:' || 
+      window.location.hostname === 'localhost' || 
+      window.location.hostname === '127.0.0.1' || 
+      window.location.hostname === ''
+    );
+
     async function initSupabase() {
+      const banner = document.getElementById('cloud-status-banner');
+      const badge = document.getElementById('cloud-sync-badge');
+      const label = document.getElementById('cloud-sync-label');
+
+      // Se estiver rodando em ambiente local (no seu computador / localhost / arquivo local),
+      // ISOLA TOTALMENTE do banco de dados online para garantir que seus testes NÃO alterem a produção da equipe!
+      if (isAmbienteLocal) {
+        isCloudConnected = false;
+        supabaseClient = null;
+        if (banner) banner.classList.add('hidden');
+        if (badge) {
+          badge.className = 'text-[9.5px] sm:text-[10px] bg-amber-500/20 text-amber-300 font-extrabold px-2.5 py-0.5 rounded-full border border-amber-400/40 flex items-center gap-1.5 shrink-0 shadow-xs cursor-pointer';
+          badge.innerHTML = '<i class="fa-solid fa-laptop-code text-amber-400"></i> Modo Local (Isolado do Online)';
+          badge.title = 'Ambiente Local de Testes: Suas ações aqui ficam salvas apenas no seu computador e NÃO afetam o sistema online original da equipe.';
+        }
+        const subTitle = document.getElementById('subTitleEsteira');
+        if (subTitle) {
+          subTitle.innerHTML = 'Ambiente Local de Testes (<strong>Isolado do Online</strong> — alterações aqui não afetam a equipe).';
+        }
+        console.log('🔒 [Ambiente Local]: Conexão online bloqueada para isolar seus testes do sistema de produção.');
+        return;
+      }
       const savedConfig = localStorage.getItem(SUPABASE_CONFIG_KEY);
       let config = DEFAULT_SUPABASE_CONFIG;
       if (savedConfig) {
@@ -1416,9 +1445,7 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
         } catch (e) { console.error('Erro config salva:', e); }
       }
 
-      const banner = document.getElementById('cloud-status-banner');
-      const badge = document.getElementById('cloud-sync-badge');
-      const label = document.getElementById('cloud-sync-label');
+      // elements already defined at initSupabase start
 
             if (!config || !config.url || !config.anonKey) {
         config = DEFAULT_SUPABASE_CONFIG;
@@ -1561,9 +1588,7 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
 
     async function carregarDadosIniciaisNuvem() {
       if (!supabaseClient) return;
-      const banner = document.getElementById('cloud-status-banner');
-      const badge = document.getElementById('cloud-sync-badge');
-      const label = document.getElementById('cloud-sync-label');
+      // elements already defined at initSupabase start
 
       try {
         // 1. Casos Ativos
@@ -1745,7 +1770,7 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
       };
       vaultCases[cod] = payload;
 
-      if (isCloudConnected && supabaseClient) {
+      if (isCloudConnected && supabaseClient && !isAmbienteLocal) {
         supabaseClient.from('cofre_casos').upsert({
           cd_usuario: cod,
           dados: payload,
@@ -1763,7 +1788,7 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
       if (!jaExiste) {
         const item = { author, date, text: cleanText, ...extra };
         historyLog[cod].unshift(item);
-        if (isCloudConnected && supabaseClient) {
+        if (isCloudConnected && supabaseClient && !isAmbienteLocal) {
           supabaseClient.from('cofre_logs').upsert({
             cd_usuario: cod,
             itens: historyLog[cod],
@@ -1825,7 +1850,7 @@ function solicitarSubirPlanilha() {
     async function executarLimparFila() {
       if (confirm('Deseja limpar apenas a fila de trabalho do dia para TODOS os usuários?\n\n🔒 O Histórico e o Cofre permanecerão salvos na Nuvem.')) {
         localStorage.setItem('hapvida_fila_limpa_manual', 'true');
-        if (isCloudConnected && supabaseClient) {
+        if (isCloudConnected && supabaseClient && !isAmbienteLocal) {
           try {
             await supabaseClient.from('casos_ativos').delete().neq('cd_usuario', '_none_');
           } catch (e) { console.error('Erro ao limpar fila no Supabase:', e); }
@@ -1849,7 +1874,7 @@ function solicitarSubirPlanilha() {
         return;
       }
 
-      if (isCloudConnected && supabaseClient) {
+      if (isCloudConnected && supabaseClient && !isAmbienteLocal) {
         try {
           await Promise.all([
             supabaseClient.from('casos_ativos').delete().neq('cd_usuario', '_none_'),
@@ -2436,7 +2461,7 @@ function solicitarSubirPlanilha() {
           const listaPlanilha = Array.from(mapaUnicos.values());
 
           // Se estiver conectado na Nuvem, sincroniza em lote para todos os 30 usuários
-          if (isCloudConnected && supabaseClient) {
+          if (isCloudConnected && supabaseClient && !isAmbienteLocal) {
             try {
               // Limpa a fila anterior na nuvem para refletir exatamente a esteira da nova planilha carregada
               await supabaseClient.from('casos_ativos').delete().neq('cd_usuario', '_none_');
@@ -2590,7 +2615,7 @@ function solicitarSubirPlanilha() {
                 'VALOR PACOTE': r.VALOR_PACOTE || r['VALOR PACOTE'] || '',
                 'QUAL PACOTE?': r.QUAL_PACOTE || r['QUAL PACOTE?'] || ''
               };
-              if (isCloudConnected && supabaseClient) {
+              if (isCloudConnected && supabaseClient && !isAmbienteLocal) {
                 supabaseClient.from('cofre_casos').upsert({
                   cd_usuario: cod,
                   dados: vaultCases[cod],
@@ -2678,29 +2703,33 @@ function solicitarSubirPlanilha() {
     function isCasoComDesfechoOuFinalizado(c) {
       if (!c) return false;
       const cod = String(c.CD_USUARIO || '').trim();
-      const isConcluido = (c.STATUS_COFRE && String(c.STATUS_COFRE).toUpperCase().includes('CONCLU'));
-      const temUltimoDesfecho = c.ULTIMO_DESFECHO && String(c.ULTIMO_DESFECHO).trim() !== '';
-      const temDesfecho = c.DESFECHO && String(c.DESFECHO).trim() !== '';
-      const temFinalizacaoSigo = c.FINALIZACAO_SIGO && String(c.FINALIZACAO_SIGO).trim() !== '';
-      if (isConcluido || temUltimoDesfecho || temDesfecho || temFinalizacaoSigo) return true;
 
-      // Se constar no Cofre já como concluído ou com desfecho
+      // Um caso só é considerado finalizado se foi formalmente concluído via "Finalizar Guia":
+      const isConcluido = (c.STATUS_COFRE && String(c.STATUS_COFRE).toUpperCase().includes('CONCLU'));
+      const temDataFin = !!(c.DATA_FINALIZACAO || c.FINALIZADO_EM_TS);
+      const temUltimoDesfecho = c.ULTIMO_DESFECHO && String(c.ULTIMO_DESFECHO).trim() !== '';
+
+      if (isConcluido || temDataFin || temUltimoDesfecho) {
+        return true;
+      }
+
+      // Se constar no Cofre histórico como formalmente CONCLUÍDO
       if (cod && typeof vaultCases !== 'undefined' && vaultCases[cod] && vaultCases[cod] !== c) {
         const salvo = vaultCases[cod];
-        if ((salvo.STATUS_COFRE && String(salvo.STATUS_COFRE).toUpperCase().includes('CONCLU')) ||
-            (salvo.ULTIMO_DESFECHO && String(salvo.ULTIMO_DESFECHO).trim() !== '') ||
-            (salvo.DESFECHO && String(salvo.DESFECHO).trim() !== '') ||
-            (salvo.FINALIZACAO_SIGO && String(salvo.FINALIZACAO_SIGO).trim() !== '')) {
+        const salvoConcluido = (salvo.STATUS_COFRE && String(salvo.STATUS_COFRE).toUpperCase().includes('CONCLU'));
+        const salvoDataFin = !!(salvo.DATA_FINALIZACAO || salvo.FINALIZADO_EM_TS);
+        const salvoUltimo = salvo.ULTIMO_DESFECHO && String(salvo.ULTIMO_DESFECHO).trim() !== '';
+        if (salvoConcluido || salvoDataFin || salvoUltimo) {
           return true;
         }
       }
 
-      // Se constar na Linha do Tempo blindada log de finalização ou [DESFECHO: ...]
+      // Se constar na Linha do Tempo blindada log formal de finalização
       if (cod && typeof historyLog !== 'undefined' && historyLog[cod] && historyLog[cod].length > 0) {
         const temLogFin = historyLog[cod].some(l => {
           const aut = String(l.author || '').toLowerCase();
           const txt = String(l.text || '').toUpperCase();
-          return aut.includes('finaliza') || txt.includes('[DESFECHO:') || txt.includes('PARECER & DESFECHO');
+          return aut.includes('finaliza') || txt.includes('[DESFECHO:');
         });
         if (temLogFin) return true;
       }
@@ -3116,7 +3145,7 @@ function solicitarSubirPlanilha() {
         if (idx >= 0) activeCases[idx] = { ...c };
         syncToVault(c);
         saveState();
-        if (isCloudConnected && supabaseClient) {
+        if (isCloudConnected && supabaseClient && !isAmbienteLocal) {
           sincronizarCasoComNuvem(c);
         }
         render();
@@ -3202,7 +3231,7 @@ function solicitarSubirPlanilha() {
       saveState();
 
       // 6. Sincroniza casos_ativos no Supabase se conectado
-      if (isCloudConnected && supabaseClient) {
+      if (isCloudConnected && supabaseClient && !isAmbienteLocal) {
         try {
           await supabaseClient.from('casos_ativos').upsert({
             cd_usuario: String(currentCase.CD_USUARIO).trim(),
@@ -3824,7 +3853,7 @@ function solicitarSubirPlanilha() {
       if (idx !== -1) activeCases[idx] = { ...currentCase };
       
       // Salva no Supabase em segundo plano
-      if (isCloudConnected && supabaseClient) {
+      if (isCloudConnected && supabaseClient && !isAmbienteLocal) {
         supabaseClient.from('casos_ativos').upsert({
           cd_usuario: String(currentCase.CD_USUARIO).trim(),
           dados: currentCase,
@@ -3883,7 +3912,7 @@ function solicitarSubirPlanilha() {
     function aoMudarDesfecho(valor) {
       const val = valor || document.getElementById('singleSelectDesfecho')?.value || '';
       
-      // 1. Atualização instantânea na tela (zero atraso para o usuário)
+      // 1. Atualização instantânea na tela do modelo SIGO
       const notaEl = document.getElementById('singleInputNota');
       if (notaEl) {
         if (val) {
@@ -3894,11 +3923,8 @@ function solicitarSubirPlanilha() {
         }
       }
 
-      // 2. Gravação em memória e salvamento assíncrono em segundo plano
-      if (currentCase) {
-        currentCase.DESFECHO = val;
-        autoSalvarProfissionais();
-      }
+      // IMPORTANTE: Não salva nem finaliza o caso aqui.
+      // O caso só é finalizado quando o operador clicar formalmente no botão "Finalizar Guia (Arquivar no Cofre)".
     }
 
     function singleConcluirCasoOK() {
@@ -3947,7 +3973,7 @@ function solicitarSubirPlanilha() {
         });
         if (idx !== -1) activeCases[idx] = { ...currentCase };
         
-        if (isCloudConnected && supabaseClient) {
+        if (isCloudConnected && supabaseClient && !isAmbienteLocal) {
           supabaseClient.from('casos_ativos').upsert({
             cd_usuario: String(currentCase.CD_USUARIO).trim(),
             dados: currentCase,
@@ -3963,7 +3989,7 @@ function solicitarSubirPlanilha() {
       }
 
       // Demais desfechos: Remove de casos_ativos na Nuvem
-      if (isCloudConnected && supabaseClient) {
+      if (isCloudConnected && supabaseClient && !isAmbienteLocal) {
         supabaseClient.from('casos_ativos').delete().eq('cd_usuario', String(currentCase.CD_USUARIO).trim()).then(function(res) {
           if (res && res.error) console.error('Erro ao remover de casos_ativos:', res.error);
         });
@@ -4139,6 +4165,11 @@ function solicitarSubirPlanilha() {
       // (a menos que o desfecho seja GNMED ou Congênere, que a regra de negócio mantém na esteira)
       const totalAntesFiltro = activeCases.length;
       activeCases = activeCases.filter(c => {
+        // Se este é o caso que o operador está visualizando/editando na tela agora, NUNCA remove!
+        if (currentCase && String(currentCase.CD_USUARIO) === String(c.CD_USUARIO)) {
+          return true;
+        }
+
         if (!isCasoComDesfechoOuFinalizado(c)) return true;
         const d = String(c.DESFECHO || c.ULTIMO_DESFECHO || '').toUpperCase();
         const logs = (c.CD_USUARIO && historyLog[String(c.CD_USUARIO).trim()]) || [];
