@@ -1445,11 +1445,6 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
         } catch (e) { console.error('Erro config salva:', e); }
       }
 
-      // elements already defined at initSupabase start
-
-            if (!config || !config.url || !config.anonKey) {
-        config = DEFAULT_SUPABASE_CONFIG;
-      }
       if (!config || !config.url || !config.anonKey) {
         isCloudConnected = false;
         if (banner) banner.classList.remove('hidden');
@@ -1588,7 +1583,9 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
 
     async function carregarDadosIniciaisNuvem() {
       if (!supabaseClient) return;
-      // elements already defined at initSupabase start
+      const banner = document.getElementById('cloud-status-banner');
+      const badge = document.getElementById('cloud-sync-badge');
+      const label = document.getElementById('cloud-sync-label');
 
       try {
         // 1. Casos Ativos
