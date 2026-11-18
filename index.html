@@ -2420,24 +2420,16 @@ function solicitarSubirPlanilha() {
               ULTIMO_DESFECHO: ''
             };
 
-            // Se o caso já possui finalização/desfecho prévio no cofre ou no histórico de logs,
-            // ele NÃO deve ir para a esteira ativa: ele pertence ao Histórico!
-            const jaFinalizado = isCasoComDesfechoOuFinalizado(salvoNoCofre) || 
-                                 (historyLog[codUsuario] && historyLog[codUsuario].some(l => {
-                                   const aut = String(l.author || '').toLowerCase();
-                                   const txt = String(l.text || '').toUpperCase();
-                                   return aut.includes('finaliza') || txt.includes('[DESFECHO:') || txt.includes('PARECER & DESFECHO');
-                                 }));
-
-            if (jaFinalizado) {
-              novoCaso.STATUS_COFRE = salvoNoCofre.STATUS_COFRE || 'CONCLUÍDO';
-              novoCaso.DESFECHO = salvoNoCofre.DESFECHO || '';
-              novoCaso.MICRO_DESFECHO = salvoNoCofre.MICRO_DESFECHO || '';
-              novoCaso.FINALIZACAO_SIGO = salvoNoCofre.FINALIZACAO_SIGO || '';
-              novoCaso.ULTIMO_DESFECHO = salvoNoCofre.ULTIMO_DESFECHO || '';
-              syncToVault(novoCaso);
-              return; // NÃO adiciona na esteira ativa! Permanece no histórico
-            }
+            // Se veio na planilha do dia, DEVE obrigatoriamente entrar na Esteira Ativa!
+            // O histórico e pareceres anteriores ficam preservados na Linha do Tempo e observação para consulta.
+            novoCaso.STATUS_COFRE = 'EM ANDAMENTO';
+            novoCaso.DESFECHO = '';
+            novoCaso.MICRO_DESFECHO = '';
+            novoCaso.FINALIZACAO_SIGO = '';
+            novoCaso.ULTIMO_DESFECHO = '';
+            delete novoCaso.DATA_FINALIZACAO;
+            delete novoCaso.FINALIZADO_EM_TS;
+            syncToVault(novoCaso);
 
             novosCasos.push(novoCaso);
           });
@@ -2699,39 +2691,11 @@ function solicitarSubirPlanilha() {
 
     function isCasoComDesfechoOuFinalizado(c) {
       if (!c) return false;
-      const cod = String(c.CD_USUARIO || '').trim();
-
-      // Um caso só é considerado finalizado se foi formalmente concluído via "Finalizar Guia":
+      // Um caso só é considerado finalizado se foi formalmente concluído via 'Finalizar Guia':
       const isConcluido = (c.STATUS_COFRE && String(c.STATUS_COFRE).toUpperCase().includes('CONCLU'));
       const temDataFin = !!(c.DATA_FINALIZACAO || c.FINALIZADO_EM_TS);
       const temUltimoDesfecho = c.ULTIMO_DESFECHO && String(c.ULTIMO_DESFECHO).trim() !== '';
-
-      if (isConcluido || temDataFin || temUltimoDesfecho) {
-        return true;
-      }
-
-      // Se constar no Cofre histórico como formalmente CONCLUÍDO
-      if (cod && typeof vaultCases !== 'undefined' && vaultCases[cod] && vaultCases[cod] !== c) {
-        const salvo = vaultCases[cod];
-        const salvoConcluido = (salvo.STATUS_COFRE && String(salvo.STATUS_COFRE).toUpperCase().includes('CONCLU'));
-        const salvoDataFin = !!(salvo.DATA_FINALIZACAO || salvo.FINALIZADO_EM_TS);
-        const salvoUltimo = salvo.ULTIMO_DESFECHO && String(salvo.ULTIMO_DESFECHO).trim() !== '';
-        if (salvoConcluido || salvoDataFin || salvoUltimo) {
-          return true;
-        }
-      }
-
-      // Se constar na Linha do Tempo blindada log formal de finalização
-      if (cod && typeof historyLog !== 'undefined' && historyLog[cod] && historyLog[cod].length > 0) {
-        const temLogFin = historyLog[cod].some(l => {
-          const aut = String(l.author || '').toLowerCase();
-          const txt = String(l.text || '').toUpperCase();
-          return aut.includes('finaliza') || txt.includes('[DESFECHO:');
-        });
-        if (temLogFin) return true;
-      }
-
-      return false;
+      return !!(isConcluido || temDataFin || temUltimoDesfecho);
     }
 
     function isCasoAusenciaConsenso(c) {
