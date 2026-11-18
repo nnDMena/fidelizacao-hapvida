@@ -1776,6 +1776,31 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
       }
     }
 
+    async function sincronizarCasoComNuvem(caso) {
+      if (!caso || !caso.CD_USUARIO) return;
+      const cod = String(caso.CD_USUARIO).trim();
+      
+      // 1. Garante sincronização no cofre (cofre_casos)
+      syncToVault(caso);
+
+      // 2. Se for caso ativo da esteira, sincroniza em casos_ativos no Supabase para alertar todos os operadores online via Realtime
+      if (isCloudConnected && supabaseClient && !isAmbienteLocal) {
+        try {
+          const isAtivo = activeCases.some(a => String(a.CD_USUARIO).trim() === cod);
+          if (isAtivo) {
+            const { error } = await supabaseClient.from('casos_ativos').upsert({
+              cd_usuario: cod,
+              dados: caso,
+              updated_at: new Date().toISOString()
+            });
+            if (error) console.error('Erro ao sincronizar caso ativo com a nuvem:', error);
+          }
+        } catch (err) {
+          console.warn('Erro ao comunicar caso com Supabase:', err);
+        }
+      }
+    }
+
     function addImmutableLog(codUsuario, author, date, text, extra = {}) {
       if (!codUsuario || !text || !String(text).trim()) return;
       const cod = String(codUsuario).trim();
@@ -1990,8 +2015,12 @@ function solicitarSubirPlanilha() {
         'baseoperadora', 'ufbase', 'polo', 'nucleo'
       ],
       NM_FILIAL: [
-        'nmfilial', 'nm_filial', 'filial', 'nomefilial', 'nome_filial', 'nomedafilial',
-        'unidadefilial', 'filialprestador', 'filialoperadora', 'nm_filial_operadora'
+        'nmfilial', 'nm_filial', 'nomefilial', 'nome_filial', 'nomedafilial',
+        'filialnome', 'filial_nome', 'nm_filial_operadora', 'nmfilialoperadora',
+        'unidadefilial', 'filialprestador', 'filialoperadora'
+      ],
+      CD_FILIAL: [
+        'cdfilial', 'cd_filial', 'codfilial', 'cod_filial', 'codigofilial', 'filial', 'idfilial', 'numfilial', 'nrfilial'
       ],
       TIPO_PENDENCIA: [
         'tipopendencia', 'tppendencia', 'pendencia', 'codpendencia', 'cdpendencia',
@@ -2216,6 +2245,23 @@ function solicitarSubirPlanilha() {
               const norm = normalizarTexto(cell);
               if (!norm) return;
 
+              // Prioridade explícita para o Nome da Filial (evita confusão com coluna de código numérico 'filial')
+              if (norm === 'nmfilial' || norm === 'nm_filial' || norm === 'nomefilial' || norm === 'nome_filial' || norm === 'nomedafilial') {
+                mapTentativo['NM_FILIAL'] = colIdx;
+                pontos += 15;
+                return;
+              }
+              if (norm === 'cdfilial' || norm === 'cd_filial' || norm === 'codfilial' || norm === 'cod_filial' || norm === 'codigofilial') {
+                mapTentativo['CD_FILIAL'] = colIdx;
+                pontos += 5;
+                return;
+              }
+              if (norm === 'filial') {
+                mapTentativo['CD_FILIAL'] = colIdx;
+                pontos += 3;
+                return;
+              }
+
               for (const [campo, sinonimos] of Object.entries(DICIONARIO_COLUNAS)) {
                 if (mapTentativo[campo] !== undefined) continue;
 
@@ -2293,6 +2339,14 @@ function solicitarSubirPlanilha() {
           const dataHoje = new Date().toLocaleDateString('pt-BR') + ' - Importação Planilha';
           let recuperadosDoCofre = 0;
 
+          // Mapa para identificar casos já ativos na esteira (Grupo 2 - Repetidos) e os que sumiram (Grupo 3)
+          const codigosAtivosAnterioresMap = new Map();
+          activeCases.forEach(c => {
+            const k = String(c.CD_USUARIO || '').trim();
+            if (k) codigosAtivosAnterioresMap.set(k, c);
+          });
+          const codigosNaNovaPlanilha = new Set();
+          const hojeStrBR = new Date().toLocaleDateString('pt-BR');
           dataRows.forEach((row) => {
             if (!row || !Array.isArray(row)) return;
             const temConteudo = row.some(cell => cell !== null && cell !== undefined && String(cell).trim() !== '');
@@ -2343,37 +2397,82 @@ function solicitarSubirPlanilha() {
 
             const salvoNoCofre = vaultCases[codUsuario] || {};
             if (vaultCases[codUsuario]) recuperadosDoCofre++;
+            codigosNaNovaPlanilha.add(codUsuario);
 
-            // Se tiver histórico anterior, puxa o que tiver de descrição e vai direto para o campo observação
+            // -------------------------------------------------------------
+            // GRUPO 2: CASOS REPETIDOS (Já estavam na esteira ativa)
+            // -------------------------------------------------------------
+            const casoJaAtivo = codigosAtivosAnterioresMap.get(codUsuario);
+            if (casoJaAtivo) {
+              // Atualiza prazos com os dados do dia
+              casoJaAtivo.DIAS_AUTORIZACAO = diasSla;
+              if (diasSetor !== null) casoJaAtivo.DIAS_SETOR = diasSetor;
+
+              // Acrescenta novas informações da planilha se houver
+              const camposParaAcrescentar = [
+                'NM_PRESTADOR', 'NM_SOLICITANTE', 'PROCEDIMENTO_AGRUPADO', 'CD_PROCEDIMENTO',
+                'CIDADE', 'UF', 'NM_PLANO', 'NM_EMPRESA', 'TEL_PESSOAL', 'TEL_CLINICA',
+                'NM_FILIAL', 'CD_FILIAL', 'FILIAL'
+              ];
+              camposParaAcrescentar.forEach(cmp => {
+                const valPlan = getVal(cmp);
+                if (valPlan && (!casoJaAtivo[cmp] || casoJaAtivo[cmp] === '-' || casoJaAtivo[cmp] === '--')) {
+                  casoJaAtivo[cmp] = valPlan;
+                }
+              });
+
+              const filialNomePlan = getVal('NM_FILIAL');
+              const filialCodPlan = getVal('CD_FILIAL');
+              if (filialNomePlan) {
+                casoJaAtivo.NM_FILIAL = filialNomePlan;
+                casoJaAtivo.FILIAL = filialNomePlan;
+              }
+              if (filialCodPlan) {
+                casoJaAtivo.CD_FILIAL = filialCodPlan;
+              }
+
+              const valIni = getVal('VALOR_INICIAL');
+              if (valIni && !casoJaAtivo.VALOR_INICIAL) casoJaAtivo.VALOR_INICIAL = valIni;
+              const menVal = getVal('MENOR_VALOR');
+              if (menVal && !casoJaAtivo.MENOR_VALOR) casoJaAtivo.MENOR_VALOR = menVal;
+              const valPac = getVal('VALOR PACOTE');
+              if (valPac && !casoJaAtivo['VALOR PACOTE']) casoJaAtivo['VALOR PACOTE'] = valPac;
+
+              // Se a planilha trouxer texto novo de observação, acrescenta sem apagar a existente
+              const obsPlanilha = (getVal('OBSERVACAO') || '').trim();
+              if (obsPlanilha && !String(casoJaAtivo.OBSERVACAO || '').includes(obsPlanilha)) {
+                casoJaAtivo.OBSERVACAO = (casoJaAtivo.OBSERVACAO ? casoJaAtivo.OBSERVACAO + '\n\n' : '') + obsPlanilha;
+              }
+
+              casoJaAtivo.STATUS_COFRE = 'EM ANDAMENTO';
+              syncToVault(casoJaAtivo);
+              novosCasos.push(casoJaAtivo);
+              return; // Continua na esteira com os dados enriquecidos
+            }
+
+            // -------------------------------------------------------------
+            // CASO NOVO OU REINCIDENTE (NÃO estava na esteira ativa)
+            // -------------------------------------------------------------
             let obsExistente = (salvoNoCofre.OBSERVACAO || '').trim();
             const partesHistorico = [];
 
-            if (salvoNoCofre.ULTIMO_DESFECHO && salvoNoCofre.ULTIMO_DESFECHO.trim()) {
-              partesHistorico.push(`[HISTÓRICO ANTERIOR - DESFECHO]: ${salvoNoCofre.ULTIMO_DESFECHO.trim()}`);
-            }
-            if (salvoNoCofre.FINALIZACAO_SIGO && salvoNoCofre.FINALIZACAO_SIGO.trim() && (!salvoNoCofre.ULTIMO_DESFECHO || !salvoNoCofre.ULTIMO_DESFECHO.includes(salvoNoCofre.FINALIZACAO_SIGO.trim()))) {
-              partesHistorico.push(`[HISTÓRICO ANTERIOR - SIGO]: ${salvoNoCofre.FINALIZACAO_SIGO.trim()}`);
-            }
-
             const logsAnteriores = historyLog[codUsuario] || [];
             if (logsAnteriores.length > 0) {
-              const resumoLogs = logsAnteriores.map(l => `• [${l.date}] ${l.author}: ${l.text}`).join('\n');
-              if (resumoLogs) {
-                partesHistorico.push(`[HISTÓRICO ANTERIOR - REGISTROS]:\n${resumoLogs}`);
-              }
+              const resumoLogs = logsAnteriores.map(l => '• [' + l.date + '] ' + l.author + ': ' + l.text).join('\n');
+              if (resumoLogs) partesHistorico.push(`[HISTÓRICO ANTERIOR - REGISTROS]:\n${resumoLogs}`);
             }
 
             let observacaoFinal = obsExistente;
             if (partesHistorico.length > 0) {
               const blocoHistorico = partesHistorico.join('\n\n');
-              if (observacaoFinal) {
-                if (!observacaoFinal.includes(blocoHistorico)) {
-                  observacaoFinal = `${observacaoFinal}\n\n${blocoHistorico}`;
-                }
-              } else {
-                observacaoFinal = blocoHistorico;
+              if (!observacaoFinal.includes(blocoHistorico)) {
+                observacaoFinal = observacaoFinal ? `${observacaoFinal}\n\n${blocoHistorico}` : blocoHistorico;
               }
             }
+
+            const filialNomeNovo = getVal('NM_FILIAL');
+            const filialCodNovo = getVal('CD_FILIAL');
+            const filialFinalNovo = filialNomeNovo || filialCodNovo || salvoNoCofre.NM_FILIAL || salvoNoCofre.FILIAL || '';
 
             const novoCaso = {
               CD_USUARIO: codUsuario,
@@ -2383,8 +2482,9 @@ function solicitarSubirPlanilha() {
               ASSUMIU_POR: salvoNoCofre.ASSUMIU_POR || '',
               ADMINISTRATIVO: salvoNoCofre.ADMINISTRATIVO || '',
               BASE: getVal('BASE', salvoNoCofre.BASE || 'NDI'),
-              NM_FILIAL: getVal('NM_FILIAL', salvoNoCofre.NM_FILIAL || salvoNoCofre.FILIAL || ''),
-              FILIAL: getVal('NM_FILIAL', salvoNoCofre.NM_FILIAL || salvoNoCofre.FILIAL || ''),
+              NM_FILIAL: filialNomeNovo || salvoNoCofre.NM_FILIAL || filialFinalNovo,
+              FILIAL: filialFinalNovo,
+              CD_FILIAL: filialCodNovo || salvoNoCofre.CD_FILIAL || '',
               TIPO_PENDENCIA: getVal('TIPO_PENDENCIA', salvoNoCofre.TIPO_PENDENCIA || '69'),
               GERENTE_MEDICO: getVal('GERENTE_MEDICO', salvoNoCofre.GERENTE_MEDICO || ''),
               MEDICO_CONSULTOR: getVal('MEDICO_CONSULTOR', salvoNoCofre.MEDICO_CONSULTOR || ''),
@@ -2417,11 +2517,61 @@ function solicitarSubirPlanilha() {
               OBSERVACAO: observacaoFinal,
               ENCAMINHAR: getVal('ENCAMINHAR', salvoNoCofre.ENCAMINHAR || ''),
               STATUS_COFRE: 'EM ANDAMENTO',
+              COR_SINAL: salvoNoCofre.COR_SINAL || '',
               ULTIMO_DESFECHO: ''
             };
 
-            // Se veio na planilha do dia, DEVE obrigatoriamente entrar na Esteira Ativa!
-            // O histórico e pareceres anteriores ficam preservados na Linha do Tempo e observação para consulta.
+            // Extrair data e desfecho anterior
+            function extrairDataFinBR(c, cod) {
+              if (c && c.DATA_FINALIZACAO) {
+                const d = new Date(c.DATA_FINALIZACAO);
+                if (!isNaN(d.getTime())) return d.toLocaleDateString('pt-BR');
+              }
+              const logs = (cod && historyLog[cod]) || [];
+              const logFin = logs.find(l => (l.author && l.author.toLowerCase().includes('finaliza')) || (l.text && l.text.startsWith('[DESFECHO:')) || l.desfecho);
+              if (logFin && logFin.date) {
+                const parts = String(logFin.date).trim().split(' ');
+                if (parts.length > 0 && parts[0].includes('/')) return parts[0];
+              }
+              return '';
+            }
+
+            const salvo = salvoNoCofre || {};
+            const d = String(salvo.DESFECHO || salvo.ULTIMO_DESFECHO || '').toUpperCase();
+            const logs = (codUsuario && historyLog[codUsuario]) || [];
+            const logTxt = logs.map(l => String(l.text || '')).join(' ').toUpperCase();
+            const ehGnmedCongenere = d.includes('GNMED') || d.includes('CONGÊNERE') || d.includes('CONGENERE') || 
+                                     logTxt.includes('GNMED') || logTxt.includes('CONGÊNERE') || logTxt.includes('CONGENERE');
+
+            const jaFinalizado = isCasoComDesfechoOuFinalizado(salvoNoCofre) || 
+                                 isCasoComDesfechoOuFinalizado({ CD_USUARIO: codUsuario });
+            const dtFinBR = extrairDataFinBR(salvo, codUsuario);
+            const foiFinalizadoHoje = jaFinalizado && (dtFinBR === hojeStrBR);
+
+            // 1. SE FOI FINALIZADO HOJE: Permanece no Histórico e NÃO entra na esteira
+            if (foiFinalizadoHoje && !ehGnmedCongenere) {
+              novoCaso.STATUS_COFRE = salvo.STATUS_COFRE || 'CONCLUÍDO';
+              novoCaso.DESFECHO = salvo.DESFECHO || '';
+              novoCaso.MICRO_DESFECHO = salvo.MICRO_DESFECHO || '';
+              novoCaso.FINALIZACAO_SIGO = salvo.FINALIZACAO_SIGO || '';
+              novoCaso.ULTIMO_DESFECHO = salvo.ULTIMO_DESFECHO || '';
+              novoCaso.DATA_FINALIZACAO = salvo.DATA_FINALIZACAO || new Date().toISOString();
+              syncToVault(novoCaso);
+              return; // NÃO entra na esteira ativa!
+            }
+
+            // 2. SE FOI FINALIZADO EM DIAS ANTERIORES: Entra na esteira e traz o histórico na observação
+            if (jaFinalizado && !foiFinalizadoHoje) {
+              const desfechoPassado = salvo.DESFECHO || salvo.ULTIMO_DESFECHO || 'Desfecho registrado';
+              const sigoPassado = salvo.FINALIZACAO_SIGO ? ' - ' + salvo.FINALIZACAO_SIGO : '';
+              const avisoHistPassado = `📌 [HISTÓRICO ANTERIOR]: Finalizado em ${dtFinBR || "data anterior"} com o desfecho: ${desfechoPassado}${sigoPassado}`;
+
+              if (!observacaoFinal.includes(avisoHistPassado)) {
+                observacaoFinal = observacaoFinal ? `${observacaoFinal}\n\n${avisoHistPassado}` : avisoHistPassado;
+              }
+              novoCaso.OBSERVACAO = observacaoFinal;
+            }
+
             novoCaso.STATUS_COFRE = 'EM ANDAMENTO';
             novoCaso.DESFECHO = '';
             novoCaso.MICRO_DESFECHO = '';
@@ -2432,6 +2582,42 @@ function solicitarSubirPlanilha() {
             syncToVault(novoCaso);
 
             novosCasos.push(novoCaso);
+          });
+          // -------------------------------------------------------------
+          // GRUPO 3: CASOS QUE ESTAVAM NA FILA E NÃO VIERAM NA PLANILHA NOVA
+          // (Vão direto para o Histórico com "CASO NÃO FINALIZADO NO SISTEMA")
+          // -------------------------------------------------------------
+          const casosQueSumiram = activeCases.filter(c => {
+            const k = String(c.CD_USUARIO || '').trim();
+            return k && !codigosNaNovaPlanilha.has(k);
+          });
+
+          const agora = new Date();
+          const agoraStr = agora.toLocaleDateString('pt-BR') + ' às ' + agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+          casosQueSumiram.forEach(c => {
+            const cod = String(c.CD_USUARIO).trim();
+            c.FINALIZACAO_SIGO = 'CASO NÃO FINALIZADO NO SISTEMA';
+            c.DESFECHO = c.DESFECHO || 'Cancelado / Não Consta em Planilha';
+            c.MICRO_DESFECHO = c.MICRO_DESFECHO || c.DESFECHO;
+            c.STATUS_COFRE = 'CONCLUÍDO';
+            c.DATA_FINALIZACAO = agora.toISOString();
+            c.FINALIZADO_EM_TS = agora.getTime();
+            c.ULTIMO_DESFECHO = 'CASO NÃO FINALIZADO NO SISTEMA';
+
+            addImmutableLog(
+              cod,
+              'Sistema (Conciliação Planilha)',
+              agoraStr,
+              '📋 [BAIXA AUTOMÁTICA]: Caso retirado da esteira pois não constava na nova planilha carregada.\nFinalização - SIGO: CASO NÃO FINALIZADO NO SISTEMA.',
+              { desfecho: c.DESFECHO, sigo: 'CASO NÃO FINALIZADO NO SISTEMA' }
+            );
+
+            syncToVault(c);
+
+            if (isCloudConnected && supabaseClient && !isAmbienteLocal) {
+              supabaseClient.from('casos_ativos').delete().eq('cd_usuario', cod).then(() => {});
+            }
           });
 
           if (novosCasos.length === 0) {
@@ -2482,7 +2668,7 @@ function solicitarSubirPlanilha() {
           activeCases = listaPlanilha;
           saveState();
           render();
-          alert('✅ Sucesso! ' + novosCasos.length + ' casos carregados da planilha.\nTotal na esteira ativa: ' + activeCases.length + ' casos.\n' + (isCloudConnected ? '☁️ Sincronizados na Nuvem para todos os operadores!' : '⚠️ Salvos apenas neste navegador.') + '\n🔒 ' + recuperadosDoCofre + ' casos vinculados ao histórico existente.');
+          alert("✅ Conciliação Concluída!\n\n• Casos na Esteira Ativa: " + activeCases.length + " (Novos + Repetidos Atualizados)\n• Baixados para o Histórico (Grupo 3): " + casosQueSumiram.length + " casos marcados com \"CASO NÃO FINALIZADO NO SISTEMA\"\n" + (isCloudConnected ? "☁️ Sincronizados na Nuvem!" : "⚠️ Salvos localmente."));
         } catch (err) {
           console.error(err);
           alert('Erro ao processar planilha: ' + (err.message || err));
@@ -2691,11 +2877,38 @@ function solicitarSubirPlanilha() {
 
     function isCasoComDesfechoOuFinalizado(c) {
       if (!c) return false;
-      // Um caso só é considerado finalizado se foi formalmente concluído via 'Finalizar Guia':
+      const cod = String(c.CD_USUARIO || '').trim();
+
+      // 1. Verificação direta no próprio objeto do caso
       const isConcluido = (c.STATUS_COFRE && String(c.STATUS_COFRE).toUpperCase().includes('CONCLU'));
       const temDataFin = !!(c.DATA_FINALIZACAO || c.FINALIZADO_EM_TS);
-      const temUltimoDesfecho = c.ULTIMO_DESFECHO && String(c.ULTIMO_DESFECHO).trim() !== '';
-      return !!(isConcluido || temDataFin || temUltimoDesfecho);
+      const temUltimoDesfecho = !!(c.ULTIMO_DESFECHO && String(c.ULTIMO_DESFECHO).trim() !== '');
+      if (isConcluido || temDataFin || temUltimoDesfecho) {
+        return true;
+      }
+
+      // 2. Verificação no Cofre Histórico Permanente (vaultCases)
+      if (cod && typeof vaultCases !== 'undefined' && vaultCases[cod]) {
+        const s = vaultCases[cod];
+        if (s.STATUS_COFRE && String(s.STATUS_COFRE).toUpperCase().includes('CONCLU')) {
+          return true;
+        }
+      }
+
+      // 3. Verificação na Linha do Tempo: se tem finalização oficial gravada na data de HOJE
+      const hojeStr = new Date().toLocaleDateString('pt-BR');
+      if (cod && typeof historyLog !== 'undefined' && historyLog[cod] && historyLog[cod].length > 0) {
+        const temLogFinHoje = historyLog[cod].some(l => {
+          const aut = String(l.author || '').toLowerCase();
+          const txt = String(l.text || '');
+          const dStr = String(l.date || '');
+          const ehFin = aut.includes('finaliza') || txt.startsWith('[DESFECHO:') || !!l.desfecho;
+          return ehFin && dStr.includes(hojeStr);
+        });
+        if (temLogFinHoje) return true;
+      }
+
+      return false;
     }
 
     function isCasoAusenciaConsenso(c) {
@@ -3104,6 +3317,9 @@ function solicitarSubirPlanilha() {
         c.COR_SINAL = cor || '';
         const idx = activeCases.findIndex(a => String(a.CD_USUARIO) === cod);
         if (idx >= 0) activeCases[idx] = { ...c };
+        if (currentCase && String(currentCase.CD_USUARIO) === cod) {
+          currentCase.COR_SINAL = cor || '';
+        }
         syncToVault(c);
         saveState();
         if (isCloudConnected && supabaseClient && !isAmbienteLocal) {
@@ -3401,10 +3617,20 @@ function solicitarSubirPlanilha() {
       const elDetailBase = document.getElementById('singleDetailBase');
       if (elDetailBase) elDetailBase.innerText = baseVal;
 
-      // Campo Filial (solicitado no lugar do campo Base)
-      const filialVal = currentCase.NM_FILIAL || currentCase.FILIAL || currentCase.NOME_FILIAL || currentCase.FILIAL_OPERADORA || '-';
+      // Campo Filial (prioriza o Nome da Filial vindo da coluna NM_FILIAL)
+      const filialNome = currentCase.NM_FILIAL || currentCase.NOME_FILIAL || currentCase.FILIAL_OPERADORA || '';
+      const filialCod = currentCase.CD_FILIAL || '';
+      let filialVal = filialNome;
+      if (!filialVal) {
+        filialVal = currentCase.FILIAL || filialCod || '-';
+      }
       const elFilialText = document.getElementById('labelFilialText');
-      if (elFilialText) elFilialText.innerText = filialVal;
+      if (elFilialText) {
+        elFilialText.innerText = filialVal;
+        if (filialCod && filialNome && filialCod !== filialNome) {
+          elFilialText.title = `Código Filial: ${filialCod} | Filial: ${filialNome}`;
+        }
+      }
       const elBaseText = document.getElementById('labelBaseText');
       if (elBaseText) elBaseText.innerText = filialVal;
 
@@ -4009,6 +4235,10 @@ function solicitarSubirPlanilha() {
       }
       if (hasVal(currentCase.BASE)) {
         cabecalho.push(`Base: ${currentCase.BASE.trim()}`);
+      }
+      const filialTxtCopiar = currentCase.NM_FILIAL || currentCase.FILIAL || '';
+      if (hasVal(filialTxtCopiar)) {
+        cabecalho.push(`Filial: ${filialTxtCopiar.trim()}`);
       }
 
       const diasAuto = currentCase.DIAS_AUTORIZACAO !== undefined && currentCase.DIAS_AUTORIZACAO !== null && currentCase.DIAS_AUTORIZACAO !== '' ? `${currentCase.DIAS_AUTORIZACAO}d` : '';
