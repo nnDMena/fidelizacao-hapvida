@@ -199,34 +199,34 @@
         </label>
         <select id="filterMedico" onchange="render()" 
           class="w-full sm:w-auto bg-white border border-indigo-300 rounded-lg text-xs font-bold text-slate-800 py-1 px-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-2xs">
-          <option value="">Todos os Gerentes Médicos (Geral)</option>
+          <option value="">Todos os Gerentes</option>
         </select>
         <button id="btnLimparFiltroMed" onclick="limparFiltroMedico()" title="Limpar filtro de médico" class="hidden text-slate-400 hover:text-rose-600 text-xs px-1">
           <i class="fa-solid fa-circle-xmark"></i>
         </button>
       </div>
 
-      <!-- KPI Pills (Scroll suave no celular) -->
+      <!-- KPI Pills (Mostrador com filtros interativos em 1 clique) -->
       <div class="w-full sm:w-auto flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
-        <div class="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col items-center min-w-[58px] sm:min-w-[65px] shrink-0">
-          <span id="kpi-total" class="text-xs font-extrabold text-slate-700">0</span>
-          <span class="text-[9px] sm:text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Ativas</span>
+        <div onclick="alternarFiltroUrgencia(null)" id="pill-kpi-total" class="cursor-pointer hover:bg-slate-100 hover:scale-[1.02] active:scale-[0.98] transition px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col items-center min-w-[60px] sm:min-w-[68px] shrink-0 shadow-2xs" title="Todas as Guias Ativas (Clique para ver todas)">
+          <span id="kpi-total" class="text-xs sm:text-sm font-black text-slate-700">0</span>
+          <span class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider">Ativas</span>
         </div>
-        <div class="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-rose-50 border border-rose-200/70 flex flex-col items-center min-w-[58px] sm:min-w-[65px] shrink-0">
-          <span id="badge-count-critico" class="text-xs font-extrabold text-rose-700">0</span>
-          <span class="text-[9px] sm:text-[10px] font-semibold text-rose-500 uppercase tracking-wider">Crítico</span>
+        <div onclick="alternarFiltroUrgencia('critico')" id="pill-kpi-critico" class="cursor-pointer hover:bg-rose-100/70 hover:scale-[1.02] active:scale-[0.98] transition px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-rose-50 border border-rose-200/70 flex flex-col items-center min-w-[60px] sm:min-w-[68px] shrink-0 shadow-2xs" title="Casos Críticos (> 10 dias) - Clique para filtrar">
+          <span id="badge-count-critico" class="text-xs sm:text-sm font-black text-rose-700">0</span>
+          <span class="text-[9px] sm:text-[10px] font-bold text-rose-600 uppercase tracking-wider">Crítico</span>
         </div>
-        <div class="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-amber-50 border border-amber-200/70 flex flex-col items-center min-w-[58px] sm:min-w-[65px] shrink-0">
-          <span id="badge-count-atencao" class="text-xs font-extrabold text-amber-700">0</span>
-          <span class="text-[9px] sm:text-[10px] font-semibold text-amber-600 uppercase tracking-wider">Atenção</span>
+        <div onclick="alternarFiltroUrgencia('atencao')" id="pill-kpi-atencao" class="cursor-pointer hover:bg-amber-100/70 hover:scale-[1.02] active:scale-[0.98] transition px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-amber-50 border border-amber-200/70 flex flex-col items-center min-w-[60px] sm:min-w-[68px] shrink-0 shadow-2xs" title="Casos em Atenção (7 a 10 dias) - Clique para filtrar">
+          <span id="badge-count-atencao" class="text-xs sm:text-sm font-black text-amber-700">0</span>
+          <span class="text-[9px] sm:text-[10px] font-bold text-amber-600 uppercase tracking-wider">Atenção</span>
         </div>
-        <div class="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-sky-50 border border-sky-200/70 flex flex-col items-center min-w-[58px] sm:min-w-[65px] shrink-0">
-          <span id="badge-count-regular" class="text-xs font-extrabold text-sky-700">0</span>
-          <span class="text-[9px] sm:text-[10px] font-semibold text-sky-600 uppercase tracking-wider">Regular</span>
+        <div onclick="alternarFiltroUrgencia('regular')" id="pill-kpi-regular" class="cursor-pointer hover:bg-sky-100/70 hover:scale-[1.02] active:scale-[0.98] transition px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-sky-50 border border-sky-200/70 flex flex-col items-center min-w-[60px] sm:min-w-[68px] shrink-0 shadow-2xs" title="Casos Regulares (até 6 dias) - Clique para filtrar">
+          <span id="badge-count-regular" class="text-xs sm:text-sm font-black text-sky-700">0</span>
+          <span class="text-[9px] sm:text-[10px] font-bold text-sky-600 uppercase tracking-wider">Regular</span>
         </div>
-        <div onclick="setView('finalizados')" class="cursor-pointer hover:bg-emerald-100/80 transition px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-emerald-50 border border-emerald-300 flex flex-col items-center min-w-[70px] sm:min-w-[85px] shrink-0" title="Clique para ver os Casos Finalizados">
-          <span id="kpi-concluidas" class="text-xs font-extrabold text-emerald-700">0</span>
-          <span class="text-[9px] sm:text-[10px] font-extrabold text-emerald-700 uppercase tracking-wider flex items-center gap-1"><i class="fa-solid fa-circle-check text-[8px]"></i> Finalizados</span>
+        <div onclick="alternarFiltroUrgencia('sem_responsavel')" id="pill-kpi-sem-responsavel" class="cursor-pointer hover:bg-purple-100/70 hover:scale-[1.02] active:scale-[0.98] transition px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-purple-50 border border-purple-200/70 flex flex-col items-center min-w-[70px] sm:min-w-[88px] shrink-0 shadow-2xs" title="Casos sem Equipe Técnica e sem Administrativo - Clique para filtrar">
+          <span id="badge-count-sem-responsavel" class="text-xs sm:text-sm font-black text-purple-700">0</span>
+          <span class="text-[9px] sm:text-[10px] font-bold text-purple-600 uppercase tracking-wider whitespace-nowrap">Sem Responsável</span>
         </div>
       </div>
 
@@ -242,7 +242,7 @@
           <i class="fa-solid fa-address-card"></i> Fichas
         </button>
         <button onclick="setView('finalizados')" id="btn-view-finalizados" class="flex-1 sm:flex-none justify-center px-2 sm:px-3 py-1.5 rounded-lg text-emerald-800 hover:text-emerald-950 flex items-center gap-1.5 transition text-[11px] sm:text-xs">
-          <i class="fa-solid fa-circle-check text-emerald-600"></i> Finalizados <span id="tab-count-finalizados" class="text-[9.5px] font-black bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded-full">0</span>
+          <i class="fa-solid fa-circle-check text-emerald-600"></i> Finalizados <span id="tab-count-finalizados" class="hidden text-[9.5px] font-black bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded-full" title="Total Geral de Finalizados (Visível para Fernando e Vitor)">0</span>
         </button>
         <button onclick="setView('historico')" id="btn-view-historico" class="flex-1 sm:flex-none justify-center px-2 sm:px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 flex items-center gap-1 transition text-[11px] sm:text-xs">
           <i class="fa-solid fa-shield-halved text-indigo-600"></i> Histórico
@@ -890,7 +890,7 @@
                       <i class="fa-solid fa-user-gear text-amber-400"></i> Equipe Técnica
                     </label>
                     <button type="button" onclick="assumirCasoEuMesmo()" class="text-[9px] sm:text-[9.5px] font-bold bg-amber-400/25 hover:bg-amber-400/40 text-amber-200 px-2 py-0.5 rounded transition cursor-pointer flex items-center gap-1" title="Preencher com o meu usuário logado">
-                      <i class="fa-solid fa-hand text-[9px]"></i> Assumir eu
+                      <i class="fa-solid fa-hand text-[9px]"></i> Assumir
                     </button>
                   </div>
                   <select id="editCaseAssumiuPor" onchange="autoSalvarProfissionais()" class="w-full bg-slate-900 text-white font-bold text-xs px-2.5 py-1.5 rounded-lg border border-indigo-400/60 focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer">
@@ -905,7 +905,7 @@
                       <i class="fa-solid fa-user-tie text-sky-400"></i> Administrativo
                     </label>
                     <button type="button" onclick="assumirAdministrativoEuMesmo()" class="text-[9px] sm:text-[9.5px] font-bold bg-sky-400/25 hover:bg-sky-400/40 text-sky-200 px-2 py-0.5 rounded transition cursor-pointer flex items-center gap-1" title="Preencher com o meu usuário logado">
-                      <i class="fa-solid fa-hand text-[9px]"></i> Assumir eu
+                      <i class="fa-solid fa-hand text-[9px]"></i> Assumir
                     </button>
                   </div>
                   <select id="editCaseAdministrativo" onchange="autoSalvarProfissionais()" class="w-full bg-slate-900 text-white font-bold text-xs px-2.5 py-1.5 rounded-lg border border-indigo-400/60 focus:outline-none focus:ring-2 focus:ring-sky-400 cursor-pointer">
@@ -1158,52 +1158,57 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
     // ==========================================
     const SENHA_MESTRE = 'fidelizacao';
 
-    // Lista de Equipe Técnica (sem os nomes do Administrativo)
+    // Lista de Equipe Técnica (em ordem alfabética)
     const LISTA_EQUIPE_TECNICA = [
-      "Talita Costa Freire de Oliveira",
-      "Rubens Augusto Zapponi Nathan",
-      "Diego Godoi Bernardes da Silva",
-      "Lorena de Souza Santana",
-      "Marcela Usberti Gutierre",
       "Amanda Regina Marques Lira",
-      "João Henrique de Souza",
-      "Murilo Adolfo Fernandes",
-      "Vinicius Nunes Azevedo",
-      "Marco Antonio Pereira Guerra",
-      "Ederson Evaristo",
-      "Tania Ranchandani",
-      "Rodrigo Rodrigues",
-      "Paula Orlandini Pertsew",
-      "Mauricio Cunha Guimaraes",
-      "Luiz Fernando Pavan Schwarz",
-      "Fernanda Sertorio Bartolli",
       "Caroline Perin",
+      "Claudionice Aparecida Silva",
+      "Diego Godoi Bernardes da Silva",
+      "Ederson Evaristo",
+      "Fernanda Sertorio Bartolli",
       "Gabrielly Oliveira Costa",
       "Jaqueline Rocha Nascimento Sousa",
+      "João Henrique de Souza",
+      "Lorena de Souza Santana",
+      "Luiz Fernando Pavan Schwarz",
+      "Marcela Usberti Gutierre",
+      "Marco Antonio Pereira Guerra",
+      "Mauricio Cunha Guimaraes",
+      "Mauricio de Almeida Gomes",
+      "Murilo Adolfo Fernandes",
       "Natália Santos do Carmo",
-      "Claudionice Aparecida Silva",
-      "Mauricio de Almeida Gomes"
+      "Paula Orlandini Pertsew",
+      "Rodrigo Rodrigues",
+      "Rubens Augusto Zapponi Nathan",
+      "Talita Costa Freire de Oliveira",
+      "Tania Ranchandani",
+      "Vinicius Nunes Azevedo"
     ];
 
-    // Lista exclusiva de Administrativo
+    // Lista exclusiva de Administrativo (em ordem alfabética - sem gestores/administradores)
     const LISTA_ADMINISTRATIVO = [
       "Anna Carolina de Souza Hanna",
-      "Willian Lima Fogaça",
-      "Luciene de Paulo Borges",
+      "Christiane Aparecida Balthazar",
+      "Henrique Dos Santos Mozer",
       "Jose Alailton Reinaldo da Silva",
       "Larissa Araujo Dos Santos",
-      "Henrique Dos Santos Mozer",
+      "Luciene de Paulo Borges",
       "Viviane Maconego Pereira Flauzino",
-      "Christiane Aparecida Balthazar",
+      "Willian Lima Fogaça"
+    ];
+
+    // Operadores com permissão administrativa (Gestão/Upload de Planilhas)
+    const OPERADORES_ADMINISTRADORES = [
       "Fernando Henrique Pires Mena",
       "Vitor Hugo de Almeida"
     ];
 
-    // Lista unificada para login e autenticação
+    // Lista unificada para login e autenticação (inclui administradores e operadores em ordem alfabética)
     const LISTA_OPERADORES_UNICA = [
+      ...OPERADORES_ADMINISTRADORES,
       ...LISTA_EQUIPE_TECNICA,
       ...LISTA_ADMINISTRATIVO
-    ];
+    ].filter((v, i, a) => a.indexOf(v) === i).sort((a, b) => a.localeCompare(b, 'pt-BR'));
 
     let operadorAtual = localStorage.getItem('hapvida_operador_ativo') || '';
 
@@ -1297,17 +1302,23 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
       abrirModalOperador();
     }
 
-    const OPERADORES_ADMINISTRADORES = [
-      "Fernando Henrique Pires Mena",
-      "Vitor Hugo de Almeida"
-    ];
-
     function isOperadorAdmin() {
       if (!operadorAtual) return false;
       const op = operadorAtual.trim().toLowerCase();
+      // O Dr. Luiz Fernando NÃO é administrador (acesso restrito exclusivamente a Fernando Mena e Vitor Hugo)
+      if (op.includes('luiz') || op.includes('pavan') || op.includes('schwarz')) {
+        return false;
+      }
       return OPERADORES_ADMINISTRADORES.some(admin => {
         const adm = admin.toLowerCase();
-        return op === adm || (adm.includes('fernando') && op.includes('fernando')) || (adm.includes('vitor hugo') && op.includes('vitor hugo'));
+        if (op === adm) return true;
+        if (adm.includes('fernando') && (op.includes('mena') || op.includes('pires') || op.startsWith('fernando '))) {
+          return true;
+        }
+        if (adm.includes('vitor') && (op.includes('hugo') || op.includes('almeida') || op.startsWith('vitor '))) {
+          return true;
+        }
+        return false;
       });
     }
 
@@ -1358,6 +1369,16 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
         }
       }
 
+      // O número total geral de finalizados é visível apenas para Fernando e Vitor
+      const badgeTabFin = document.getElementById('tab-count-finalizados');
+      if (badgeTabFin) {
+        if (ehAdmin) {
+          badgeTabFin.classList.remove('hidden');
+        } else {
+          badgeTabFin.classList.add('hidden');
+        }
+      }
+
       const containerRubens = document.getElementById('containerAbasDrRubens');
       const ehGestor = isPainelGestaoMedica();
       if (containerRubens) {
@@ -1371,11 +1392,21 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
       }
     }
 
+    function formatarPrimeiroEUltimoNome(nome) {
+      if (!nome) return '';
+      const partes = String(nome).trim().split(/\s+/).filter(Boolean);
+      if (partes.length <= 2) return partes.join(' ');
+      return `${partes[0]} ${partes[partes.length - 1]}`;
+    }
+
     function atualizarLabelOperador() {
       const lbl = document.getElementById('lblOperadorNome');
       if (lbl) {
-        const nomeExibido = operadorAtual || 'Selecionar Operador';
+        const nomeExibido = operadorAtual ? formatarPrimeiroEUltimoNome(operadorAtual) : 'Selecionar Operador';
         lbl.innerHTML = `${nomeExibido} <i class="fa-solid fa-pen text-[9px] text-indigo-300"></i>`;
+        if (lbl.parentElement) {
+          lbl.parentElement.title = operadorAtual ? `${operadorAtual} (Clique para trocar seu nome de operador)` : 'Clique para selecionar seu nome de operador';
+        }
       }
       atualizarPermissoesOperador();
     }
@@ -1931,18 +1962,175 @@ function solicitarSubirPlanilha() {
         .replace(/[^a-z0-9]/g, '');
     }
 
+    function getHojeBrasiliaStr() {
+      try {
+        return new Intl.DateTimeFormat('pt-BR', {
+          timeZone: 'America/Sao_Paulo',
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        }).format(new Date());
+      } catch (e) {
+        const d = new Date();
+        const dia = String(d.getDate()).padStart(2, '0');
+        const mes = String(d.getMonth() + 1).padStart(2, '0');
+        const ano = d.getFullYear();
+        return `${dia}/${mes}/${ano}`;
+      }
+    }
+
     function formatarDataBR(d) {
       if (!d) return '';
-      if (typeof d === 'string') {
-        const m = d.match(/\b(\d{1,2}\/\d{1,2}\/\d{4})\b/);
-        if (m) return m[1];
+      if (d instanceof Date) {
+        try {
+          return new Intl.DateTimeFormat('pt-BR', {
+            timeZone: 'America/Sao_Paulo',
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+          }).format(d);
+        } catch (e) {
+          const dia = String(d.getDate()).padStart(2, '0');
+          const mes = String(d.getMonth() + 1).padStart(2, '0');
+          const ano = d.getFullYear();
+          return `${dia}/${mes}/${ano}`;
+        }
       }
-      const dateObj = (d instanceof Date) ? d : new Date(d);
-      if (isNaN(dateObj.getTime())) return '';
-      const dia = String(dateObj.getDate()).padStart(2, '0');
-      const mes = String(dateObj.getMonth() + 1).padStart(2, '0');
-      const ano = dateObj.getFullYear();
-      return `${dia}/${mes}/${ano}`;
+      const str = String(d).trim();
+      const matchBR = str.match(/\b(\d{1,2}\/\d{1,2}\/\d{4})\b/);
+      if (matchBR) return matchBR[1];
+
+      const matchISO = str.match(/\b(\d{4})-(\d{1,2})-(\d{1,2})\b/);
+      if (matchISO) {
+        const ano = matchISO[1];
+        const mes = matchISO[2].padStart(2, '0');
+        const dia = matchISO[3].padStart(2, '0');
+        return `${dia}/${mes}/${ano}`;
+      }
+
+      const parsed = new Date(str);
+      if (!isNaN(parsed.getTime())) {
+        try {
+          return new Intl.DateTimeFormat('pt-BR', {
+            timeZone: 'America/Sao_Paulo',
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+          }).format(parsed);
+        } catch (e) {
+          const dia = String(parsed.getDate()).padStart(2, '0');
+          const mes = String(parsed.getMonth() + 1).padStart(2, '0');
+          const ano = parsed.getFullYear();
+          return `${dia}/${mes}/${ano}`;
+        }
+      }
+      return str;
+    }
+
+    // Lista oficial de Gerentes Médicos (com titulação Dra / Dr em ordem alfabética)
+    const LISTA_GERENTES_MEDICOS_OFICIAL = [
+      "Dra Amanda",
+      "Dr Diego",
+      "Dr João Henrique",
+      "Dra Lorena Santana",
+      "Dra Marcela Gutierre",
+      "Dr Murilo Fernandes"
+    ];
+    const LISTA_GERENTES_MEDICOS_6_OPCOES = LISTA_GERENTES_MEDICOS_OFICIAL;
+
+    function resolverNomeGerente(input) {
+      if (!input) return '';
+      const str = String(input).trim();
+      if (!str || str === '-' || str === '--' || str === '---') return '';
+
+      if (LISTA_GERENTES_MEDICOS_OFICIAL.includes(str)) return str;
+
+      const limpo = normalizarTexto(str.replace(/dr\(a\)\.?|dr\.?|dra\.?/gi, ''));
+
+      if (limpo.includes('amanda')) return 'Dra Amanda';
+      if (limpo.includes('diego')) return 'Dr Diego';
+      if (limpo.includes('joao') || limpo.includes('henrique')) return 'Dr João Henrique';
+      if (limpo.includes('lorena') || limpo.includes('santana')) return 'Dra Lorena Santana';
+      if (limpo.includes('marcela') || limpo.includes('gutierre')) return 'Dra Marcela Gutierre';
+      if (limpo.includes('murilo') || limpo.includes('fernandes')) return 'Dr Murilo Fernandes';
+
+      return str;
+    }
+
+    function extrairDataFinBR(c, cod) {
+      if (c && c.DATA_FINALIZACAO) {
+        const res = formatarDataBR(c.DATA_FINALIZACAO);
+        if (res) return res;
+      }
+      if (c && c.FINALIZADO_EM_TS) {
+        const res = formatarDataBR(new Date(c.FINALIZADO_EM_TS));
+        if (res) return res;
+      }
+      const codAlvo = cod || (c && c.CD_USUARIO);
+      const logs = (codAlvo && historyLog[codAlvo]) || [];
+      const logFin = [...logs].reverse().find(l => 
+        (l.author && String(l.author).toLowerCase().includes('finaliza')) || 
+        (l.text && (String(l.text).startsWith('[DESFECHO:') || String(l.text).includes('[DESFECHO:'))) || 
+        l.desfecho
+      );
+      if (logFin && logFin.date) {
+        const match = String(logFin.date).match(/\b(\d{1,2}\/\d{1,2}\/\d{4})\b/);
+        if (match) return match[1];
+      }
+      return '';
+    }
+
+    function resolverNomeOperador(nomeInput, tipo = 'equipe') {
+      if (!nomeInput) return '';
+      const str = String(nomeInput).trim();
+      if (!str || str === '-' || str === '--') return '';
+
+      let lista = LISTA_EQUIPE_TECNICA;
+      if (tipo === 'adm' || tipo === 'administrativo') {
+        lista = LISTA_ADMINISTRATIVO;
+      } else if (tipo === 'gerente') {
+        lista = LISTA_GERENTES_MEDICOS_6_OPCOES;
+      } else if (tipo === 'todos') {
+        lista = LISTA_OPERADORES_UNICA;
+      }
+
+      // 1. Match exato
+      if (lista.includes(str)) return str;
+
+      const normInput = normalizarTexto(str);
+
+      // 2. Match normalizado exato
+      const matchNorm = lista.find(n => normalizarTexto(n) === normInput);
+      if (matchNorm) return matchNorm;
+
+      // 3. Match por primeiro nome (ex: "Tania" -> "Tania Ranchandani", "Ederson" -> "Ederson Evaristo")
+      const primeiroNomeInput = normalizarTexto(str.split(' ')[0]);
+      if (primeiroNomeInput && primeiroNomeInput.length >= 3) {
+        const candidatos = lista.filter(n => normalizarTexto(n.split(' ')[0]) === primeiroNomeInput);
+        if (candidatos.length === 1) return candidatos[0];
+        if (candidatos.length > 1) {
+          const matchMaisProximo = candidatos.find(n => normalizarTexto(n).includes(normInput) || normInput.includes(normalizarTexto(n)));
+          if (matchMaisProximo) return matchMaisProximo;
+          return candidatos[0];
+        }
+      }
+
+      // 4. Match parcial
+      if (normInput.length >= 4) {
+        const matchContem = lista.find(n => {
+          const normN = normalizarTexto(n);
+          return normN.includes(normInput) || normInput.includes(normN);
+        });
+        if (matchContem) return matchContem;
+      }
+
+      // 5. Fallback para lista unificada se não encontrou na lista específica
+      if (tipo !== 'todos') {
+        const achouGeral = resolverNomeOperador(str, 'todos');
+        if (achouGeral && achouGeral !== str) return achouGeral;
+      }
+
+      return str;
     }
 
     function dividirLinhaCSV(linha, sep) {
@@ -2043,10 +2231,17 @@ function solicitarSubirPlanilha() {
       GERENTE_MEDICO: [
         'gerentemedico', 'medicoprofissional', 'medicoresponsavel', 'medicotitular',
         'auditor', 'medicoauditor', 'responsavel', 'gerente', 'drresponsavel',
-        'drtitular', 'auditoria', 'medico'
+        'drtitular', 'auditoria', 'medico', 'gestaomedica', 'gestor', 'nomedogerente',
+        'gerenciamedica', 'medicoauditoria', 'dr', 'dra'
       ],
       MEDICO_CONSULTOR: [
-        'medicoconsultor', 'consultor', 'assumidopor', 'medicoassumiu', 'consultoria'
+        'medicoconsultor', 'consultor', 'medicoassumiu', 'consultoria'
+      ],
+      ASSUMIU_POR: [
+        'assumiupor', 'assumidopor', 'equipotecnica', 'equipetecnica', 'operador', 'tecnico', 'responsavelcaso', 'analistatecnico', 'tecnicofidelizacao'
+      ],
+      ADMINISTRATIVO: [
+        'adm', 'administrativo', 'analistaadm', 'apoioadm', 'responsaveladm', 'assistenteadm'
       ],
       PROCEDIMENTO_AGRUPADO: [
         'procedimentoagrupado', 'procedimento', 'dsprocedimento', 'nmprocedimento',
@@ -2360,7 +2555,7 @@ function solicitarSubirPlanilha() {
             if (k) codigosAtivosAnterioresMap.set(k, c);
           });
           const codigosNaNovaPlanilha = new Set();
-          const hojeStrBR = formatarDataBR(new Date());
+          const hojeStrBR = getHojeBrasiliaStr();
           dataRows.forEach((row) => {
             if (!row || !Array.isArray(row)) return;
             const temConteudo = row.some(cell => cell !== null && cell !== undefined && String(cell).trim() !== '');
@@ -2426,10 +2621,13 @@ function solicitarSubirPlanilha() {
               const camposParaAcrescentar = [
                 'NM_PRESTADOR', 'NM_SOLICITANTE', 'PROCEDIMENTO_AGRUPADO', 'CD_PROCEDIMENTO',
                 'CIDADE', 'UF', 'NM_PLANO', 'NM_EMPRESA', 'TEL_PESSOAL', 'TEL_CLINICA',
-                'NM_FILIAL', 'CD_FILIAL', 'FILIAL'
+                'NM_FILIAL', 'CD_FILIAL', 'FILIAL', 'ASSUMIU_POR', 'ADMINISTRATIVO', 'GERENTE_MEDICO'
               ];
               camposParaAcrescentar.forEach(cmp => {
-                const valPlan = getVal(cmp);
+                let valPlan = getVal(cmp);
+                if (cmp === 'ASSUMIU_POR') valPlan = resolverNomeOperador(valPlan, 'equipe');
+                if (cmp === 'ADMINISTRATIVO') valPlan = resolverNomeOperador(valPlan, 'adm');
+                if (cmp === 'GERENTE_MEDICO') valPlan = resolverNomeGerente(valPlan);
                 if (valPlan && (!casoJaAtivo[cmp] || casoJaAtivo[cmp] === '-' || casoJaAtivo[cmp] === '--')) {
                   casoJaAtivo[cmp] = valPlan;
                 }
@@ -2493,14 +2691,14 @@ function solicitarSubirPlanilha() {
               NM_USUARIO: nmUsuario,
               DIAS_AUTORIZACAO: diasSla,
               DIAS_SETOR: diasSetor !== null ? diasSetor : (salvoNoCofre.DIAS_SETOR !== undefined ? salvoNoCofre.DIAS_SETOR : null),
-              ASSUMIU_POR: salvoNoCofre.ASSUMIU_POR || '',
-              ADMINISTRATIVO: salvoNoCofre.ADMINISTRATIVO || '',
+              ASSUMIU_POR: resolverNomeOperador(getVal('ASSUMIU_POR') || salvoNoCofre.ASSUMIU_POR || '', 'equipe'),
+              ADMINISTRATIVO: resolverNomeOperador(getVal('ADMINISTRATIVO') || salvoNoCofre.ADMINISTRATIVO || '', 'adm'),
               BASE: getVal('BASE', salvoNoCofre.BASE || 'NDI'),
               NM_FILIAL: filialNomeNovo || salvoNoCofre.NM_FILIAL || filialFinalNovo,
               FILIAL: filialFinalNovo,
               CD_FILIAL: filialCodNovo || salvoNoCofre.CD_FILIAL || '',
               TIPO_PENDENCIA: getVal('TIPO_PENDENCIA', salvoNoCofre.TIPO_PENDENCIA || '69'),
-              GERENTE_MEDICO: getVal('GERENTE_MEDICO', salvoNoCofre.GERENTE_MEDICO || ''),
+              GERENTE_MEDICO: resolverNomeGerente(getVal('GERENTE_MEDICO') || salvoNoCofre.GERENTE_MEDICO || ''),
               MEDICO_CONSULTOR: getVal('MEDICO_CONSULTOR', salvoNoCofre.MEDICO_CONSULTOR || ''),
               STATUS_MED_CONSULTOR: salvoNoCofre.STATUS_MED_CONSULTOR || '',
               OBS_MED_CONSULTOR: obsMedPlan || salvoNoCofre.OBS_MED_CONSULTOR || '',
@@ -2907,17 +3105,9 @@ function solicitarSubirPlanilha() {
 
       const isEmAndamento = (c.STATUS_COFRE && String(c.STATUS_COFRE).toUpperCase().includes('ANDAMENTO'));
 
-      // 1. Verificação direta no próprio objeto do caso
-      const isConcluido = (c.STATUS_COFRE && String(c.STATUS_COFRE).toUpperCase().includes('CONCLU'));
-      const temDataFin = !!(c.DATA_FINALIZACAO || c.FINALIZADO_EM_TS);
-      const temUltimoDesfecho = !!(c.ULTIMO_DESFECHO && String(c.ULTIMO_DESFECHO).trim() !== '');
-      if (isConcluido || temDataFin || temUltimoDesfecho) {
-        return true;
-      }
-
       // Se o caso está explicitamente EM ANDAMENTO (ex: reativado hoje pela planilha do dia)
       if (isEmAndamento) {
-        const hojeStr = formatarDataBR(new Date());
+        const hojeStr = getHojeBrasiliaStr();
         if (cod && typeof historyLog !== 'undefined' && historyLog[cod] && historyLog[cod].length > 0) {
           const temLogFinHoje = historyLog[cod].some(l => {
             const aut = String(l.author || '').toLowerCase();
@@ -2931,6 +3121,14 @@ function solicitarSubirPlanilha() {
         return false;
       }
 
+      // 1. Verificação direta no próprio objeto do caso
+      const isConcluido = (c.STATUS_COFRE && String(c.STATUS_COFRE).toUpperCase().includes('CONCLU'));
+      const temDataFin = !!(c.DATA_FINALIZACAO || c.FINALIZADO_EM_TS);
+      const temUltimoDesfecho = !!(c.ULTIMO_DESFECHO && String(c.ULTIMO_DESFECHO).trim() !== '');
+      if (isConcluido || temDataFin || temUltimoDesfecho) {
+        return true;
+      }
+
       // 2. Verificação no Cofre Histórico Permanente (vaultCases)
       if (cod && typeof vaultCases !== 'undefined' && vaultCases[cod]) {
         const s = vaultCases[cod];
@@ -2940,7 +3138,7 @@ function solicitarSubirPlanilha() {
       }
 
       // 3. Verificação na Linha do Tempo: se tem finalização oficial gravada na data de HOJE
-      const hojeStr = formatarDataBR(new Date());
+      const hojeStr = getHojeBrasiliaStr();
       if (cod && typeof historyLog !== 'undefined' && historyLog[cod] && historyLog[cod].length > 0) {
         const temLogFinHoje = historyLog[cod].some(l => {
           const aut = String(l.author || '').toLowerCase();
@@ -3180,18 +3378,21 @@ function solicitarSubirPlanilha() {
       alert(`✅ Sucesso! Caso ${cod} marcado como CONCLUÍDO na Ausência de Consenso.`);
     }
 
+    function gerenteCorrespondeFiltro(gerenteCaso, filtroSelecionado) {
+      if (!filtroSelecionado) return true;
+      if (!gerenteCaso) return false;
+      return resolverNomeGerente(gerenteCaso) === filtroSelecionado;
+    }
+
     function popularFiltroMedicos() {
       const select = document.getElementById('filterMedico');
       if (!select) return;
       const currentVal = select.value;
-      const medicosSet = new Set();
-      activeCases.forEach(c => {
-        if (c.GERENTE_MEDICO && c.GERENTE_MEDICO.trim()) medicosSet.add(c.GERENTE_MEDICO.trim());
-      });
-      const medicos = Array.from(medicosSet).sort();
-      select.innerHTML = '<option value="">Todos os Médicos (Geral)</option>' +
-        medicos.map(m => `<option value="${m}">Dr(a). ${m}</option>`).join('');
-      if (currentVal && medicos.includes(currentVal)) select.value = currentVal;
+      select.innerHTML = '<option value="">Todos os Gerentes</option>' +
+        LISTA_GERENTES_MEDICOS_OFICIAL.map(m => `<option value="${m}">${m}</option>`).join('');
+      if (currentVal && LISTA_GERENTES_MEDICOS_OFICIAL.includes(currentVal)) {
+        select.value = currentVal;
+      }
     }
 
     function limparFiltroMedico() {
@@ -3273,6 +3474,32 @@ function solicitarSubirPlanilha() {
       return tokens.every(token => superTexto.includes(token));
     }
 
+    function isSemResponsavel(c) {
+      if (!c) return false;
+      const assumiu = String(c.ASSUMIU_POR || '').trim();
+      const adm = String(c.ADMINISTRATIVO || '').trim();
+      const temAssumiu = Boolean(assumiu && assumiu !== '-' && assumiu !== '--' && assumiu !== '---');
+      const temAdm = Boolean(adm && adm !== '-' && adm !== '--' && adm !== '---');
+      return !temAssumiu && !temAdm;
+    }
+
+    let filtroUrgencia = null; // null | 'critico' | 'atencao' | 'regular' | 'sem_responsavel'
+
+    function alternarFiltroUrgencia(tipo) {
+      if (tipo === null) {
+        filtroUrgencia = null;
+      } else if (filtroUrgencia === tipo) {
+        filtroUrgencia = null;
+      } else {
+        filtroUrgencia = tipo;
+      }
+      if (currentView === 'finalizados' || currentView === 'historico' || currentView.startsWith('rubens_')) {
+        setView('kanban');
+      } else {
+        render();
+      }
+    }
+
     function getFilteredCases() {
       const q = ((document.getElementById('searchInputMobile')?.value || document.getElementById('searchInput')?.value) || '').toLowerCase();
       const medSelect = document.getElementById('filterMedico');
@@ -3295,19 +3522,14 @@ function solicitarSubirPlanilha() {
           if (!ehGnmedCongenere) return false;
         }
 
-        if (medFiltro && (!c.GERENTE_MEDICO || c.GERENTE_MEDICO.trim() !== medFiltro)) return false;
+        if (medFiltro && !gerenteCorrespondeFiltro(c.GERENTE_MEDICO, medFiltro)) return false;
+        if (filtroUrgencia === 'critico' && !((c.DIAS_AUTORIZACAO || 0) > 10)) return false;
+        if (filtroUrgencia === 'atencao' && !((c.DIAS_AUTORIZACAO || 0) >= 7 && (c.DIAS_AUTORIZACAO || 0) <= 10)) return false;
+        if (filtroUrgencia === 'regular' && !((c.DIAS_AUTORIZACAO || 0) <= 6)) return false;
+        if (filtroUrgencia === 'sem_responsavel' && !isSemResponsavel(c)) return false;
         return casoCorrespondeBusca(c, q);
       }).sort((a, b) => (b.DIAS_AUTORIZACAO || 0) - (a.DIAS_AUTORIZACAO || 0));
     }
-
-    const LISTA_GERENTES_MEDICOS_6_OPCOES = [
-      "Amanda",
-      "Diego",
-      "João Henrique",
-      "Lorena Santana",
-      "Marcela Gutierre",
-      "Murilo Fernandes"
-    ];
 
     // Cores Primárias e Secundárias para o Sinal / Bolinha (Sem vínculo fixo com gerentes, livre escolha)
     const MAPA_CORES_SINAL = {
@@ -3392,19 +3614,12 @@ function solicitarSubirPlanilha() {
       const select = document.getElementById('selectTrocarGerenteMedico');
       if (!select || !currentCase) return;
 
-      const atual = (currentCase.GERENTE_MEDICO || '').trim();
+      const atualResolvido = resolverNomeGerente(currentCase.GERENTE_MEDICO || '');
 
       let html = '<option value="">-- Selecione o Gerente Médico --</option>';
-      LISTA_GERENTES_MEDICOS_6_OPCOES.forEach(m => {
-        let isSelected = false;
-        if (atual) {
-          const atClean = atual.toLowerCase().replace(/dr\(a\)\.?|dr\.?|dra\.?/g, '').trim();
-          const mClean = m.toLowerCase().trim();
-          if (atClean === mClean || atClean.startsWith(mClean) || mClean.startsWith(atClean)) {
-            isSelected = true;
-          }
-        }
-        html += `<option value="${m}" ${isSelected ? 'selected' : ''}>Dr(a). ${m}</option>`;
+      LISTA_GERENTES_MEDICOS_OFICIAL.forEach(m => {
+        const isSelected = (atualResolvido === m);
+        html += `<option value="${m}" ${isSelected ? 'selected' : ''}>${m}</option>`;
       });
       select.innerHTML = html;
     }
@@ -3477,10 +3692,11 @@ function solicitarSubirPlanilha() {
       select.innerHTML = '<option value="">Selecione a equipe técnica...</option>' +
         LISTA_EQUIPE_TECNICA.map(nome => `<option value="${nome}">${nome}</option>`).join('');
       if (valAtual) {
-        if (!LISTA_EQUIPE_TECNICA.includes(valAtual) && valAtual !== '') {
-          select.innerHTML += `<option value="${valAtual}">${valAtual}</option>`;
+        const valResolvido = resolverNomeOperador(valAtual, 'equipe');
+        if (!LISTA_EQUIPE_TECNICA.includes(valResolvido) && valResolvido !== '') {
+          select.innerHTML += `<option value="${valResolvido}">${valResolvido}</option>`;
         }
-        select.value = valAtual;
+        select.value = valResolvido;
       }
     }
 
@@ -3491,10 +3707,11 @@ function solicitarSubirPlanilha() {
       select.innerHTML = '<option value="">Selecione o administrativo...</option>' +
         LISTA_ADMINISTRATIVO.map(nome => `<option value="${nome}">${nome}</option>`).join('');
       if (valAtual) {
-        if (!LISTA_ADMINISTRATIVO.includes(valAtual) && valAtual !== '') {
-          select.innerHTML += `<option value="${valAtual}">${valAtual}</option>`;
+        const valResolvido = resolverNomeOperador(valAtual, 'adm');
+        if (!LISTA_ADMINISTRATIVO.includes(valResolvido) && valResolvido !== '') {
+          select.innerHTML += `<option value="${valResolvido}">${valResolvido}</option>`;
         }
-        select.value = valAtual;
+        select.value = valResolvido;
       }
     }
 
@@ -3522,17 +3739,6 @@ function solicitarSubirPlanilha() {
         select.value = operadorAtual;
       }
       autoSalvarProfissionais();
-    }
-
-    function formatarDataBR(dataStr) {
-      if (!dataStr) return '';
-      const str = String(dataStr).trim();
-      if (str.includes('/')) return str;
-      const parts = str.split('-');
-      if (parts.length === 3) {
-        return `${parts[2]}/${parts[1]}/${parts[0]}`;
-      }
-      return str;
     }
 
     function converterDataParaInput(dataStr) {
@@ -3775,9 +3981,27 @@ function solicitarSubirPlanilha() {
       popularSelectAssumiuCaso();
       popularSelectAdministrativo();
       const elAssumiu = document.getElementById('editCaseAssumiuPor');
-      if (elAssumiu) elAssumiu.value = currentCase.ASSUMIU_POR || '';
+      if (elAssumiu) {
+        const assumiuResolvido = resolverNomeOperador(currentCase.ASSUMIU_POR || '', 'equipe');
+        if (assumiuResolvido && !LISTA_EQUIPE_TECNICA.includes(assumiuResolvido)) {
+          elAssumiu.innerHTML += `<option value="${assumiuResolvido}">${assumiuResolvido}</option>`;
+        }
+        elAssumiu.value = assumiuResolvido;
+        if (assumiuResolvido && assumiuResolvido !== currentCase.ASSUMIU_POR) {
+          currentCase.ASSUMIU_POR = assumiuResolvido;
+        }
+      }
       const elAdm = document.getElementById('editCaseAdministrativo');
-      if (elAdm) elAdm.value = currentCase.ADMINISTRATIVO || '';
+      if (elAdm) {
+        const admResolvido = resolverNomeOperador(currentCase.ADMINISTRATIVO || '', 'adm');
+        if (admResolvido && !LISTA_ADMINISTRATIVO.includes(admResolvido)) {
+          elAdm.innerHTML += `<option value="${admResolvido}">${admResolvido}</option>`;
+        }
+        elAdm.value = admResolvido;
+        if (admResolvido && admResolvido !== currentCase.ADMINISTRATIVO) {
+          currentCase.ADMINISTRATIVO = admResolvido;
+        }
+      }
 
       const elObs = document.getElementById('editCaseObservacao');
       if (elObs) elObs.value = currentCase.OBSERVACAO || '';
@@ -4265,24 +4489,24 @@ function solicitarSubirPlanilha() {
       if (hasVal(tipoDemandaAtual)) partesDemanda.push(tipoDemandaAtual.trim());
       if (hasVal(prazoDemandaAtual)) partesDemanda.push(`Prazo Final: ${formatarDataBR(prazoDemandaAtual)}`);
       if (partesDemanda.length > 0) {
-        cabecalho.push(`Demanda Crítica: ${partesDemanda.join(' | ')}`);
+        cabecalho.push(`- Demanda Crítica: ${partesDemanda.join(' | ')}`);
       }
 
       if (hasVal(currentCase.NM_USUARIO)) {
-        cabecalho.push(`Beneficiário: ${currentCase.NM_USUARIO.trim()}`);
+        cabecalho.push(`- Beneficiário: ${currentCase.NM_USUARIO.trim()}`);
       }
       if (hasVal(currentCase.CD_USUARIO)) {
-        cabecalho.push(`Cód. Utente / Carteira: ${currentCase.CD_USUARIO.trim()}`);
+        cabecalho.push(`- Cód. / Carteira: ${currentCase.CD_USUARIO.trim()}`);
       }
       if (hasVal(currentCase.NM_PLANO)) {
-        cabecalho.push(`Plano: ${currentCase.NM_PLANO.trim()}`);
+        cabecalho.push(`- Plano: ${currentCase.NM_PLANO.trim()}`);
       }
       if (hasVal(currentCase.BASE)) {
-        cabecalho.push(`Base: ${currentCase.BASE.trim()}`);
+        cabecalho.push(`- Base: ${currentCase.BASE.trim()}`);
       }
       const filialTxtCopiar = currentCase.NM_FILIAL || currentCase.FILIAL || '';
       if (hasVal(filialTxtCopiar)) {
-        cabecalho.push(`Filial: ${filialTxtCopiar.trim()}`);
+        cabecalho.push(`- Filial: ${filialTxtCopiar.trim()}`);
       }
 
       const diasAuto = currentCase.DIAS_AUTORIZACAO !== undefined && currentCase.DIAS_AUTORIZACAO !== null && currentCase.DIAS_AUTORIZACAO !== '' ? `${currentCase.DIAS_AUTORIZACAO}d` : '';
@@ -4295,10 +4519,10 @@ function solicitarSubirPlanilha() {
 
       let linhaPrazo = '';
       if (partesSla.length > 0) {
-        linhaPrazo = `Prazo / SLA: ${partesSla.join(' | ')}`;
+        linhaPrazo = `- Prazo / SLA: ${partesSla.join(' | ')}`;
         if (pendencia) linhaPrazo += ` ${pendencia}`;
       } else if (pendencia) {
-        linhaPrazo = `Pendência: #${currentCase.TIPO_PENDENCIA}`;
+        linhaPrazo = `- Pendência: #${currentCase.TIPO_PENDENCIA}`;
       }
       if (linhaPrazo) {
         cabecalho.push(linhaPrazo);
@@ -4348,15 +4572,17 @@ function solicitarSubirPlanilha() {
       // 3. EQUIPE DESIGNADA
       const linhasEquipe = [];
       if (hasVal(currentCase.GERENTE_MEDICO)) {
-        const gm = currentCase.GERENTE_MEDICO.trim();
+        const gm = resolverNomeGerente(currentCase.GERENTE_MEDICO);
         const gmFormatado = gm.toLowerCase().startsWith('dr') ? gm : `Dr(a). ${gm}`;
         linhasEquipe.push(`* Gerente Médico: ${gmFormatado}`);
       }
-      if (hasVal(currentCase.ASSUMIU_POR)) {
-        linhasEquipe.push(`* Eq. Técnica: ${currentCase.ASSUMIU_POR.trim()}`);
+      const eqTecnica = resolverNomeOperador(currentCase.ASSUMIU_POR, 'equipe');
+      if (hasVal(eqTecnica)) {
+        linhasEquipe.push(`* Eq. Técnica: ${eqTecnica.trim()}`);
       }
-      if (hasVal(currentCase.ADMINISTRATIVO)) {
-        linhasEquipe.push(`* Administrativo: ${currentCase.ADMINISTRATIVO.trim()}`);
+      const admTecnico = resolverNomeOperador(currentCase.ADMINISTRATIVO, 'adm');
+      if (hasVal(admTecnico)) {
+        linhasEquipe.push(`* Administrativo: ${admTecnico.trim()}`);
       }
 
       if (linhasEquipe.length > 0) {
@@ -4383,7 +4609,7 @@ function solicitarSubirPlanilha() {
       }
 
       // 7. LINK DIRETO
-      secoes.push(`Acesse a ficha deste caso diretamente no link:\n${linkDireto}`);
+      secoes.push(`Acesse a ficha deste caso diretamente no link:\n- ${linkDireto}`);
 
       const txt = secoes.join('\n\n');
 
@@ -4425,23 +4651,81 @@ function solicitarSubirPlanilha() {
       }
 
       popularFiltroMedicos();
+
+      const q = ((document.getElementById('searchInputMobile')?.value || document.getElementById('searchInput')?.value) || '').toLowerCase();
+      const medSelect = document.getElementById('filterMedico');
+      const medFiltro = medSelect ? medSelect.value : '';
+
+      const baseCasosMostrador = activeCases.filter(c => {
+        if (isCasoComDesfechoOuFinalizado(c)) {
+          const d = String(c.DESFECHO || c.ULTIMO_DESFECHO || '').toUpperCase();
+          const logs = (c.CD_USUARIO && historyLog[String(c.CD_USUARIO).trim()]) || [];
+          const logTxt = logs.map(l => String(l.text || '')).join(' ').toUpperCase();
+          const ehGnmedCongenere = d.includes('GNMED') || d.includes('CONGÊNERE') || d.includes('CONGENERE') || 
+                                   logTxt.includes('GNMED') || logTxt.includes('CONGÊNERE') || logTxt.includes('CONGENERE');
+          if (!ehGnmedCongenere) return false;
+        }
+        if (medFiltro && !gerenteCorrespondeFiltro(c.GERENTE_MEDICO, medFiltro)) return false;
+        return casoCorrespondeBusca(c, q);
+      });
+
+      const criticos = baseCasosMostrador.filter(c => (c.DIAS_AUTORIZACAO || 0) > 10);
+      const atencao = baseCasosMostrador.filter(c => (c.DIAS_AUTORIZACAO || 0) >= 7 && (c.DIAS_AUTORIZACAO || 0) <= 10);
+      const regular = baseCasosMostrador.filter(c => (c.DIAS_AUTORIZACAO || 0) <= 6);
+      const semResponsavel = baseCasosMostrador.filter(isSemResponsavel);
+
       const cases = getFilteredCases();
-      
-      const criticos = cases.filter(c => (c.DIAS_AUTORIZACAO || 0) > 10);
-      const atencao = cases.filter(c => (c.DIAS_AUTORIZACAO || 0) >= 7 && (c.DIAS_AUTORIZACAO || 0) <= 10);
-      const regular = cases.filter(c => (c.DIAS_AUTORIZACAO || 0) <= 6);
 
       const totalNoCofre = Object.values(vaultCases).filter(isCasoComDesfechoOuFinalizado).length;
+      const hojeStrBR = getHojeBrasiliaStr();
+      const countFinalizadosHoje = Object.values(vaultCases).filter(c => {
+        if (!isCasoComDesfechoOuFinalizado(c)) return false;
+        const dt = extrairDataFinBR(c, c.CD_USUARIO);
+        return dt === hojeStrBR;
+      }).length;
 
       document.getElementById('badgeTotalTop').innerText = `${activeCases.length} Casos na Esteira`;
-      document.getElementById('kpi-total').innerText = cases.length;
+      document.getElementById('kpi-total').innerText = baseCasosMostrador.length;
       document.getElementById('badge-count-critico').innerText = criticos.length;
-      document.getElementById('col-count-critico').innerText = criticos.length;
       document.getElementById('badge-count-atencao').innerText = atencao.length;
-      document.getElementById('col-count-atencao').innerText = atencao.length;
       document.getElementById('badge-count-regular').innerText = regular.length;
-      document.getElementById('col-count-regular').innerText = regular.length;
-      document.getElementById('kpi-concluidas').innerText = totalNoCofre;
+      const elSemResp = document.getElementById('badge-count-sem-responsavel');
+      if (elSemResp) elSemResp.innerText = semResponsavel.length;
+      const kpiFinEl = document.getElementById('kpi-concluidas');
+      if (kpiFinEl) kpiFinEl.innerText = countFinalizadosHoje;
+
+      // Destaca visualmente a pill de filtro ativa no mostrador
+      const pTotal = document.getElementById('pill-kpi-total');
+      const pCrit = document.getElementById('pill-kpi-critico');
+      const pAtenc = document.getElementById('pill-kpi-atencao');
+      const pReg = document.getElementById('pill-kpi-regular');
+      const pSemResp = document.getElementById('pill-kpi-sem-responsavel');
+
+      if (pTotal) {
+        pTotal.classList.toggle('ring-2', !filtroUrgencia);
+        pTotal.classList.toggle('ring-indigo-400', !filtroUrgencia);
+        pTotal.classList.toggle('bg-slate-100', !filtroUrgencia);
+      }
+      if (pCrit) {
+        pCrit.classList.toggle('ring-2', filtroUrgencia === 'critico');
+        pCrit.classList.toggle('ring-rose-500', filtroUrgencia === 'critico');
+        pCrit.classList.toggle('bg-rose-100', filtroUrgencia === 'critico');
+      }
+      if (pAtenc) {
+        pAtenc.classList.toggle('ring-2', filtroUrgencia === 'atencao');
+        pAtenc.classList.toggle('ring-amber-500', filtroUrgencia === 'atencao');
+        pAtenc.classList.toggle('bg-amber-100', filtroUrgencia === 'atencao');
+      }
+      if (pReg) {
+        pReg.classList.toggle('ring-2', filtroUrgencia === 'regular');
+        pReg.classList.toggle('ring-sky-500', filtroUrgencia === 'regular');
+        pReg.classList.toggle('bg-sky-100', filtroUrgencia === 'regular');
+      }
+      if (pSemResp) {
+        pSemResp.classList.toggle('ring-2', filtroUrgencia === 'sem_responsavel');
+        pSemResp.classList.toggle('ring-purple-500', filtroUrgencia === 'sem_responsavel');
+        pSemResp.classList.toggle('bg-purple-100', filtroUrgencia === 'sem_responsavel');
+      }
 
       const buildCard = (c) => {
         const qtdLogs = (historyLog[c.CD_USUARIO] || []).length;
@@ -4474,7 +4758,7 @@ function solicitarSubirPlanilha() {
           </div>
           <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] flex-wrap gap-1">
             <div class="flex items-center gap-1 flex-wrap">
-              <span class="text-indigo-600 font-bold bg-indigo-50 px-2 py-0.5 rounded-md">${c.GERENTE_MEDICO ? 'Dr(a). ' + c.GERENTE_MEDICO : 'Sem Resp.'}</span>
+              <span class="text-indigo-600 font-bold bg-indigo-50 px-2 py-0.5 rounded-md">${c.GERENTE_MEDICO ? (c.GERENTE_MEDICO.startsWith('Dr') ? c.GERENTE_MEDICO : 'Dr(a). ' + c.GERENTE_MEDICO) : 'Sem Resp.'}</span>
               ${c.ASSUMIU_POR ? `<span class="inline-flex items-center gap-1 text-[9.5px] font-extrabold bg-amber-50 text-amber-800 border border-amber-200 px-1.5 py-0.5 rounded-md" title="Equipe Técnica: ${c.ASSUMIU_POR}"><i class="fa-solid fa-user-gear text-amber-600 text-[8.5px]"></i> ${c.ASSUMIU_POR.split(' ')[0]}</span>` : ''}
               ${c.ADMINISTRATIVO ? `<span class="inline-flex items-center gap-1 text-[9.5px] font-extrabold bg-sky-50 text-sky-800 border border-sky-200 px-1.5 py-0.5 rounded-md" title="Administrativo: ${c.ADMINISTRATIVO}"><i class="fa-solid fa-user-tie text-sky-600 text-[8.5px]"></i> ${c.ADMINISTRATIVO.split(' ')[0]}</span>` : ''}
             </div>
@@ -4485,9 +4769,32 @@ function solicitarSubirPlanilha() {
 
       const emptyMsg = (msg) => `<p class="text-xs text-slate-400 italic p-4 text-center">${msg}</p>`;
 
-      document.getElementById('col-critico').innerHTML = criticos.length ? criticos.map(buildCard).join('') : emptyMsg('Nenhum caso crítico.');
-      document.getElementById('col-atencao').innerHTML = atencao.length ? atencao.map(buildCard).join('') : emptyMsg('Nenhum caso em atenção.');
-      document.getElementById('col-regular').innerHTML = regular.length ? regular.map(buildCard).join('') : emptyMsg('Nenhum caso regular.');
+      let criticosKanban = criticos;
+      let atencaoKanban = atencao;
+      let regularKanban = regular;
+
+      if (filtroUrgencia === 'sem_responsavel') {
+        criticosKanban = criticos.filter(isSemResponsavel);
+        atencaoKanban = atencao.filter(isSemResponsavel);
+        regularKanban = regular.filter(isSemResponsavel);
+      } else if (filtroUrgencia === 'critico') {
+        atencaoKanban = [];
+        regularKanban = [];
+      } else if (filtroUrgencia === 'atencao') {
+        criticosKanban = [];
+        regularKanban = [];
+      } else if (filtroUrgencia === 'regular') {
+        criticosKanban = [];
+        atencaoKanban = [];
+      }
+
+      document.getElementById('col-count-critico').innerText = criticosKanban.length;
+      document.getElementById('col-count-atencao').innerText = atencaoKanban.length;
+      document.getElementById('col-count-regular').innerText = regularKanban.length;
+
+      document.getElementById('col-critico').innerHTML = criticosKanban.length ? criticosKanban.map(buildCard).join('') : emptyMsg(filtroUrgencia === 'sem_responsavel' ? 'Nenhum caso crítico sem responsável.' : 'Nenhum caso crítico.');
+      document.getElementById('col-atencao').innerHTML = atencaoKanban.length ? atencaoKanban.map(buildCard).join('') : emptyMsg(filtroUrgencia === 'sem_responsavel' ? 'Nenhum caso em atenção sem responsável.' : 'Nenhum caso em atenção.');
+      document.getElementById('col-regular').innerHTML = regularKanban.length ? regularKanban.map(buildCard).join('') : emptyMsg(filtroUrgencia === 'sem_responsavel' ? 'Nenhum caso regular sem responsável.' : 'Nenhum caso regular.');
 
       document.getElementById('lista-tbody').innerHTML = cases.length ? cases.map(c => {
         const temSetor = c.DIAS_SETOR !== undefined && c.DIAS_SETOR !== null && c.DIAS_SETOR !== '';
@@ -4541,21 +4848,26 @@ function solicitarSubirPlanilha() {
 
       document.getElementById('view-fichas').innerHTML = cases.length ? cases.map(buildCard).join('') : `<div class="col-span-3">${emptyMsg('Nenhum caso carregado.')}</div>`;
 
-      const q = ((document.getElementById('searchInputMobile')?.value || document.getElementById('searchInput')?.value) || '').toLowerCase();
-      const medSelect = document.getElementById('filterMedico');
-      const medFiltro = medSelect ? medSelect.value : '';
-      
-      // 1. Renderizar Casos Finalizados
+      // 1. Renderizar Casos Finalizados (SOMENTE OS DO DIA ATUAL)
       const listaFinalizados = Object.values(vaultCases).filter(c => {
         if (!isCasoComDesfechoOuFinalizado(c)) return false;
+        const dtFin = extrairDataFinBR(c, c.CD_USUARIO);
+        if (dtFin !== hojeStrBR) return false;
         return casoCorrespondeBusca(c, q);
       });
 
-      const countFinalizadosTotal = Object.values(vaultCases).filter(isCasoComDesfechoOuFinalizado).length;
       const badgeTabFin = document.getElementById('tab-count-finalizados');
-      if (badgeTabFin) badgeTabFin.innerText = countFinalizadosTotal;
+      if (badgeTabFin) {
+        const ehAdmin = isOperadorAdmin();
+        badgeTabFin.innerText = totalNoCofre;
+        if (ehAdmin) {
+          badgeTabFin.classList.remove('hidden');
+        } else {
+          badgeTabFin.classList.add('hidden');
+        }
+      }
       const kpiFin = document.getElementById('kpi-concluidas');
-      if (kpiFin) kpiFin.innerText = countFinalizadosTotal;
+      if (kpiFin) kpiFin.innerText = countFinalizadosHoje;
 
       const tbodyFin = document.getElementById('finalizados-tbody');
       if (tbodyFin) {
@@ -4596,7 +4908,7 @@ function solicitarSubirPlanilha() {
               <td class="py-3 px-4 text-right font-bold text-emerald-700">Ver Ficha ➔</td>
             </tr>
           `;
-        }).join('') : `<tr><td colspan="7" class="py-8 text-center text-slate-400 italic">Nenhum caso finalizado até o momento.</td></tr>`;
+        }).join('') : `<tr><td colspan="7" class="py-8 text-center text-slate-400 italic">Nenhum caso finalizado no dia de hoje (${hojeStrBR}) até o momento. O histórico completo de dias anteriores está disponível na aba Histórico.</td></tr>`;
       }
 
       // 2. Renderizar Histórico Completo (Cofre)
@@ -4632,7 +4944,7 @@ function solicitarSubirPlanilha() {
       // 3. Renderizar Esteira Médica: Ausência de Consenso (Critério em definição - com regra de 48h pronta)
       const listaRubensConsensoBase = Object.values(vaultCases).filter(c => {
         if (!isCasoAusenciaConsenso(c)) return false;
-        if (medFiltro && (!c.GERENTE_MEDICO || c.GERENTE_MEDICO.trim() !== medFiltro)) return false;
+        if (medFiltro && !gerenteCorrespondeFiltro(c.GERENTE_MEDICO, medFiltro)) return false;
         return true;
       });
 
@@ -4727,7 +5039,7 @@ function solicitarSubirPlanilha() {
       // SOMENTE CASOS QUE ESTÃO NA ESTEIRA (activeCases)
       const listaOncoEsteira = activeCases.filter(c => {
         if (!isCasoOncologia(c)) return false;
-        if (medFiltro && (!c.GERENTE_MEDICO || c.GERENTE_MEDICO.trim() !== medFiltro)) return false;
+        if (medFiltro && !gerenteCorrespondeFiltro(c.GERENTE_MEDICO, medFiltro)) return false;
         return true;
       });
 
@@ -4834,14 +5146,14 @@ function solicitarSubirPlanilha() {
       const listaRubensCriticos = activeCases.filter(c => {
         const isCrit = (c.DIAS_AUTORIZACAO || 0) > 10;
         if (!isCrit) return false;
-        if (medFiltro && (!c.GERENTE_MEDICO || c.GERENTE_MEDICO.trim() !== medFiltro)) return false;
+        if (medFiltro && !gerenteCorrespondeFiltro(c.GERENTE_MEDICO, medFiltro)) return false;
         return casoCorrespondeBusca(c, q);
       });
 
       const totalCriticosDrRubens = activeCases.filter(c => {
         const isCrit = (c.DIAS_AUTORIZACAO || 0) > 10;
         if (!isCrit) return false;
-        if (medFiltro && (!c.GERENTE_MEDICO || c.GERENTE_MEDICO.trim() !== medFiltro)) return false;
+        if (medFiltro && !gerenteCorrespondeFiltro(c.GERENTE_MEDICO, medFiltro)) return false;
         return true;
       }).length;
       const badgeCriticosEl = document.getElementById('badge-rubens-criticos');
@@ -4904,7 +5216,7 @@ function solicitarSubirPlanilha() {
 
       // Lista completa com busca e filtro de médico aplicados
       const listaJuntaBase = Object.values(mapaJunta).filter(c => {
-        if (medFiltro && (!c.GERENTE_MEDICO || c.GERENTE_MEDICO.trim() !== medFiltro)) return false;
+        if (medFiltro && !gerenteCorrespondeFiltro(c.GERENTE_MEDICO, medFiltro)) return false;
         return casoCorrespondeBusca(c, q);
       });
 
