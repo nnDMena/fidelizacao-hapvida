@@ -453,7 +453,10 @@
               <p class="text-[11px] sm:text-xs text-rose-200/90 mt-0.5">Casos ativos na esteira com Quimioterapia Sistêmica, Terapia Oncológica ou Terapia Antineoplásica.</p>
             </div>
           </div>
-          <div class="flex items-center gap-2 w-full sm:w-auto">
+          <div class="flex items-center gap-2 w-full sm:w-auto flex-wrap">
+            <button onclick="copiarTodosCasosOncologicos()" class="w-full sm:w-auto justify-center bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs px-3.5 py-2 rounded-xl flex items-center gap-2 transition border border-rose-400 shadow-sm cursor-pointer active:scale-95" title="Copiar ficha de todos os casos oncológicos de uma vez para o Teams">
+              <i class="fa-solid fa-copy"></i> Copiar Todas as Fichas (Teams)
+            </button>
             <button onclick="setView('kanban')" class="w-full sm:w-auto justify-center bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs px-3.5 py-2 rounded-xl flex items-center gap-2 transition border border-slate-700 cursor-pointer">
               <i class="fa-solid fa-arrow-left"></i> Voltar ao Kanban
             </button>
@@ -461,12 +464,17 @@
         </div>
 
         <!-- Pílulas de Subfiltro para Oncologia na Esteira -->
-        <div class="flex items-center gap-2 flex-wrap text-xs">
-          <button id="btn-filtro-onco-pendentes" onclick="setFiltroOnco('pendentes')" class="px-3 py-1.5 rounded-xl font-extrabold text-xs transition flex items-center gap-1.5 shadow-xs cursor-pointer border border-rose-400 bg-rose-600 text-white">
-            <i class="fa-solid fa-clock"></i> Pendentes de Análise (<span id="count-onco-pendentes">0</span>)
-          </button>
-          <button id="btn-filtro-onco-concluidos" onclick="setFiltroOnco('concluidos')" class="px-3 py-1.5 rounded-xl font-extrabold text-xs transition flex items-center gap-1.5 shadow-xs cursor-pointer border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100">
-            <i class="fa-solid fa-check-double"></i> Concluídos pela Gestão (<span id="count-onco-concluidos">0</span>)
+        <div class="flex items-center justify-between gap-2 flex-wrap text-xs">
+          <div class="flex items-center gap-2 flex-wrap">
+            <button id="btn-filtro-onco-pendentes" onclick="setFiltroOnco('pendentes')" class="px-3 py-1.5 rounded-xl font-extrabold text-xs transition flex items-center gap-1.5 shadow-xs cursor-pointer border border-rose-400 bg-rose-600 text-white">
+              <i class="fa-solid fa-clock"></i> Pendentes de Análise (<span id="count-onco-pendentes">0</span>)
+            </button>
+            <button id="btn-filtro-onco-concluidos" onclick="setFiltroOnco('concluidos')" class="px-3 py-1.5 rounded-xl font-extrabold text-xs transition flex items-center gap-1.5 shadow-xs cursor-pointer border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100">
+              <i class="fa-solid fa-check-double"></i> Concluídos pela Gestão (<span id="count-onco-concluidos">0</span>)
+            </button>
+          </div>
+          <button onclick="copiarTodosCasosOncologicos()" class="px-3 py-1.5 rounded-xl font-extrabold text-xs transition flex items-center gap-1.5 shadow-xs cursor-pointer border border-emerald-500 bg-emerald-600 hover:bg-emerald-500 text-white active:scale-95" title="Copiar ficha de todos os casos oncológicos para o Teams">
+            <i class="fa-solid fa-copy"></i> Copiar Fichas para o Teams (<span id="btn-count-copiar-onco">0</span>)
           </button>
         </div>
 
@@ -970,11 +978,11 @@
                   <option value="P67 (Finalizado com REGRA de OPME com valor menor que o menor pacote)">P67 (Finalizado com REGRA de OPME com valor menor que o menor pacote)</option>
                   <option value="P67 (Finalizado com REGRA de OPME menor que 3.000 reais)">P67 (Finalizado com REGRA de OPME menor que 3.000 reais)</option>
                   <option value="P67 (Delibera&#231;&#227;o de interna&#231;&#227;o, exame ou procedimento sem OPME, por aus&#234;ncia de adequa&#231;&#227;o)">P67 (Delibera&#231;&#227;o de interna&#231;&#227;o, exame ou procedimento sem OPME, por aus&#234;ncia de adequa&#231;&#227;o)</option>
-                  <option value="P67 (Resolu&#231;&#227;o)">P67 (Resolu&#231;&#227;o)</option>
-                  <option value="P67 (Verticalizado contratual com possibilidade de JUNTA M&#201;DICA, se falha da verticaliza&#231;&#227;o, por OPME alto custo)">P67 (Verticalizado contratual com possibilidade de JUNTA M&#201;DICA, se falha da verticaliza&#231;&#227;o, por OPME alto custo)</option>
-                  <option value="P67 (Verticalizado contratual com possibilidade de RESOLU&#199;&#195;O do valor, se falha da verticaliza&#231;&#227;o, por OPME baixo custo)">P67 (Verticalizado contratual com possibilidade de RESOLU&#199;&#195;O do valor, se falha da verticaliza&#231;&#227;o, por OPME baixo custo)</option>
-                  <option value="P71 (Direcionado com possibilidade de JUNTA M&#201;DICA, se falha do direcionamento de rede, por OPME alto custo)">P71 (Direcionado com possibilidade de JUNTA M&#201;DICA, se falha do direcionamento de rede, por OPME alto custo)</option>
-                  <option value="P71 (Direcionado com possibilidade de RESOLU&#199;&#195;O do valor, se falha do direcionamento de rede, por OPME baixo custo)">P71 (Direcionado com possibilidade de RESOLU&#199;&#195;O do valor, se falha do direcionamento de rede, por OPME baixo custo)</option>
+                  <option value="P67 (Resolução)">P67 (Resolução)</option>
+                  <option value="P67 (Verticalizado contratual com possibilidade de RESOLUÇÃO do valor, se falha da verticalização, por OPME baixo custo)">P67 (Verticalizado contratual com possibilidade de RESOLUÇÃO do valor, se falha da verticalização, por OPME baixo custo)</option>
+                  <option value="P67 (Verticalizado contratual com possibilidade de JUNTA MÉDICA, se falha da verticalização)">P67 (Verticalizado contratual com possibilidade de JUNTA MÉDICA, se falha da verticalização)</option>
+                  <option value="P71 (Direcionado com possibilidade de JUNTA MÉDICA, se falha no direcionamento de rede)">P71 (Direcionado com possibilidade de JUNTA MÉDICA, se falha no direcionamento de rede)</option>
+                  <option value="P71 (Direcionado com possibilidade de RESOLUÇÃO do valor, se falha na verticalização)">P71 (Direcionado com possibilidade de RESOLUÇÃO do valor, se falha na verticalização)</option>
                   <option value="P75 (Novo Formato enviado para acolhimento na Rede Credenciada)">P75 (Novo Formato enviado para acolhimento na Rede Credenciada)</option>
                 </select>
               </div>
@@ -1733,9 +1741,32 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
     }
 
     // ==========================================
-    // SINCRONIZAÇÃO EM TEMPO REAL (SUPABASE REALTIME)
+    // SINCRONIZAÇÃO EM TEMPO REAL (SUPABASE REALTIME OTIMIZADA)
     // ==========================================
-        function iniciarOuvintesTempoReal() {
+    let timerRealtimeRender = null;
+    let timerRealtimeStorage = null;
+
+    function agendarRealtimeRender(ms = 80) {
+      if (timerRealtimeRender) clearTimeout(timerRealtimeRender);
+      timerRealtimeRender = setTimeout(() => {
+        render();
+      }, ms);
+    }
+
+    function agendarSalvarLocalStorage(ms = 400) {
+      if (timerRealtimeStorage) clearTimeout(timerRealtimeStorage);
+      timerRealtimeStorage = setTimeout(() => {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(activeCases));
+          localStorage.setItem(VAULT_CASES_KEY, JSON.stringify(vaultCases));
+          localStorage.setItem(HISTORY_KEY, JSON.stringify(historyLog));
+        } catch (e) {
+          console.warn('Alerta storage background:', e);
+        }
+      }, ms);
+    }
+
+    function iniciarOuvintesTempoReal() {
       if (!supabaseClient) return;
 
       // 1. Escutar Casos Ativos em Tempo Real
@@ -1761,8 +1792,8 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
               closeCaseDetail();
             }
           }
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(activeCases));
-          render();
+          agendarSalvarLocalStorage(300);
+          agendarRealtimeRender(80);
         })
         .subscribe();
 
@@ -1773,8 +1804,8 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
           if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
             const cd = payload.new.cd_usuario;
             vaultCases[cd] = payload.new.dados;
-            localStorage.setItem(VAULT_CASES_KEY, JSON.stringify(vaultCases));
-            render();
+            agendarSalvarLocalStorage(500);
+            agendarRealtimeRender(100);
           }
         })
         .subscribe();
@@ -1786,7 +1817,7 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
           if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
             const cd = payload.new.cd_usuario;
             historyLog[cd] = payload.new.itens || [];
-            localStorage.setItem(HISTORY_KEY, JSON.stringify(historyLog));
+            agendarSalvarLocalStorage(500);
             if (currentCase && String(currentCase.CD_USUARIO) === String(cd)) {
               renderSingleTimeline();
             }
@@ -1867,11 +1898,11 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
       try {
         if (sincronizarTudo) {
           activeCases.forEach(c => syncToVault(c));
+          localStorage.setItem(VAULT_CASES_KEY, JSON.stringify(vaultCases));
         } else if (currentCase) {
           syncToVault(currentCase);
         }
         localStorage.setItem(STORAGE_KEY, JSON.stringify(activeCases));
-        localStorage.setItem(VAULT_CASES_KEY, JSON.stringify(vaultCases));
       } catch (err) {
         console.warn('Alerta de armazenamento:', err);
       }
@@ -3121,6 +3152,27 @@ function solicitarSubirPlanilha() {
       render();
     }
 
+    function extrairDataFinBR(c, cod) {
+      if (!c) return '';
+      if (c._dataFinCache) return c._dataFinCache;
+      if (c.DATA_FINALIZACAO) {
+        const res = formatarDataBR(c.DATA_FINALIZACAO);
+        if (res) { c._dataFinCache = res; return res; }
+      }
+      const codSafe = cod || c.CD_USUARIO;
+      const logs = (codSafe && historyLog[codSafe]) || [];
+      const logFin = [...logs].reverse().find(l => 
+        (l.author && l.author.toLowerCase().includes('finaliza')) || 
+        (l.text && (l.text.startsWith('[DESFECHO:') || l.text.includes('[DESFECHO:'))) || 
+        l.desfecho
+      );
+      if (logFin && logFin.date) {
+        const match = String(logFin.date).match(/\b(\d{1,2}\/\d{1,2}\/\d{4})\b/);
+        if (match) { c._dataFinCache = match[1]; return match[1]; }
+      }
+      return '';
+    }
+
     function isCasoComDesfechoOuFinalizado(c) {
       if (!c) return false;
       const cod = String(c.CD_USUARIO || '').trim();
@@ -3422,12 +3474,16 @@ function solicitarSubirPlanilha() {
       if (select) { select.value = ''; render(); }
     }
 
+    let timerDebounceBusca = null;
     function sincronizarBusca(termo) {
       const d = document.getElementById('searchInput');
       const m = document.getElementById('searchInputMobile');
       if (d && d.value !== termo) d.value = termo;
       if (m && m.value !== termo) m.value = termo;
-      render();
+      if (timerDebounceBusca) clearTimeout(timerDebounceBusca);
+      timerDebounceBusca = setTimeout(() => {
+        render();
+      }, 120);
     }
 
     function casoCorrespondeBusca(c, q) {
@@ -4497,10 +4553,14 @@ function solicitarSubirPlanilha() {
       "P67 (Finalizado com REGRA de OPME menor que 3.000 reais)": "C\u00d3DIGOS: [QUAL(IS) C\u00d3DIGOS ACORDADOS]. OPME: [QUAL(IS) OPME ACORDADOS]. CASO SEM CONSENSO. O CASO EQUADRA-SE NA LISTA DE PROCEDIMENTOS AT\u00c9 3.000 REAIS. SEGUIR COM AUTORIZA\u00c7\u00c3O ESTRAT\u00c9GICA, BASEADA EM ANALISE DE DADOS, COM A FINALIDADE DE EVITAR BACKLOG, DEMANDAS REGULAT\u00d3RIAS E LIMINARES.",
       "P67 (Delibera\u00e7\u00e3o de interna\u00e7\u00e3o, exame ou procedimento sem OPME, por aus\u00eancia de adequa\u00e7\u00e3o)": "AUTORIZAR TUSS CONSIDERADOS PERTINENTES PARA AUDITORIA ELETIVA. DEMAIS TUSS MANTIDO(S) EM GUIA PARA CONTINUIDADE DO FLUXO ASSISTENCIAL E AN\u00c1LISE P\u00d3S-CONTA.",
       "P67 (Resolu\u00e7\u00e3o)": "C\u00d3DIGOS: [QUAL(IS) C\u00d3DIGOS ACORDADOS]. OPME: [QUAL(IS) OPME ACORDADOS]. CASO SEM CONSENSO INTEGRAL, N\u00c3O PASS\u00cdVEL DE AUTORIZA\u00c7\u00c3O DENTRO DAS REGRAS ADMINISTRATIVAS. COM O OBJETIVO DE MITIGAR RISCOS REGULAT\u00d3RIOS, SEGUIR COM AUTORIZA\u00c7\u00c3O E RESOLU\u00c7\u00c3O DA DIFEREN\u00c7A DO OPME FORA DO PROTOCOLO E OPME CONSIDERADO PERTINENTE. [VALOR OPME NEGOCIADO COM SOLICITANTE] - [VALOR OPME DENTRO DO PROTOCOLO] = [VALOR DA RESOLU\u00c7\u00c3O].",
-      "P67 (Verticalizado contratual com possibilidade de JUNTA M\u00c9DICA, se falha da verticaliza\u00e7\u00e3o, por OPME alto custo)": "CASO PASS\u00cdVEL DE JUNTA SE FALHA NA VERTICALIZA\u00c7\u00c3O. FORA DAS REGRAS DE AUTORIZA\u00c7\u00c3O. SEM CONSENSO. PACIENTE EM PLANOS PASS\u00cdVEIS DE VERTICALIZA\u00c7\u00c3O (HMO \"N\u00c3O LICITA\u00c7\u00c3O\", PPO ADVANCE 600/700 ENF). SINALIZAMOS PARA TRANSLADO/VERTICALIZA\u00c7\u00c3O. SUGERIMOS [ESPECIALIDADE]  [M\u00c9DICO/CL\u00cdNICA 00 00000000], QUE ATENDE NA CIDADE [CIDADE].",
-      "P67 (Verticalizado contratual com possibilidade de RESOLU\u00c7\u00c3O do valor, se falha da verticaliza\u00e7\u00e3o, por OPME baixo custo)": "CASO FORA DAS REGRAS DE AUTORIZA\u00c7\u00c3O. SEM CONSENSO. PACIENTE EM PLANOS PASS\u00cdVEIS DE VERTICALIZA\u00c7\u00c3O (HMO \"N\u00c3O LICITA\u00c7\u00c3O\", PPO ADVANCE 600/700 ENF). SINALIZAMOS PARA TRANSLADO/VERTICALIZA\u00c7\u00c3O. SUGERIMOS [ESPECIALIDADE]  [M\u00c9DICO/CL\u00cdNICA 00 00000000], QUE ATENDE NA CIDADE [CIDADE].",
-      "P71 (Direcionado com possibilidade de JUNTA M\u00c9DICA, se falha do direcionamento de rede, por OPME alto custo)": "CASO PASS\u00cdVEL DE JUNTA SE FALHA NO DIRECIONAMENTO. FORA DAS REGRAS DE AUTORIZA\u00c7\u00c3O. SEM CONSENSO. PACIENTE EM PLANOS PASS\u00cdVEIS DE DIRECIONAMENTO DE REDE (HMO LICITA\u00c7\u00c3O, PPO - ADVANCE 600/700 APTO, PREMIUM E INFINITY). SUGERIMOS  [ESPECIALIDADE]  [M\u00c9DICO/CL\u00cdNICA 00 00000000], QUE ATENDE NA CIDADE [CIDADE].",
-      "P71 (Direcionado com possibilidade de RESOLU\u00c7\u00c3O do valor, se falha do direcionamento de rede, por OPME baixo custo)": "CASO FORA DAS REGRAS DE AUTORIZA\u00c7\u00c3O. SEM CONSENSO. PACIENTE EM PLANOS PASS\u00cdVEIS DE DIRECIONAMENTO DE REDE (HMO LICITA\u00c7\u00c3O, PPO - ADVANCE 600/700 APTO, PREMIUM E INFINITY). SUGERIMOS  [ESPECIALIDADE]  [M\u00c9DICO/CL\u00cdNICA 00 00000000], QUE ATENDE NA CIDADE [CIDADE].",
+      "P67 (Verticalizado contratual com possibilidade de RESOLUÇÃO do valor, se falha da verticalização, por OPME baixo custo)": "CÓDIGOS: [QUAL(IS) CÓDIGOS ACORDADOS]. OPME: [QUAL(IS) OPME ACORDADOS]. CASO FORA DAS REGRAS DE AUTORIZAÇÃO. PACIENTE EM PLANOS PASSÍVEIS DE VERTICALIZAÇÃO (HMO \"NÃO LICITAÇÃO\", PPO ADVANCE 600/700 ENF). SINALIZAMOS PARA TRANSLADO/VERTICALIZAÇÃO. SUGERIMOS [ESPECIALIDADE]  [MÉDICO/CLÍNICA 00 00000000], QUE ATENDE NA CIDADE [CIDADE].",
+      "P67 (Verticalizado contratual com possibilidade de JUNTA MÉDICA, se falha da verticalização)": "CÓDIGOS: [QUAL(IS) CÓDIGOS ACORDADOS]. OPME: [QUAL(IS) OPME ACORDADOS]. CASO PASSÍVEL DE JUNTA SE FALHA NA VERTICALIZAÇÃO. FORA DAS REGRAS DE AUTORIZAÇÃO. PACIENTE EM PLANOS PASSÍVEIS DE VERTICALIZAÇÃO (HMO \"NÃO LICITAÇÃO\", PPO ADVANCE 600/700 ENF). SINALIZAMOS PARA TRANSLADO/VERTICALIZAÇÃO. SUGERIMOS [ESPECIALIDADE]  [MÉDICO/CLÍNICA 00 00000000], QUE ATENDE NA CIDADE [CIDADE].",
+      "P71 (Direcionado com possibilidade de JUNTA MÉDICA, se falha no direcionamento de rede)": "CÓDIGOS: [QUAL(IS) CÓDIGOS ACORDADOS]. OPME: [QUAL(IS) OPME ACORDADOS]. CASO PASSÍVEL DE JUNTA SE FALHA NO DIRECIONAMENTO. FORA DAS REGRAS DE AUTORIZAÇÃO. PACIENTE EM PLANOS PASSÍVEIS DE DIRECIONAMENTO DE REDE (HMO LICITAÇÃO, PPO - ADVANCE 600/700 APTO, PREMIUM E INFINITY). SUGERIMOS  [ESPECIALIDADE]  [MÉDICO/CLÍNICA 00 00000000], QUE ATENDE NA CIDADE [CIDADE].",
+      "P71 (Direcionado com possibilidade de RESOLUÇÃO do valor, se falha na verticalização)": "CÓDIGOS: [QUAL(IS) CÓDIGOS ACORDADOS]. OPME: [QUAL(IS) OPME ACORDADOS]. CASO FORA DAS REGRAS DE AUTORIZAÇÃO. PACIENTE EM PLANOS PASSÍVEIS DE DIRECIONAMENTO DE REDE (HMO LICITAÇÃO, PPO - ADVANCE 600/700 APTO, PREMIUM E INFINITY). SUGERIMOS  [ESPECIALIDADE]  [MÉDICO/CLÍNICA 00 00000000], QUE ATENDE NA CIDADE [CIDADE].",
+      // Aliases para compatibilidade retroativa com registros anteriores
+      "P67 (Verticalizado contratual com possibilidade de JUNTA MÉDICA, se falha da verticalização, por OPME alto custo)": "CÓDIGOS: [QUAL(IS) CÓDIGOS ACORDADOS]. OPME: [QUAL(IS) OPME ACORDADOS]. CASO PASSÍVEL DE JUNTA SE FALHA NA VERTICALIZAÇÃO. FORA DAS REGRAS DE AUTORIZAÇÃO. PACIENTE EM PLANOS PASSÍVEIS DE VERTICALIZAÇÃO (HMO \"NÃO LICITAÇÃO\", PPO ADVANCE 600/700 ENF). SINALIZAMOS PARA TRANSLADO/VERTICALIZAÇÃO. SUGERIMOS [ESPECIALIDADE]  [MÉDICO/CLÍNICA 00 00000000], QUE ATENDE NA CIDADE [CIDADE].",
+      "P71 (Direcionado com possibilidade de JUNTA MÉDICA, se falha do direcionamento de rede, por OPME alto custo)": "CÓDIGOS: [QUAL(IS) CÓDIGOS ACORDADOS]. OPME: [QUAL(IS) OPME ACORDADOS]. CASO PASSÍVEL DE JUNTA SE FALHA NO DIRECIONAMENTO. FORA DAS REGRAS DE AUTORIZAÇÃO. PACIENTE EM PLANOS PASSÍVEIS DE DIRECIONAMENTO DE REDE (HMO LICITAÇÃO, PPO - ADVANCE 600/700 APTO, PREMIUM E INFINITY). SUGERIMOS  [ESPECIALIDADE]  [MÉDICO/CLÍNICA 00 00000000], QUE ATENDE NA CIDADE [CIDADE].",
+      "P71 (Direcionado com possibilidade de RESOLUÇÃO do valor, se falha do direcionamento de rede, por OPME baixo custo)": "CÓDIGOS: [QUAL(IS) CÓDIGOS ACORDADOS]. OPME: [QUAL(IS) OPME ACORDADOS]. CASO FORA DAS REGRAS DE AUTORIZAÇÃO. PACIENTE EM PLANOS PASSÍVEIS DE DIRECIONAMENTO DE REDE (HMO LICITAÇÃO, PPO - ADVANCE 600/700 APTO, PREMIUM E INFINITY). SUGERIMOS  [ESPECIALIDADE]  [MÉDICO/CLÍNICA 00 00000000], QUE ATENDE NA CIDADE [CIDADE].",
       "P75 (Novo Formato enviado para acolhimento na Rede Credenciada)": "ENVIO \u00c0 P75 PARA TRATATIVA DE NOVO FORMATO, COM AS SEGUINTES INFORMA\u00c7\u00d5ES: M\u00c9DICO INDICADO: [NOME DO M\u00c9DICO]. ESPECIALIDADE: [ESPECIALIDADE]. REDE: [PR\u00d3PRIA OU CREDENCIADA]. CONSULTA AGENDADA PARA [DATA] \u00c0S [HOR\u00c1RIO]. PRESTADOR/LOCAL DE ATENDIMENTO: [NOME DO PRESTADOR]. ENDERE\u00c7O: [ENDERE\u00c7O COMPLETO]. EVID\u00caNCIA DE ORIENTA\u00c7\u00c3O PR\u00c9VIA DO M\u00c9DICO FIDELIZADO SOBRE O CASO: [DESCREVER OU ANEXAR EVID\u00caNCIA]."
     };
 
@@ -4611,9 +4671,8 @@ function solicitarSubirPlanilha() {
       closeCaseDetail();
     }
 
-    function copiarFichaCasoAtual() {
-      if (!currentCase) return;
-
+    function formatarTextoFichaCaso(c) {
+      if (!c) return '';
       const hasVal = (val) => {
         if (val === null || val === undefined) return false;
         const s = String(val).trim();
@@ -4626,9 +4685,9 @@ function solicitarSubirPlanilha() {
       // Gerar link direto para este caso (se rodando localmente, gera o link de produção da Vercel)
       let linkDireto = '';
       if (window.location.protocol.startsWith('http') && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1')) {
-        linkDireto = `${window.location.origin}${window.location.pathname}#caso=${encodeURIComponent(currentCase.CD_USUARIO)}`;
+        linkDireto = `${window.location.origin}${window.location.pathname}#caso=${encodeURIComponent(c.CD_USUARIO)}`;
       } else {
-        linkDireto = `https://fidelizacao-hapvida.vercel.app/#caso=${encodeURIComponent(currentCase.CD_USUARIO)}`;
+        linkDireto = `https://fidelizacao-hapvida.vercel.app/#caso=${encodeURIComponent(c.CD_USUARIO)}`;
       }
 
       const secoes = [];
@@ -4636,40 +4695,41 @@ function solicitarSubirPlanilha() {
       // 1. CABEÇALHO DA FICHA
       const cabecalho = ['FICHA DE CASO - FIDELIZAÇÃO HAPVIDA NDI'];
 
-      const tipoDemandaAtual = document.getElementById('editCaseTipoDemanda')?.value || currentCase.TIPO_DEMANDA || '';
-      const prazoDemandaAtual = document.getElementById('editCasePrazoDemanda')?.value || currentCase.PRAZO_FINAL_DEMANDA || '';
+      const ehCasoAberto = currentCase && String(currentCase.CD_USUARIO) === String(c.CD_USUARIO);
+      const tipoDemandaAtual = (ehCasoAberto ? document.getElementById('editCaseTipoDemanda')?.value : null) || c.TIPO_DEMANDA || '';
+      const prazoDemandaAtual = (ehCasoAberto ? document.getElementById('editCasePrazoDemanda')?.value : null) || c.PRAZO_FINAL_DEMANDA || '';
       const partesDemanda = [];
       if (hasVal(tipoDemandaAtual)) partesDemanda.push(tipoDemandaAtual.trim());
       if (hasVal(prazoDemandaAtual)) partesDemanda.push(`Prazo Final: ${formatarDataBR(prazoDemandaAtual)}`);
       if (partesDemanda.length > 0) {
         let txtDem = `- Demanda Crítica: ${partesDemanda.join(' | ')}`;
-        if (currentCase.TIPO_DEMANDA_ALTERADO_POR) {
-          const nomeQuem = typeof formatarPrimeiroEUltimoNome === 'function' ? formatarPrimeiroEUltimoNome(currentCase.TIPO_DEMANDA_ALTERADO_POR) : currentCase.TIPO_DEMANDA_ALTERADO_POR;
-          txtDem += ` (Definido por ${nomeQuem}${currentCase.TIPO_DEMANDA_ALTERADO_EM ? ' em ' + currentCase.TIPO_DEMANDA_ALTERADO_EM : ''})`;
+        if (c.TIPO_DEMANDA_ALTERADO_POR) {
+          const nomeQuem = typeof formatarPrimeiroEUltimoNome === 'function' ? formatarPrimeiroEUltimoNome(c.TIPO_DEMANDA_ALTERADO_POR) : c.TIPO_DEMANDA_ALTERADO_POR;
+          txtDem += ` (Definido por ${nomeQuem}${c.TIPO_DEMANDA_ALTERADO_EM ? ' em ' + c.TIPO_DEMANDA_ALTERADO_EM : ''})`;
         }
         cabecalho.push(txtDem);
       }
 
-      if (hasVal(currentCase.NM_USUARIO)) {
-        cabecalho.push(`- Beneficiário: ${currentCase.NM_USUARIO.trim()}`);
+      if (hasVal(c.NM_USUARIO)) {
+        cabecalho.push(`- Beneficiário: ${c.NM_USUARIO.trim()}`);
       }
-      if (hasVal(currentCase.CD_USUARIO)) {
-        cabecalho.push(`- Cód. / Carteira: ${currentCase.CD_USUARIO.trim()}`);
+      if (hasVal(c.CD_USUARIO)) {
+        cabecalho.push(`- Cód. / Carteira: ${c.CD_USUARIO.trim()}`);
       }
-      if (hasVal(currentCase.NM_PLANO)) {
-        cabecalho.push(`- Plano: ${currentCase.NM_PLANO.trim()}`);
+      if (hasVal(c.NM_PLANO)) {
+        cabecalho.push(`- Plano: ${c.NM_PLANO.trim()}`);
       }
-      if (hasVal(currentCase.BASE)) {
-        cabecalho.push(`- Base: ${currentCase.BASE.trim()}`);
+      if (hasVal(c.BASE)) {
+        cabecalho.push(`- Base: ${c.BASE.trim()}`);
       }
-      const filialTxtCopiar = currentCase.NM_FILIAL || currentCase.FILIAL || '';
+      const filialTxtCopiar = c.NM_FILIAL || c.FILIAL || '';
       if (hasVal(filialTxtCopiar)) {
         cabecalho.push(`- Filial: ${filialTxtCopiar.trim()}`);
       }
 
-      const diasAuto = currentCase.DIAS_AUTORIZACAO !== undefined && currentCase.DIAS_AUTORIZACAO !== null && currentCase.DIAS_AUTORIZACAO !== '' ? `${currentCase.DIAS_AUTORIZACAO}d` : '';
-      const diasSetor = currentCase.DIAS_SETOR !== undefined && currentCase.DIAS_SETOR !== null && currentCase.DIAS_SETOR !== '' ? `Setor: ${currentCase.DIAS_SETOR}d` : '';
-      const pendencia = hasVal(currentCase.TIPO_PENDENCIA) ? `(Pendência: #${currentCase.TIPO_PENDENCIA})` : '';
+      const diasAuto = c.DIAS_AUTORIZACAO !== undefined && c.DIAS_AUTORIZACAO !== null && c.DIAS_AUTORIZACAO !== '' ? `${c.DIAS_AUTORIZACAO}d` : '';
+      const diasSetor = c.DIAS_SETOR !== undefined && c.DIAS_SETOR !== null && c.DIAS_SETOR !== '' ? `Setor: ${c.DIAS_SETOR}d` : '';
+      const pendencia = hasVal(c.TIPO_PENDENCIA) ? `(Pendência: #${c.TIPO_PENDENCIA})` : '';
 
       const partesSla = [];
       if (diasAuto) partesSla.push(diasAuto);
@@ -4680,7 +4740,7 @@ function solicitarSubirPlanilha() {
         linhaPrazo = `- Prazo / SLA: ${partesSla.join(' | ')}`;
         if (pendencia) linhaPrazo += ` ${pendencia}`;
       } else if (pendencia) {
-        linhaPrazo = `- Pendência: #${currentCase.TIPO_PENDENCIA}`;
+        linhaPrazo = `- Pendência: #${c.TIPO_PENDENCIA}`;
       }
       if (linhaPrazo) {
         cabecalho.push(linhaPrazo);
@@ -4690,35 +4750,35 @@ function solicitarSubirPlanilha() {
 
       // 2. DADOS DO PROCEDIMENTO & PRESTADOR
       const linhasProc = [];
-      const proc = currentCase.PROCEDIMENTO_AGRUPADO || currentCase.DS_PROCEDIMENTO || '';
+      const proc = c.PROCEDIMENTO_AGRUPADO || c.DS_PROCEDIMENTO || '';
       if (hasVal(proc)) {
         linhasProc.push(`* Procedimento: ${proc.trim()}`);
       }
-      if (hasVal(currentCase.CD_PROCEDIMENTO)) {
-        linhasProc.push(`* Cód. TUSS: ${String(currentCase.CD_PROCEDIMENTO).trim()}`);
+      if (hasVal(c.CD_PROCEDIMENTO)) {
+        linhasProc.push(`* Cód. TUSS: ${String(c.CD_PROCEDIMENTO).trim()}`);
       }
-      if (hasVal(currentCase.NM_PRESTADOR)) {
-        linhasProc.push(`* Prestador: ${currentCase.NM_PRESTADOR.trim()}`);
+      if (hasVal(c.NM_PRESTADOR)) {
+        linhasProc.push(`* Prestador: ${c.NM_PRESTADOR.trim()}`);
       }
 
-      const cid = hasVal(currentCase.CIDADE) ? currentCase.CIDADE.trim() : '';
-      const uf = hasVal(currentCase.UF) ? currentCase.UF.trim() : '';
+      const cid = hasVal(c.CIDADE) ? c.CIDADE.trim() : '';
+      const uf = hasVal(c.UF) ? c.UF.trim() : '';
       if (cid || uf) {
         const localFormatado = [cid, uf].filter(Boolean).join(' - ');
         linhasProc.push(`* Local: ${localFormatado}`);
       }
 
-      const solicitante = (document.getElementById('editCaseSolicitante')?.value || currentCase.NM_SOLICITANTE || '').trim();
+      const solicitante = ((ehCasoAberto ? document.getElementById('editCaseSolicitante')?.value : null) || c.NM_SOLICITANTE || '').trim();
       if (hasVal(solicitante)) {
         linhasProc.push(`* Solicitante: ${solicitante}`);
       }
 
-      const telPessoal = (document.getElementById('editCaseTelPessoal')?.value || currentCase.TEL_PESSOAL || '').trim();
+      const telPessoal = ((ehCasoAberto ? document.getElementById('editCaseTelPessoal')?.value : null) || c.TEL_PESSOAL || '').trim();
       if (hasVal(telPessoal)) {
         linhasProc.push(`* Tel. Pessoal / Celular: ${telPessoal}`);
       }
 
-      const telClinica = (document.getElementById('editCaseTelClinica')?.value || currentCase.TEL_CLINICA || '').trim();
+      const telClinica = ((ehCasoAberto ? document.getElementById('editCaseTelClinica')?.value : null) || c.TEL_CLINICA || '').trim();
       if (hasVal(telClinica)) {
         linhasProc.push(`* Tel. Clínica / Secretária: ${telClinica}`);
       }
@@ -4729,16 +4789,16 @@ function solicitarSubirPlanilha() {
 
       // 3. EQUIPE DESIGNADA
       const linhasEquipe = [];
-      if (hasVal(currentCase.GERENTE_MEDICO)) {
-        const gm = resolverNomeGerente(currentCase.GERENTE_MEDICO);
+      if (hasVal(c.GERENTE_MEDICO)) {
+        const gm = resolverNomeGerente(c.GERENTE_MEDICO);
         const gmFormatado = gm.toLowerCase().startsWith('dr') ? gm : `Dr(a). ${gm}`;
         linhasEquipe.push(`* Gerente Médico: ${gmFormatado}`);
       }
-      const eqTecnica = resolverNomeOperador(currentCase.ASSUMIU_POR, 'equipe');
+      const eqTecnica = resolverNomeOperador(c.ASSUMIU_POR, 'equipe');
       if (hasVal(eqTecnica)) {
         linhasEquipe.push(`* Eq. Técnica: ${eqTecnica.trim()}`);
       }
-      const admTecnico = resolverNomeOperador(currentCase.ADMINISTRATIVO, 'adm');
+      const admTecnico = resolverNomeOperador(c.ADMINISTRATIVO, 'adm');
       if (hasVal(admTecnico)) {
         linhasEquipe.push(`* Administrativo: ${admTecnico.trim()}`);
       }
@@ -4748,19 +4808,19 @@ function solicitarSubirPlanilha() {
       }
 
       // 4. OBSERVAÇÃO (se houver)
-      const observacaoInput = (document.getElementById('editCaseObservacao')?.value || currentCase.OBSERVACAO || '').trim();
+      const observacaoInput = ((ehCasoAberto ? document.getElementById('editCaseObservacao')?.value : null) || c.OBSERVACAO || '').trim();
       if (hasVal(observacaoInput)) {
         secoes.push(`Observação:\n${observacaoInput}`);
       }
 
       // 5. ENCAMINHAR (se houver)
-      const enc = (document.getElementById('singleSelectEncaminhar')?.value || currentCase.ENCAMINHAR || '').trim();
+      const enc = ((ehCasoAberto ? document.getElementById('singleSelectEncaminhar')?.value : null) || c.ENCAMINHAR || '').trim();
       if (hasVal(enc)) {
         secoes.push(`Encaminhar: ${enc}`);
       }
 
       // 6. ÚLTIMOS REGISTROS BLINDADOS (se houver)
-      const logs = historyLog[currentCase.CD_USUARIO] || [];
+      const logs = historyLog[c.CD_USUARIO] || [];
       if (logs && logs.length > 0) {
         const ultimosLogs = logs.slice(0, 3).map(l => `* [${l.date}] ${l.author}: ${l.text}`).join('\n');
         secoes.push(`Últimos Registros Blindados:\n${ultimosLogs}`);
@@ -4769,13 +4829,65 @@ function solicitarSubirPlanilha() {
       // 7. LINK DIRETO
       secoes.push(`Acesse a ficha deste caso diretamente no link:\n- ${linkDireto}`);
 
-      const txt = secoes.join('\n\n');
+      return secoes.join('\n\n');
+    }
 
+    function copiarFichaCasoAtual() {
+      if (!currentCase) return;
+      const txt = formatarTextoFichaCaso(currentCase);
       navigator.clipboard.writeText(txt).then(() => {
         alert('✅ Ficha copiada com sucesso!\n\nPronta para colar no Teams ou WhatsApp.');
       }).catch(err => {
         console.error('Erro ao copiar ficha:', err);
         prompt('Copie o texto da ficha abaixo:', txt);
+      });
+    }
+
+    function obterCasosOncologicosFila() {
+      const medSelect = document.getElementById('filterMedico');
+      const medFiltro = medSelect ? medSelect.value : '';
+      const q = ((document.getElementById('searchInputMobile')?.value || document.getElementById('searchInput')?.value) || '').toLowerCase();
+
+      const listaOncoEsteira = activeCases.filter(c => {
+        if (!isCasoOncologia(c)) return false;
+        if (medFiltro && !gerenteCorrespondeFiltro(c.GERENTE_MEDICO, medFiltro)) return false;
+        return true;
+      });
+
+      let lista = listaOncoEsteira;
+      if (filtroAbaOnco === 'concluidos') {
+        lista = lista.filter(c => c.STATUS_ONCOLOGIA === 'CONCLUÍDO');
+      } else {
+        lista = lista.filter(c => c.STATUS_ONCOLOGIA !== 'CONCLUÍDO');
+      }
+
+      if (q) {
+        lista = lista.filter(c => casoCorrespondeBusca(c, q));
+      }
+
+      return lista.sort(compararDiasEsteira);
+    }
+
+    function copiarTodosCasosOncologicos() {
+      const lista = obterCasosOncologicosFila();
+      if (!lista || lista.length === 0) {
+        alert('Nenhum caso oncológico encontrado na fila atual para copiar.');
+        return;
+      }
+
+      const blocos = lista.map((caso, index) => {
+        const num = index + 1;
+        const textoFicha = formatarTextoFichaCaso(caso);
+        return `* caso ${num}\n\n${textoFicha}`;
+      });
+
+      const textoFinal = blocos.join('\n\n\n');
+
+      navigator.clipboard.writeText(textoFinal).then(() => {
+        alert(`✅ Sucesso!\n\nForam copiadas as fichas de ${lista.length} caso(s) oncológico(s) em texto único com numeração.\n\nPronto para colar no Teams!`);
+      }).catch(err => {
+        console.error('Erro ao copiar fichas oncológicas:', err);
+        prompt('Copie o texto dos casos oncológicos abaixo:', textoFinal);
       });
     }
 
@@ -4954,70 +5066,74 @@ function solicitarSubirPlanilha() {
       document.getElementById('col-count-atencao').innerText = atencaoKanban.length;
       document.getElementById('col-count-regular').innerText = regularKanban.length;
 
-      document.getElementById('col-critico').innerHTML = criticosKanban.length ? criticosKanban.map(buildCard).join('') : emptyMsg(filtroUrgencia === 'sem_responsavel' ? 'Nenhum caso crítico sem responsável.' : 'Nenhum caso crítico.');
-      document.getElementById('col-atencao').innerHTML = atencaoKanban.length ? atencaoKanban.map(buildCard).join('') : emptyMsg(filtroUrgencia === 'sem_responsavel' ? 'Nenhum caso em atenção sem responsável.' : 'Nenhum caso em atenção.');
-      document.getElementById('col-regular').innerHTML = regularKanban.length ? regularKanban.map(buildCard).join('') : emptyMsg(filtroUrgencia === 'sem_responsavel' ? 'Nenhum caso regular sem responsável.' : 'Nenhum caso regular.');
-
-      document.getElementById('lista-tbody').innerHTML = cases.length ? cases.map(c => {
-        const temSetor = c.DIAS_SETOR !== undefined && c.DIAS_SETOR !== null && c.DIAS_SETOR !== '';
-        return `
-        <tr onclick="openCaseDetail('${c.CD_USUARIO}')" class="hover:bg-indigo-50/50 cursor-pointer transition">
-          <td class="py-3 px-4 font-mono font-bold text-indigo-700 text-xs">${c.CD_USUARIO}</td>
-          <td class="py-3 px-4 font-bold text-slate-900">
-            <div class="flex items-center gap-1.5 flex-wrap">
-              <span title="${c.NM_USUARIO || ''}">${mascararNomeBeneficiario(c.NM_USUARIO)}</span>
-              ${(c.TIPO_DEMANDA || c.PRAZO_FINAL_DEMANDA) ? `
-                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-600 text-white text-[9.5px] font-black">
-                  <i class="fa-solid fa-triangle-exclamation text-[8px]"></i> ${c.TIPO_DEMANDA || 'DEMANDA'}${c.PRAZO_FINAL_DEMANDA ? ' (' + formatarDataBR(c.PRAZO_FINAL_DEMANDA) + ')' : ''}
-                </span>
-              ` : ''}
-            </div>
-          </td>
-          <td class="py-3 px-4 text-xs whitespace-nowrap">
-            <div class="inline-flex items-center gap-1.5">
-              <button type="button" onclick="abrirMenuCorSinal('${c.CD_USUARIO}', event)" class="p-0.5 rounded-full hover:scale-125 active:scale-95 transition cursor-pointer" title="Clique para escolher a cor do sinal (Primárias e Secundárias)">
-                ${c.COR_SINAL && MAPA_CORES_SINAL[c.COR_SINAL] ? `
-                  <span class="w-3.5 h-3.5 rounded-full inline-block ${MAPA_CORES_SINAL[c.COR_SINAL].bg} ring-2 ${MAPA_CORES_SINAL[c.COR_SINAL].ring} shadow-xs"></span>
-                ` : `
-                  <span class="w-3.5 h-3.5 rounded-full inline-flex items-center justify-center bg-slate-100 hover:bg-indigo-50 border border-dashed border-slate-400 text-slate-400 hover:text-indigo-600 transition" title="Adicionar cor do sinal">
-                    <i class="fa-solid fa-circle text-[5px]"></i>
-                  </span>
-                `}
-              </button>
-              ${c.GERENTE_MEDICO ? `
-                <span class="inline-flex items-center gap-1 text-indigo-900 bg-indigo-50 border border-indigo-200/70 px-2 py-0.5 rounded-md font-bold text-[10.5px]">
-                  <i class="fa-solid fa-user-doctor text-indigo-600 text-[9px]"></i> ${c.GERENTE_MEDICO.startsWith('Dr') ? c.GERENTE_MEDICO : 'Dr(a). ' + c.GERENTE_MEDICO}
-                </span>
-              ` : '<span class="text-slate-400 italic">-</span>'}
-            </div>
-          </td>
-          <td class="py-3 px-4 text-xs whitespace-nowrap">
-            ${c.ASSUMIU_POR ? `<span class="inline-flex items-center gap-1 font-bold text-amber-900 bg-amber-50 border border-amber-200/80 px-2 py-0.5 rounded-md text-[10.5px] max-w-[170px] truncate" title="Equipe Técnica: ${c.ASSUMIU_POR}"><i class="fa-solid fa-user-gear text-amber-600 text-[9px] shrink-0"></i> <span class="truncate">${c.ASSUMIU_POR}</span></span>` : '<span class="text-slate-400 italic">-</span>'}
-          </td>
-          <td class="py-3 px-4 text-xs whitespace-nowrap">
-            ${c.ADMINISTRATIVO ? `<span class="inline-flex items-center gap-1 font-bold text-sky-900 bg-sky-50 border border-sky-200/80 px-2 py-0.5 rounded-md text-[10.5px] max-w-[170px] truncate" title="Administrativo: ${c.ADMINISTRATIVO}"><i class="fa-solid fa-user-tie text-sky-600 text-[9px] shrink-0"></i> <span class="truncate">${c.ADMINISTRATIVO}</span></span>` : '<span class="text-slate-400 italic">-</span>'}
-          </td>
-          <td class="py-3 px-4 text-slate-500 truncate max-w-xs">${c.NM_PRESTADOR}</td>
-          <td class="py-3 px-4 text-center">
-            <div class="inline-flex items-center gap-1 justify-center">
-              <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full ${c.DIAS_AUTORIZACAO > 10 ? 'bg-rose-100 text-rose-700' : (c.DIAS_AUTORIZACAO >= 7 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800')}">${c.DIAS_AUTORIZACAO || 0}d</span>
-              ${temSetor ? `<span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">${c.DIAS_SETOR}d</span>` : ''}
-            </div>
-          </td>
-          <td class="py-3 px-4 text-right font-bold text-indigo-600">Abrir ➔</td>
-        </tr>
-      `}).join('') : `<tr><td colspan="8" class="py-8 text-center text-slate-400 italic">Suba a planilha do dia no botão verde acima.</td></tr>`;
-
-      document.getElementById('view-fichas').innerHTML = cases.length ? cases.map(buildCard).join('') : `<div class="col-span-3">${emptyMsg('Nenhum caso carregado.')}</div>`;
+      if (currentView === 'kanban') {
+        const elCrit = document.getElementById('col-critico');
+        const elAtenc = document.getElementById('col-atencao');
+        const elReg = document.getElementById('col-regular');
+        if (elCrit) elCrit.innerHTML = criticosKanban.length ? criticosKanban.map(buildCard).join('') : emptyMsg(filtroUrgencia === 'sem_responsavel' ? 'Nenhum caso crítico sem responsável.' : 'Nenhum caso crítico.');
+        if (elAtenc) elAtenc.innerHTML = atencaoKanban.length ? atencaoKanban.map(buildCard).join('') : emptyMsg(filtroUrgencia === 'sem_responsavel' ? 'Nenhum caso em atenção sem responsável.' : 'Nenhum caso em atenção.');
+        if (elReg) elReg.innerHTML = regularKanban.length ? regularKanban.map(buildCard).join('') : emptyMsg(filtroUrgencia === 'sem_responsavel' ? 'Nenhum caso regular sem responsável.' : 'Nenhum caso regular.');
+      } else if (currentView === 'lista') {
+        const elLista = document.getElementById('lista-tbody');
+        if (elLista) {
+          elLista.innerHTML = cases.length ? cases.map(c => {
+            const temSetor = c.DIAS_SETOR !== undefined && c.DIAS_SETOR !== null && c.DIAS_SETOR !== '';
+            return `
+            <tr onclick="openCaseDetail('${c.CD_USUARIO}')" class="hover:bg-indigo-50/50 cursor-pointer transition">
+              <td class="py-3 px-4 font-mono font-bold text-indigo-700 text-xs">${c.CD_USUARIO}</td>
+              <td class="py-3 px-4 font-bold text-slate-900">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span title="${c.NM_USUARIO || ''}">${mascararNomeBeneficiario(c.NM_USUARIO)}</span>
+                  ${(c.TIPO_DEMANDA || c.PRAZO_FINAL_DEMANDA) ? `
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-600 text-white text-[9.5px] font-black" ${c.TIPO_DEMANDA_ALTERADO_POR ? `title="Tipo de Demanda alterado por: ${c.TIPO_DEMANDA_ALTERADO_POR}${c.TIPO_DEMANDA_ALTERADO_EM ? ' em ' + c.TIPO_DEMANDA_ALTERADO_EM : ''}"` : ''}>
+                      <i class="fa-solid fa-triangle-exclamation text-[8px]"></i> ${c.TIPO_DEMANDA || 'DEMANDA'}${c.PRAZO_FINAL_DEMANDA ? ' (' + formatarDataBR(c.PRAZO_FINAL_DEMANDA) + ')' : ''}
+                    </span>
+                  ` : ''}
+                </div>
+              </td>
+              <td class="py-3 px-4 text-xs whitespace-nowrap">
+                <div class="inline-flex items-center gap-1.5">
+                  <button type="button" onclick="abrirMenuCorSinal('${c.CD_USUARIO}', event)" class="p-0.5 rounded-full hover:scale-125 active:scale-95 transition cursor-pointer" title="Clique para escolher a cor do sinal (Primárias e Secundárias)">
+                    ${c.COR_SINAL && MAPA_CORES_SINAL[c.COR_SINAL] ? `
+                      <span class="w-3.5 h-3.5 rounded-full inline-block ${MAPA_CORES_SINAL[c.COR_SINAL].bg} ring-2 ${MAPA_CORES_SINAL[c.COR_SINAL].ring} shadow-xs"></span>
+                    ` : `
+                      <span class="w-3.5 h-3.5 rounded-full inline-flex items-center justify-center bg-slate-100 hover:bg-indigo-50 border border-dashed border-slate-400 text-slate-400 hover:text-indigo-600 transition" title="Adicionar cor do sinal">
+                        <i class="fa-solid fa-circle text-[5px]"></i>
+                      </span>
+                    `}
+                  </button>
+                  ${c.GERENTE_MEDICO ? `
+                    <span class="inline-flex items-center gap-1 text-indigo-900 bg-indigo-50 border border-indigo-200/70 px-2 py-0.5 rounded-md font-bold text-[10.5px]">
+                      <i class="fa-solid fa-user-doctor text-indigo-600 text-[9px]"></i> ${c.GERENTE_MEDICO.startsWith('Dr') ? c.GERENTE_MEDICO : 'Dr(a). ' + c.GERENTE_MEDICO}
+                    </span>
+                  ` : '<span class="text-slate-400 italic">-</span>'}
+                </div>
+              </td>
+              <td class="py-3 px-4 text-xs whitespace-nowrap">
+                ${c.ASSUMIU_POR ? `<span class="inline-flex items-center gap-1 font-bold text-amber-900 bg-amber-50 border border-amber-200/80 px-2 py-0.5 rounded-md text-[10.5px] max-w-[170px] truncate" title="Equipe Técnica: ${c.ASSUMIU_POR}"><i class="fa-solid fa-user-gear text-amber-600 text-[9px] shrink-0"></i> <span class="truncate">${c.ASSUMIU_POR}</span></span>` : '<span class="text-slate-400 italic">-</span>'}
+              </td>
+              <td class="py-3 px-4 text-xs whitespace-nowrap">
+                ${c.ADMINISTRATIVO ? `<span class="inline-flex items-center gap-1 font-bold text-sky-900 bg-sky-50 border border-sky-200/80 px-2 py-0.5 rounded-md text-[10.5px] max-w-[170px] truncate" title="Administrativo: ${c.ADMINISTRATIVO}"><i class="fa-solid fa-user-tie text-sky-600 text-[9px] shrink-0"></i> <span class="truncate">${c.ADMINISTRATIVO}</span></span>` : '<span class="text-slate-400 italic">-</span>'}
+              </td>
+              <td class="py-3 px-4 text-slate-500 truncate max-w-xs">${c.NM_PRESTADOR}</td>
+              <td class="py-3 px-4 text-center">
+                <div class="inline-flex items-center gap-1 justify-center">
+                  <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full ${c.DIAS_AUTORIZACAO > 10 ? 'bg-rose-100 text-rose-700' : (c.DIAS_AUTORIZACAO >= 7 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800')}">${c.DIAS_AUTORIZACAO || 0}d</span>
+                  ${temSetor ? `<span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">${c.DIAS_SETOR}d</span>` : ''}
+                </div>
+              </td>
+              <td class="py-3 px-4 text-right font-bold text-indigo-600">Abrir ➔</td>
+            </tr>
+          `}).join('') : `<tr><td colspan="8" class="py-8 text-center text-slate-400 italic">Suba a planilha do dia no botão verde acima.</td></tr>`;
+        }
+      } else if (currentView === 'fichas') {
+        const elFichas = document.getElementById('view-fichas');
+        if (elFichas) {
+          elFichas.innerHTML = cases.length ? cases.map(buildCard).join('') : `<div class="col-span-3">${emptyMsg('Nenhum caso carregado.')}</div>`;
+        }
+      }
 
       // 1. Renderizar Casos Finalizados (SOMENTE OS DO DIA ATUAL)
-      const listaFinalizados = Object.values(vaultCases).filter(c => {
-        if (!isCasoComDesfechoOuFinalizado(c)) return false;
-        const dtFin = extrairDataFinBR(c, c.CD_USUARIO);
-        if (dtFin !== hojeStrBR) return false;
-        return casoCorrespondeBusca(c, q);
-      }).sort(compararDiasEsteira);
-
       const badgeTabFin = document.getElementById('tab-count-finalizados');
       if (badgeTabFin) {
         const ehAdmin = isOperadorAdmin();
@@ -5032,7 +5148,14 @@ function solicitarSubirPlanilha() {
       if (kpiFin) kpiFin.innerText = countFinalizadosHoje;
 
       const tbodyFin = document.getElementById('finalizados-tbody');
-      if (tbodyFin) {
+      if (tbodyFin && currentView === 'finalizados') {
+        const listaFinalizados = Object.values(vaultCases).filter(c => {
+          if (!isCasoComDesfechoOuFinalizado(c)) return false;
+          const dtFin = extrairDataFinBR(c, c.CD_USUARIO);
+          if (dtFin !== hojeStrBR) return false;
+          return casoCorrespondeBusca(c, q);
+        }).sort(compararDiasEsteira);
+
         tbodyFin.innerHTML = listaFinalizados.length ? listaFinalizados.map(c => {
           const logs = historyLog[c.CD_USUARIO] || [];
           const ultimoLog = logs[0] ? `${logs[0].text} (${logs[0].date})` : (c.ULTIMO_DESFECHO || 'Sem parecer final');
@@ -5074,34 +5197,39 @@ function solicitarSubirPlanilha() {
       }
 
       // 2. Renderizar Histórico Completo (Cofre)
-      const listaCofre = Object.values(vaultCases).filter(c => {
-        if (!isCasoComDesfechoOuFinalizado(c)) return false;
-        return casoCorrespondeBusca(c, q);
-      }).sort(compararDiasEsteira);
+      const tbodyHist = document.getElementById('historico-tbody');
+      if (tbodyHist && currentView === 'historico') {
+        const listaCofre = Object.values(vaultCases).filter(c => {
+          if (!isCasoComDesfechoOuFinalizado(c)) return false;
+          return casoCorrespondeBusca(c, q);
+        }).sort(compararDiasEsteira);
 
-      document.getElementById('historico-tbody').innerHTML = listaCofre.length ? listaCofre.map(c => {
-        const logs = historyLog[c.CD_USUARIO] || [];
-        const ultimoLog = logs[0] ? `${logs[0].text} (${logs[0].date})` : (c.ULTIMO_DESFECHO || 'Sem parecer final');
-        const isConcluido = (c.STATUS_COFRE && c.STATUS_COFRE.includes('CONCLU'));
-        return `
-          <tr onclick="openCaseDetail('${c.CD_USUARIO}')" class="hover:bg-emerald-50/50 cursor-pointer transition">
-            <td class="py-3 px-4">
-              <span class="text-[10px] font-extrabold px-2.5 py-1 rounded-full ${isConcluido ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-indigo-100 text-indigo-800 border border-indigo-200'}">
-                ${isConcluido ? '✔ CONCLUÍDO' : '⏳ EM HISTÓRICO'}
-              </span>
-            </td>
-            <td class="py-3 px-4 font-mono font-bold text-slate-800">${c.CD_USUARIO}</td>
-            <td class="py-3 px-4 font-bold text-slate-900" title="${c.NM_USUARIO || ''}">${mascararNomeBeneficiario(c.NM_USUARIO)}</td>
-            <td class="py-3 px-4 text-slate-600 truncate max-w-xs">${c.PROCEDIMENTO_AGRUPADO || '-'}</td>
-            <td class="py-3 px-4 text-xs">
-              <span class="font-bold text-indigo-700">${c.MEDICO_CONSULTOR || c.GERENTE_MEDICO || '-'}</span>
-              ${c['VALOR PACOTE'] ? `<span class="block text-[10px] font-extrabold text-emerald-700">Pacote: ${c['VALOR PACOTE']}</span>` : ''}
-            </td>
-            <td class="py-3 px-4 text-slate-600 truncate max-w-sm">${ultimoLog}</td>
-            <td class="py-3 px-4 text-right font-bold text-emerald-700">Ver Ficha ➔</td>
-          </tr>
-        `;
-      }).join('') : `<tr><td colspan="7" class="py-8 text-center text-slate-400 italic">Nenhum registro acumulado no Cofre ainda.</td></tr>`;
+        const listaCofreExibida = (!q && listaCofre.length > 150) ? listaCofre.slice(0, 150) : listaCofre;
+
+        tbodyHist.innerHTML = listaCofreExibida.length ? listaCofreExibida.map(c => {
+          const logs = historyLog[c.CD_USUARIO] || [];
+          const ultimoLog = logs[0] ? `${logs[0].text} (${logs[0].date})` : (c.ULTIMO_DESFECHO || 'Sem parecer final');
+          const isConcluido = (c.STATUS_COFRE && c.STATUS_COFRE.includes('CONCLU'));
+          return `
+            <tr onclick="openCaseDetail('${c.CD_USUARIO}')" class="hover:bg-emerald-50/50 cursor-pointer transition">
+              <td class="py-3 px-4">
+                <span class="text-[10px] font-extrabold px-2.5 py-1 rounded-full ${isConcluido ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-indigo-100 text-indigo-800 border border-indigo-200'}">
+                  ${isConcluido ? '✔ CONCLUÍDO' : '⏳ EM HISTÓRICO'}
+                </span>
+              </td>
+              <td class="py-3 px-4 font-mono font-bold text-slate-800">${c.CD_USUARIO}</td>
+              <td class="py-3 px-4 font-bold text-slate-900" title="${c.NM_USUARIO || ''}">${mascararNomeBeneficiario(c.NM_USUARIO)}</td>
+              <td class="py-3 px-4 text-slate-600 truncate max-w-xs">${c.PROCEDIMENTO_AGRUPADO || '-'}</td>
+              <td class="py-3 px-4 text-xs">
+                <span class="font-bold text-indigo-700">${c.MEDICO_CONSULTOR || c.GERENTE_MEDICO || '-'}</span>
+                ${c['VALOR PACOTE'] ? `<span class="block text-[10px] font-extrabold text-emerald-700">Pacote: ${c['VALOR PACOTE']}</span>` : ''}
+              </td>
+              <td class="py-3 px-4 text-slate-600 truncate max-w-sm">${ultimoLog}</td>
+              <td class="py-3 px-4 text-right font-bold text-emerald-700">Ver Ficha ➔</td>
+            </tr>
+          `;
+        }).join('') + (!q && listaCofre.length > 150 ? `<tr><td colspan="7" class="py-3 text-center text-xs font-bold text-slate-500 bg-slate-50">Exibindo os primeiros 150 casos de ${listaCofre.length}. Use a busca acima para filtrar instantaneamente.</td></tr>` : '') : `<tr><td colspan="7" class="py-8 text-center text-slate-400 italic">Nenhum registro acumulado no Cofre ainda.</td></tr>`;
+      }
 
       // 3. Renderizar Esteira Médica: Ausência de Consenso (Critério em definição - com regra de 48h pronta)
       const listaRubensConsensoBase = Object.values(vaultCases).filter(c => {
@@ -5110,14 +5238,7 @@ function solicitarSubirPlanilha() {
         return true;
       });
 
-      const listaRubensConsenso = listaRubensConsensoBase.filter(c => {
-        const horas = getHorasDesdeFinalizacao(c);
-        const isConcluido = c.STATUS_CONSENSO === 'CONCLUÍDO';
-        if (!isConcluido && horas > 48) return false;
-        return casoCorrespondeBusca(c, q);
-      });
-
-      const totalConsensoDrRubens = listaRubensConsenso.filter(c => {
+      const totalConsensoDrRubens = listaRubensConsensoBase.filter(c => {
         const horas = getHorasDesdeFinalizacao(c);
         return c.STATUS_CONSENSO !== 'CONCLUÍDO' && horas <= 48;
       }).length;
@@ -5126,7 +5247,14 @@ function solicitarSubirPlanilha() {
       if (badgeConsensoEl) badgeConsensoEl.innerText = totalConsensoDrRubens;
 
       const tbodyConsenso = document.getElementById('rubens-consenso-tbody');
-      if (tbodyConsenso) {
+      if (tbodyConsenso && currentView === 'rubens_consenso') {
+        const listaRubensConsenso = listaRubensConsensoBase.filter(c => {
+          const horas = getHorasDesdeFinalizacao(c);
+          const isConcluido = c.STATUS_CONSENSO === 'CONCLUÍDO';
+          if (!isConcluido && horas > 48) return false;
+          return casoCorrespondeBusca(c, q);
+        });
+
         tbodyConsenso.innerHTML = listaRubensConsenso.length ? listaRubensConsenso.map(c => {
           const isConcluido = c.STATUS_CONSENSO === 'CONCLUÍDO';
           const horas = getHorasDesdeFinalizacao(c);
@@ -5224,6 +5352,10 @@ function solicitarSubirPlanilha() {
       if (elCountOncoP) elCountOncoP.innerText = countOncoPendentes;
       const elCountOncoC = document.getElementById('count-onco-concluidos');
       if (elCountOncoC) elCountOncoC.innerText = countOncoConcluidos;
+      const elCountCopiarOnco = document.getElementById('btn-count-copiar-onco');
+      if (elCountCopiarOnco) {
+        elCountCopiarOnco.innerText = filtroAbaOnco === 'concluidos' ? countOncoConcluidos : countOncoPendentes;
+      }
 
       // Estilização das pílulas internas
       const baseBtnPillOnco = 'px-3 py-1.5 rounded-xl font-extrabold text-xs transition flex items-center gap-1.5 shadow-xs cursor-pointer border ';
@@ -5236,14 +5368,14 @@ function solicitarSubirPlanilha() {
         btnOC.className = baseBtnPillOnco + (filtroAbaOnco === 'concluidos' ? 'border-emerald-300 bg-emerald-600 text-white' : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100');
       }
 
-      const listaRubensOnco = listaOncoEsteira.filter(c => {
-        const isConcluido = c.STATUS_ONCOLOGIA === 'CONCLUÍDO';
-        if (filtroAbaOnco === 'concluidos') return isConcluido;
-        return !isConcluido && casoCorrespondeBusca(c, q);
-      });
-
       const tbodyOnco = document.getElementById('rubens-onco-tbody');
-      if (tbodyOnco) {
+      if (tbodyOnco && currentView === 'rubens_onco') {
+        const listaRubensOnco = listaOncoEsteira.filter(c => {
+          const isConcluido = c.STATUS_ONCOLOGIA === 'CONCLUÍDO';
+          if (filtroAbaOnco === 'concluidos') return isConcluido;
+          return !isConcluido && casoCorrespondeBusca(c, q);
+        });
+
         tbodyOnco.innerHTML = listaRubensOnco.length ? listaRubensOnco.map(c => {
           const isConcluidoOnco = c.STATUS_ONCOLOGIA === 'CONCLUÍDO';
           const temSetor = c.DIAS_SETOR !== undefined && c.DIAS_SETOR !== null && c.DIAS_SETOR !== '';
@@ -5305,13 +5437,6 @@ function solicitarSubirPlanilha() {
       }
 
       // 5. Renderizar Esteira Médica: Casos Críticos na Esteira (>10 dias)
-      const listaRubensCriticos = activeCases.filter(c => {
-        const isCrit = (c.DIAS_AUTORIZACAO || 0) > 10;
-        if (!isCrit) return false;
-        if (medFiltro && !gerenteCorrespondeFiltro(c.GERENTE_MEDICO, medFiltro)) return false;
-        return casoCorrespondeBusca(c, q);
-      });
-
       const totalCriticosDrRubens = activeCases.filter(c => {
         const isCrit = (c.DIAS_AUTORIZACAO || 0) > 10;
         if (!isCrit) return false;
@@ -5322,7 +5447,14 @@ function solicitarSubirPlanilha() {
       if (badgeCriticosEl) badgeCriticosEl.innerText = totalCriticosDrRubens;
 
       const tbodyCriticos = document.getElementById('rubens-criticos-tbody');
-      if (tbodyCriticos) {
+      if (tbodyCriticos && currentView === 'rubens_criticos') {
+        const listaRubensCriticos = activeCases.filter(c => {
+          const isCrit = (c.DIAS_AUTORIZACAO || 0) > 10;
+          if (!isCrit) return false;
+          if (medFiltro && !gerenteCorrespondeFiltro(c.GERENTE_MEDICO, medFiltro)) return false;
+          return casoCorrespondeBusca(c, q);
+        });
+
         tbodyCriticos.innerHTML = listaRubensCriticos.length ? listaRubensCriticos.map(c => {
           const temSetor = c.DIAS_SETOR !== undefined && c.DIAS_SETOR !== null && c.DIAS_SETOR !== '';
           return `
@@ -5418,18 +5550,18 @@ function solicitarSubirPlanilha() {
         btnFC.className = baseBtnPill + (filtroAbaJunta === 'concluidos' ? 'border-emerald-300 bg-emerald-600 text-white' : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100');
       }
 
-      // Aplica o filtro selecionado na tabela (apenas pendentes <=48h ou concluídos)
-      const listaExibidaJunta = listaJuntaBase.filter(c => {
-        const isConcluido = c.STATUS_JUNTA === 'CONCLUÍDO';
-        const horas = getHorasDesdeFinalizacao(c);
-        if (filtroAbaJunta === 'concluidos') {
-          return isConcluido;
-        }
-        return !isConcluido && horas <= 48;
-      });
-
       const tbodyJunta = document.getElementById('rubens-junta-tbody');
-      if (tbodyJunta) {
+      if (tbodyJunta && currentView === 'rubens_junta') {
+        // Aplica o filtro selecionado na tabela (apenas pendentes <=48h ou concluídos)
+        const listaExibidaJunta = listaJuntaBase.filter(c => {
+          const isConcluido = c.STATUS_JUNTA === 'CONCLUÍDO';
+          const horas = getHorasDesdeFinalizacao(c);
+          if (filtroAbaJunta === 'concluidos') {
+            return isConcluido;
+          }
+          return !isConcluido && horas <= 48;
+        });
+
         tbodyJunta.innerHTML = listaExibidaJunta.length ? listaExibidaJunta.map(c => {
           const isAtivo = c._origem === 'ativo' && activeCases.some(a => String(a.CD_USUARIO) === String(c.CD_USUARIO));
           const isConcluido = c.STATUS_JUNTA === 'CONCLUÍDO';
@@ -5505,13 +5637,6 @@ function solicitarSubirPlanilha() {
           `;
         }).join('') : `<tr><td colspan="8" class="py-8 text-center text-slate-400 italic">${filtroAbaJunta === 'concluidos' ? 'Nenhum caso concluído pela Junta ainda.' : 'Nenhum caso de Junta Médica pendente na janela de 48h! 🎉'}</td></tr>`;
       }
-    }
-
-    if (document.getElementById('searchInput')) {
-      document.getElementById('searchInput').addEventListener('input', render);
-    }
-    if (document.getElementById('searchInputMobile')) {
-      document.getElementById('searchInputMobile').addEventListener('input', render);
     }
     
     // Abertura Direta via Link (Hash na URL #caso=...)
