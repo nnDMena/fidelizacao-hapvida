@@ -1783,14 +1783,18 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
               activeCases.push(caso);
             }
             if (currentCase && String(currentCase.CD_USUARIO) === String(caso.CD_USUARIO)) {
-              currentCase = caso;
+              // Não sobrepõe currentCase em tela se o usuário estiver digitando ativamente no formulário
+              const activeEl = document.activeElement;
+              const estaDigitando = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA');
+              if (!estaDigitando) {
+                currentCase = caso;
+              }
             }
           } else if (payload.eventType === 'DELETE') {
             const cd = payload.old.cd_usuario;
             activeCases = activeCases.filter(c => String(c.CD_USUARIO) !== String(cd));
-            if (currentCase && String(currentCase.CD_USUARIO) === String(cd)) {
-              closeCaseDetail();
-            }
+            // NUNCA fecha a tela automaticamente durante a visualização/digitação do operador
+            // para evitar que reconciliações em segundo plano fechem o caso involuntariamente
           }
           agendarSalvarLocalStorage(300);
           agendarRealtimeRender(80);
@@ -1901,6 +1905,7 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
           localStorage.setItem(VAULT_CASES_KEY, JSON.stringify(vaultCases));
         } else if (currentCase) {
           syncToVault(currentCase);
+          localStorage.setItem(VAULT_CASES_KEY, JSON.stringify(vaultCases));
         }
         localStorage.setItem(STORAGE_KEY, JSON.stringify(activeCases));
       } catch (err) {
@@ -4518,11 +4523,16 @@ function solicitarSubirPlanilha() {
       
       // Salva no Supabase em segundo plano
       if (isCloudConnected && supabaseClient && !isAmbienteLocal) {
-        supabaseClient.from('casos_ativos').upsert({
-          cd_usuario: String(currentCase.CD_USUARIO).trim(),
-          dados: currentCase,
-          updated_at: new Date().toISOString()
-        }).then(({ error }) => { if (error) console.error('Erro save caso ativo:', error); });
+        // Se o caso for finalizado ou já possuir desfecho, NUNCA envia para casos_ativos!
+        // Casos finalizados pertencem exclusivamente ao cofre_casos (já atualizado via syncToVault).
+        const ehFinalizado = isCasoComDesfechoOuFinalizado(currentCase);
+        if (!ehFinalizado && idx !== -1) {
+          supabaseClient.from('casos_ativos').upsert({
+            cd_usuario: String(currentCase.CD_USUARIO).trim(),
+            dados: currentCase,
+            updated_at: new Date().toISOString()
+          }).then(({ error }) => { if (error) console.error('Erro save caso ativo:', error); });
+        }
       }
 
       syncToVault(currentCase);
