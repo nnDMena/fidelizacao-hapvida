@@ -329,7 +329,7 @@
             </div>
           </div>
           <div class="flex items-center gap-2 w-full sm:w-auto">
-            <button onclick="verificarSenhaEExecutar('baixar_base')" class="w-full sm:w-auto justify-center bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs px-3.5 py-2 rounded-xl flex items-center gap-2 shadow-sm transition">
+            <button id="btnExportarFinalizados" onclick="verificarSenhaEExecutar('baixar_base')" class="hidden w-full sm:w-auto justify-center bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs px-3.5 py-2 rounded-xl items-center gap-2 shadow-sm transition">
               <i class="fa-solid fa-file-excel"></i> Exportar Base (.xlsx)
             </button>
           </div>
@@ -686,7 +686,7 @@
                   <label for="editCaseTipoDemanda" id="labelTipoDemandaTitle" class="text-[9.5px] sm:text-[10px] font-extrabold uppercase text-slate-600 tracking-wider block mb-1 flex items-center gap-1">
                     <i class="fa-solid fa-bell"></i> Canal / Tipo de Demanda:
                   </label>
-                  <select id="editCaseTipoDemanda" onchange="atualizarEstiloDemanda(); autoSalvarProfissionais();" class="w-full bg-slate-50 font-bold text-slate-800 text-xs px-2.5 py-1.5 sm:py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-rose-400 cursor-pointer">
+                  <select id="editCaseTipoDemanda" onchange="aoMudarTipoDemanda(this.value);" class="w-full bg-slate-50 font-bold text-slate-800 text-xs px-2.5 py-1.5 sm:py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-rose-400 cursor-pointer">
                     <option value="">Nenhum (Fluxo Normal)</option>
                     <option value="SAC">SAC</option>
                     <option value="NIP">NIP</option>
@@ -699,7 +699,7 @@
                   <label for="editCasePrazoDemanda" id="labelPrazoDemandaTitle" class="text-[9.5px] sm:text-[10px] font-extrabold uppercase text-slate-600 tracking-wider block mb-1 flex items-center gap-1">
                     <i class="fa-regular fa-calendar-xmark"></i> Prazo Final da Demanda:
                   </label>
-                  <input type="date" id="editCasePrazoDemanda" onchange="atualizarEstiloDemanda(); autoSalvarProfissionais();" oninput="atualizarEstiloDemanda(); autoSalvarProfissionais();" class="w-full bg-slate-50 font-bold text-slate-800 text-xs px-2.5 py-1.5 sm:py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-rose-400 cursor-pointer">
+                  <input type="date" id="editCasePrazoDemanda" onchange="aoMudarPrazoDemanda(this.value);" oninput="atualizarEstiloDemanda(); autoSalvarProfissionais();" class="w-full bg-slate-50 font-bold text-slate-800 text-xs px-2.5 py-1.5 sm:py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-rose-400 cursor-pointer">
                 </div>
               </div>
             </div>
@@ -1347,6 +1347,7 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
     function atualizarPermissoesOperador() {
       const containerAdmin = document.getElementById('containerBotoesAdmin');
       const btnExportarCofre = document.getElementById('btnExportarCofre');
+      const btnExportarFinalizados = document.getElementById('btnExportarFinalizados');
       const ehAdmin = isOperadorAdmin();
 
       if (containerAdmin) {
@@ -1359,6 +1360,7 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
         }
       }
 
+      // Os botões de exportação de base são visíveis exclusivamente para Fernando e Vitor
       if (btnExportarCofre) {
         if (ehAdmin) {
           btnExportarCofre.classList.remove('hidden');
@@ -1366,6 +1368,16 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
         } else {
           btnExportarCofre.classList.add('hidden');
           btnExportarCofre.classList.remove('flex');
+        }
+      }
+
+      if (btnExportarFinalizados) {
+        if (ehAdmin) {
+          btnExportarFinalizados.classList.remove('hidden');
+          btnExportarFinalizados.classList.add('flex');
+        } else {
+          btnExportarFinalizados.classList.add('hidden');
+          btnExportarFinalizados.classList.remove('flex');
         }
       }
 
@@ -2726,6 +2738,10 @@ function solicitarSubirPlanilha() {
               PRESTADOR_PACOTE: salvoNoCofre.PRESTADOR_PACOTE || '',
               TIPO_DEMANDA: getVal('TIPO_DEMANDA', salvoNoCofre.TIPO_DEMANDA || ''),
               PRAZO_FINAL_DEMANDA: getVal('PRAZO_FINAL_DEMANDA', salvoNoCofre.PRAZO_FINAL_DEMANDA || ''),
+              TIPO_DEMANDA_ALTERADO_POR: getVal('TIPO_DEMANDA_ALTERADO_POR', salvoNoCofre.TIPO_DEMANDA_ALTERADO_POR || ''),
+              TIPO_DEMANDA_ALTERADO_EM: getVal('TIPO_DEMANDA_ALTERADO_EM', salvoNoCofre.TIPO_DEMANDA_ALTERADO_EM || ''),
+              PRAZO_DEMANDA_ALTERADO_POR: getVal('PRAZO_DEMANDA_ALTERADO_POR', salvoNoCofre.PRAZO_DEMANDA_ALTERADO_POR || ''),
+              PRAZO_DEMANDA_ALTERADO_EM: getVal('PRAZO_DEMANDA_ALTERADO_EM', salvoNoCofre.PRAZO_DEMANDA_ALTERADO_EM || ''),
               OBSERVACAO: observacaoFinal,
               ENCAMINHAR: getVal('ENCAMINHAR', salvoNoCofre.ENCAMINHAR || ''),
               STATUS_COFRE: 'EM ANDAMENTO',
@@ -2906,6 +2922,10 @@ function solicitarSubirPlanilha() {
     }
 
     function exportarPlanilhaBaseHistorico() {
+      if (!isOperadorAdmin()) {
+        alert('🔒 Acesso Restrito\nApenas os administradores (Fernando Mena e Vitor Hugo) têm permissão para exportar a planilha base.');
+        return;
+      }
       const todosCodigos = Object.keys(vaultCases);
       if (todosCodigos.length === 0 && Object.keys(historyLog).length === 0) {
         alert('Ainda não há registros no Cofre de Histórico para exportar.');
@@ -2926,6 +2946,8 @@ function solicitarSubirPlanilha() {
           'DIAS_SETOR': c.DIAS_SETOR !== undefined && c.DIAS_SETOR !== null ? c.DIAS_SETOR : '',
           'TIPO_DEMANDA': c.TIPO_DEMANDA || '',
           'PRAZO_FINAL_DEMANDA': c.PRAZO_FINAL_DEMANDA || '',
+          'TIPO_DEMANDA_ALTERADO_POR': c.TIPO_DEMANDA_ALTERADO_POR || '',
+          'TIPO_DEMANDA_ALTERADO_EM': c.TIPO_DEMANDA_ALTERADO_EM || '',
           'GERENTE_MEDICO': c.GERENTE_MEDICO || '',
           'ASSUMIU_POR': c.ASSUMIU_POR || '',
           'ADMINISTRATIVO': c.ADMINISTRATIVO || '',
@@ -3483,6 +3505,34 @@ function solicitarSubirPlanilha() {
       return !temAssumiu && !temAdm;
     }
 
+    function extrairNumeroDias(val) {
+      if (val === null || val === undefined) return 0;
+      if (typeof val === 'number') return isNaN(val) ? 0 : val;
+      const limpo = String(val).trim().replace(/[^\d.-]/g, '');
+      const num = parseInt(limpo, 10);
+      return isNaN(num) ? 0 : num;
+    }
+
+    function compararDiasEsteira(a, b) {
+      // 1. Dias de autorização (do maior para o menor: 10d antes de 9d, 8d antes de 7d...)
+      const diasA = extrairNumeroDias(a.DIAS_AUTORIZACAO);
+      const diasB = extrairNumeroDias(b.DIAS_AUTORIZACAO);
+      if (diasB !== diasA) return diasB - diasA;
+
+      // 2. Desempate por Demanda Crítica (se houver demanda crítica ou prazo final, vem na frente no mesmo dia)
+      const temDemandaA = Boolean(a.TIPO_DEMANDA || a.PRAZO_FINAL_DEMANDA);
+      const temDemandaB = Boolean(b.TIPO_DEMANDA || b.PRAZO_FINAL_DEMANDA);
+      if (temDemandaA !== temDemandaB) return temDemandaA ? -1 : 1;
+
+      // 3. Desempate por Dias no Setor (do maior para o menor)
+      const setorA = extrairNumeroDias(a.DIAS_SETOR);
+      const setorB = extrairNumeroDias(b.DIAS_SETOR);
+      if (setorB !== setorA) return setorB - setorA;
+
+      // 4. Desempate estável por nome
+      return String(a.NM_USUARIO || '').localeCompare(String(b.NM_USUARIO || ''), 'pt-BR');
+    }
+
     let filtroUrgencia = null; // null | 'critico' | 'atencao' | 'regular' | 'sem_responsavel'
 
     function alternarFiltroUrgencia(tipo) {
@@ -3523,12 +3573,15 @@ function solicitarSubirPlanilha() {
         }
 
         if (medFiltro && !gerenteCorrespondeFiltro(c.GERENTE_MEDICO, medFiltro)) return false;
-        if (filtroUrgencia === 'critico' && !((c.DIAS_AUTORIZACAO || 0) > 10)) return false;
-        if (filtroUrgencia === 'atencao' && !((c.DIAS_AUTORIZACAO || 0) >= 7 && (c.DIAS_AUTORIZACAO || 0) <= 10)) return false;
-        if (filtroUrgencia === 'regular' && !((c.DIAS_AUTORIZACAO || 0) <= 6)) return false;
+        if (filtroUrgencia === 'critico' && !(extrairNumeroDias(c.DIAS_AUTORIZACAO) > 10)) return false;
+        if (filtroUrgencia === 'atencao') {
+          const d = extrairNumeroDias(c.DIAS_AUTORIZACAO);
+          if (!(d >= 7 && d <= 10)) return false;
+        }
+        if (filtroUrgencia === 'regular' && !(extrairNumeroDias(c.DIAS_AUTORIZACAO) <= 6)) return false;
         if (filtroUrgencia === 'sem_responsavel' && !isSemResponsavel(c)) return false;
         return casoCorrespondeBusca(c, q);
-      }).sort((a, b) => (b.DIAS_AUTORIZACAO || 0) - (a.DIAS_AUTORIZACAO || 0));
+      }).sort(compararDiasEsteira);
     }
 
     // Cores Primárias e Secundárias para o Sinal / Bolinha (Sem vínculo fixo com gerentes, livre escolha)
@@ -3682,6 +3735,7 @@ function solicitarSubirPlanilha() {
       // 7. Re-renderiza a Linha do Tempo e Filtro de Médicos
       renderSingleTimeline();
       popularFiltroMedicos();
+      atualizarPermissoesOperador();
       render();
     }
 
@@ -3819,6 +3873,88 @@ function solicitarSubirPlanilha() {
       }
     }
 
+    function atualizarLabelQuemAlterouDemanda() {
+      // Registro visual mantido estritamente na Linha do Tempo Blindada conforme solicitado
+    }
+
+    function aoMudarTipoDemanda(novoTipo) {
+      if (!currentCase) return;
+      const tipoAntigo = (currentCase.TIPO_DEMANDA || '').trim();
+      const tipoNovo = (novoTipo || '').trim();
+
+      if (tipoNovo !== tipoAntigo) {
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('pt-BR') + ' às ' + now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        const quemAlterou = operadorAtual || 'Operador';
+
+        currentCase.TIPO_DEMANDA = tipoNovo;
+        currentCase.TIPO_DEMANDA_ALTERADO_POR = quemAlterou;
+        currentCase.TIPO_DEMANDA_ALTERADO_EM = dateStr;
+
+        const labelAnt = tipoAntigo || 'Nenhum (Fluxo Normal)';
+        const labelNovo = tipoNovo || 'Nenhum (Fluxo Normal)';
+        const textoLog = `🏷️ Canal / Tipo de Demanda alterado de "${labelAnt}" para "${labelNovo}".`;
+
+        addImmutableLog(currentCase.CD_USUARIO, `${quemAlterou} (Tipo de Demanda)`, dateStr, textoLog);
+
+        renderSingleTimeline();
+        atualizarLabelQuemAlterouDemanda();
+
+        syncToVault(currentCase);
+        saveState();
+
+        if (isCloudConnected && supabaseClient && !isAmbienteLocal) {
+          supabaseClient.from('casos_ativos').upsert({
+            cd_usuario: String(currentCase.CD_USUARIO).trim(),
+            dados: currentCase,
+            updated_at: new Date().toISOString()
+          }).then(({ error }) => { if (error) console.error('Erro save caso ativo:', error); });
+        }
+      }
+
+      atualizarEstiloDemanda();
+      autoSalvarProfissionais();
+    }
+
+    function aoMudarPrazoDemanda(novoPrazo) {
+      if (!currentCase) return;
+      const prazoAntigo = (currentCase.PRAZO_FINAL_DEMANDA || '').trim();
+      const prazoNovo = (novoPrazo || '').trim();
+
+      if (prazoNovo !== prazoAntigo) {
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('pt-BR') + ' às ' + now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        const quemAlterou = operadorAtual || 'Operador';
+
+        currentCase.PRAZO_FINAL_DEMANDA = prazoNovo;
+        currentCase.PRAZO_DEMANDA_ALTERADO_POR = quemAlterou;
+        currentCase.PRAZO_DEMANDA_ALTERADO_EM = dateStr;
+
+        const labelPrazoAnt = prazoAntigo ? formatarDataBR(prazoAntigo) : 'Sem prazo';
+        const labelPrazoNovo = prazoNovo ? formatarDataBR(prazoNovo) : 'Sem prazo';
+        const textoLog = `📅 Prazo da Demanda alterado de "${labelPrazoAnt}" para "${labelPrazoNovo}".`;
+
+        addImmutableLog(currentCase.CD_USUARIO, `${quemAlterou} (Prazo Demanda)`, dateStr, textoLog);
+
+        renderSingleTimeline();
+        atualizarLabelQuemAlterouDemanda();
+
+        syncToVault(currentCase);
+        saveState();
+
+        if (isCloudConnected && supabaseClient && !isAmbienteLocal) {
+          supabaseClient.from('casos_ativos').upsert({
+            cd_usuario: String(currentCase.CD_USUARIO).trim(),
+            dados: currentCase,
+            updated_at: new Date().toISOString()
+          }).then(({ error }) => { if (error) console.error('Erro save caso ativo:', error); });
+        }
+      }
+
+      atualizarEstiloDemanda();
+      autoSalvarProfissionais();
+    }
+
         function openCaseDetail(cod) {
       currentCase = activeCases.find(c => String(c.CD_USUARIO) === String(cod)) || vaultCases[String(cod)];
       if (!currentCase) return;
@@ -3919,6 +4055,9 @@ function solicitarSubirPlanilha() {
 
       const elPrazoDemanda = document.getElementById('editCasePrazoDemanda');
       if (elPrazoDemanda) elPrazoDemanda.value = currentCase.PRAZO_FINAL_DEMANDA || '';
+
+      atualizarEstiloDemanda();
+      atualizarLabelQuemAlterouDemanda();
 
       // Procedimento & Prestador
       const elProc = document.getElementById('singleDetailProcedure');
@@ -4295,10 +4434,24 @@ function solicitarSubirPlanilha() {
       currentCase.ADMINISTRATIVO = document.getElementById('editCaseAdministrativo')?.value || '';
       
       if (document.getElementById('editCaseTipoDemanda')) {
-        currentCase.TIPO_DEMANDA = document.getElementById('editCaseTipoDemanda').value;
+        const valTipo = document.getElementById('editCaseTipoDemanda').value;
+        if (valTipo !== currentCase.TIPO_DEMANDA) {
+          currentCase.TIPO_DEMANDA = valTipo;
+          if (!currentCase.TIPO_DEMANDA_ALTERADO_POR) {
+            currentCase.TIPO_DEMANDA_ALTERADO_POR = operadorAtual || 'Operador';
+            currentCase.TIPO_DEMANDA_ALTERADO_EM = new Date().toLocaleDateString('pt-BR') + ' às ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+          }
+        }
       }
       if (document.getElementById('editCasePrazoDemanda')) {
-        currentCase.PRAZO_FINAL_DEMANDA = document.getElementById('editCasePrazoDemanda').value;
+        const valPrazo = document.getElementById('editCasePrazoDemanda').value;
+        if (valPrazo !== currentCase.PRAZO_FINAL_DEMANDA) {
+          currentCase.PRAZO_FINAL_DEMANDA = valPrazo;
+          if (!currentCase.PRAZO_DEMANDA_ALTERADO_POR) {
+            currentCase.PRAZO_DEMANDA_ALTERADO_POR = operadorAtual || 'Operador';
+            currentCase.PRAZO_DEMANDA_ALTERADO_EM = new Date().toLocaleDateString('pt-BR') + ' às ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+          }
+        }
       }
       if (document.getElementById('singleSelectEncaminhar')) {
         currentCase.ENCAMINHAR = document.getElementById('singleSelectEncaminhar').value;
@@ -4489,7 +4642,12 @@ function solicitarSubirPlanilha() {
       if (hasVal(tipoDemandaAtual)) partesDemanda.push(tipoDemandaAtual.trim());
       if (hasVal(prazoDemandaAtual)) partesDemanda.push(`Prazo Final: ${formatarDataBR(prazoDemandaAtual)}`);
       if (partesDemanda.length > 0) {
-        cabecalho.push(`- Demanda Crítica: ${partesDemanda.join(' | ')}`);
+        let txtDem = `- Demanda Crítica: ${partesDemanda.join(' | ')}`;
+        if (currentCase.TIPO_DEMANDA_ALTERADO_POR) {
+          const nomeQuem = typeof formatarPrimeiroEUltimoNome === 'function' ? formatarPrimeiroEUltimoNome(currentCase.TIPO_DEMANDA_ALTERADO_POR) : currentCase.TIPO_DEMANDA_ALTERADO_POR;
+          txtDem += ` (Definido por ${nomeQuem}${currentCase.TIPO_DEMANDA_ALTERADO_EM ? ' em ' + currentCase.TIPO_DEMANDA_ALTERADO_EM : ''})`;
+        }
+        cabecalho.push(txtDem);
       }
 
       if (hasVal(currentCase.NM_USUARIO)) {
@@ -4651,6 +4809,7 @@ function solicitarSubirPlanilha() {
       }
 
       popularFiltroMedicos();
+      atualizarPermissoesOperador();
 
       const q = ((document.getElementById('searchInputMobile')?.value || document.getElementById('searchInput')?.value) || '').toLowerCase();
       const medSelect = document.getElementById('filterMedico');
@@ -4667,12 +4826,15 @@ function solicitarSubirPlanilha() {
         }
         if (medFiltro && !gerenteCorrespondeFiltro(c.GERENTE_MEDICO, medFiltro)) return false;
         return casoCorrespondeBusca(c, q);
-      });
+      }).sort(compararDiasEsteira);
 
-      const criticos = baseCasosMostrador.filter(c => (c.DIAS_AUTORIZACAO || 0) > 10);
-      const atencao = baseCasosMostrador.filter(c => (c.DIAS_AUTORIZACAO || 0) >= 7 && (c.DIAS_AUTORIZACAO || 0) <= 10);
-      const regular = baseCasosMostrador.filter(c => (c.DIAS_AUTORIZACAO || 0) <= 6);
-      const semResponsavel = baseCasosMostrador.filter(isSemResponsavel);
+      const criticos = baseCasosMostrador.filter(c => extrairNumeroDias(c.DIAS_AUTORIZACAO) > 10).sort(compararDiasEsteira);
+      const atencao = baseCasosMostrador.filter(c => {
+        const d = extrairNumeroDias(c.DIAS_AUTORIZACAO);
+        return d >= 7 && d <= 10;
+      }).sort(compararDiasEsteira);
+      const regular = baseCasosMostrador.filter(c => extrairNumeroDias(c.DIAS_AUTORIZACAO) <= 6).sort(compararDiasEsteira);
+      const semResponsavel = baseCasosMostrador.filter(isSemResponsavel).sort(compararDiasEsteira);
 
       const cases = getFilteredCases();
 
@@ -4742,7 +4904,7 @@ function solicitarSubirPlanilha() {
           </div>
           <div>
             ${(c.TIPO_DEMANDA || c.PRAZO_FINAL_DEMANDA) ? `
-              <div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-rose-600 text-white font-black text-[10px] shadow-xs mb-1.5 animate-pulse">
+              <div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-rose-600 text-white font-black text-[10px] shadow-xs mb-1.5 animate-pulse" ${c.TIPO_DEMANDA_ALTERADO_POR ? `title="Tipo de Demanda alterado por: ${c.TIPO_DEMANDA_ALTERADO_POR}${c.TIPO_DEMANDA_ALTERADO_EM ? ' em ' + c.TIPO_DEMANDA_ALTERADO_EM : ''}"` : ''}>
                 <i class="fa-solid fa-triangle-exclamation text-[9px]"></i>
                 <span>${c.TIPO_DEMANDA || 'DEMANDA CRÍTICA'}${c.PRAZO_FINAL_DEMANDA ? ' | Prazo: ' + formatarDataBR(c.PRAZO_FINAL_DEMANDA) : ''}</span>
               </div>
@@ -4854,7 +5016,7 @@ function solicitarSubirPlanilha() {
         const dtFin = extrairDataFinBR(c, c.CD_USUARIO);
         if (dtFin !== hojeStrBR) return false;
         return casoCorrespondeBusca(c, q);
-      });
+      }).sort(compararDiasEsteira);
 
       const badgeTabFin = document.getElementById('tab-count-finalizados');
       if (badgeTabFin) {
@@ -4915,7 +5077,7 @@ function solicitarSubirPlanilha() {
       const listaCofre = Object.values(vaultCases).filter(c => {
         if (!isCasoComDesfechoOuFinalizado(c)) return false;
         return casoCorrespondeBusca(c, q);
-      });
+      }).sort(compararDiasEsteira);
 
       document.getElementById('historico-tbody').innerHTML = listaCofre.length ? listaCofre.map(c => {
         const logs = historyLog[c.CD_USUARIO] || [];
@@ -4992,7 +5154,7 @@ function solicitarSubirPlanilha() {
                 <div class="flex items-center gap-1.5 flex-wrap">
                   <span title="${c.NM_USUARIO || ''}">${mascararNomeBeneficiario(c.NM_USUARIO)}</span>
                   ${(c.TIPO_DEMANDA || c.PRAZO_FINAL_DEMANDA) ? `
-                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-600 text-white text-[9.5px] font-black">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-600 text-white text-[9.5px] font-black" ${c.TIPO_DEMANDA_ALTERADO_POR ? `title="Tipo de Demanda alterado por: ${c.TIPO_DEMANDA_ALTERADO_POR}${c.TIPO_DEMANDA_ALTERADO_EM ? ' em ' + c.TIPO_DEMANDA_ALTERADO_EM : ''}"` : ''}>
                       <i class="fa-solid fa-triangle-exclamation text-[8px]"></i> ${c.TIPO_DEMANDA || 'DEMANDA'}
                     </span>
                   ` : ''}
@@ -5098,7 +5260,7 @@ function solicitarSubirPlanilha() {
                 <div class="flex items-center gap-1.5 flex-wrap">
                   <span title="${c.NM_USUARIO || ''}">${mascararNomeBeneficiario(c.NM_USUARIO)}</span>
                   ${(c.TIPO_DEMANDA || c.PRAZO_FINAL_DEMANDA) ? `
-                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-600 text-white text-[9.5px] font-black">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-600 text-white text-[9.5px] font-black" ${c.TIPO_DEMANDA_ALTERADO_POR ? `title="Tipo de Demanda alterado por: ${c.TIPO_DEMANDA_ALTERADO_POR}${c.TIPO_DEMANDA_ALTERADO_EM ? ' em ' + c.TIPO_DEMANDA_ALTERADO_EM : ''}"` : ''}>
                       <i class="fa-solid fa-triangle-exclamation text-[8px]"></i> ${c.TIPO_DEMANDA || 'DEMANDA'}
                     </span>
                   ` : ''}
@@ -5178,7 +5340,7 @@ function solicitarSubirPlanilha() {
                 <div class="flex items-center gap-1.5 flex-wrap">
                   <span title="${c.NM_USUARIO || ''}">${mascararNomeBeneficiario(c.NM_USUARIO)}</span>
                   ${(c.TIPO_DEMANDA || c.PRAZO_FINAL_DEMANDA) ? `
-                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-600 text-white text-[9.5px] font-black">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-600 text-white text-[9.5px] font-black" ${c.TIPO_DEMANDA_ALTERADO_POR ? `title="Tipo de Demanda alterado por: ${c.TIPO_DEMANDA_ALTERADO_POR}${c.TIPO_DEMANDA_ALTERADO_EM ? ' em ' + c.TIPO_DEMANDA_ALTERADO_EM : ''}"` : ''}>
                       <i class="fa-solid fa-triangle-exclamation text-[8px]"></i> ${c.TIPO_DEMANDA || 'DEMANDA'}
                     </span>
                   ` : ''}
@@ -5297,7 +5459,7 @@ function solicitarSubirPlanilha() {
                 <div class="flex items-center gap-1.5 flex-wrap">
                   <span title="${c.NM_USUARIO || ''}">${mascararNomeBeneficiario(c.NM_USUARIO)}</span>
                   ${(c.TIPO_DEMANDA || c.PRAZO_FINAL_DEMANDA) ? `
-                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-600 text-white text-[9.5px] font-black">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-600 text-white text-[9.5px] font-black" ${c.TIPO_DEMANDA_ALTERADO_POR ? `title="Tipo de Demanda alterado por: ${c.TIPO_DEMANDA_ALTERADO_POR}${c.TIPO_DEMANDA_ALTERADO_EM ? ' em ' + c.TIPO_DEMANDA_ALTERADO_EM : ''}"` : ''}>
                       <i class="fa-solid fa-triangle-exclamation text-[8px]"></i> ${c.TIPO_DEMANDA || 'DEMANDA'}
                     </span>
                   ` : ''}
