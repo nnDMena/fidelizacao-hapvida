@@ -1632,6 +1632,24 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
     function abrirConfigFirebase() { abrirConfigNuvem(); }
     function fecharConfigFirebase() { fecharConfigNuvem(); }
 
+    async function fetchAllSupabaseRows(tableName, selectCols) {
+      const allRows = [];
+      const pageSize = 1000;
+      let from = 0;
+      while (true) {
+        const { data, error } = await supabaseClient
+          .from(tableName)
+          .select(selectCols)
+          .range(from, from + pageSize - 1);
+        if (error) return { data: allRows, error };
+        if (!data || data.length === 0) break;
+        allRows.push(...data);
+        if (data.length < pageSize) break;
+        from += pageSize;
+      }
+      return { data: allRows, error: null };
+    }
+
     async function carregarDadosIniciaisNuvem() {
       if (!supabaseClient) return;
       const banner = document.getElementById('cloud-status-banner');
@@ -1639,8 +1657,8 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
       const label = document.getElementById('cloud-sync-label');
 
       try {
-        // 1. Casos Ativos
-        const { data: atvData, error: atvErr } = await supabaseClient.from('casos_ativos').select('dados');
+        // 1. Casos Ativos (com paginação completa sem limite de 1000 linhas)
+        const { data: atvData, error: atvErr } = await fetchAllSupabaseRows('casos_ativos', 'dados');
         if (atvErr) {
           console.error('Erro ao consultar casos_ativos no Supabase:', atvErr);
           if (atvErr.code === 'PGRST205' || (atvErr.message && atvErr.message.includes('schema cache'))) {
@@ -1657,69 +1675,46 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
           throw atvErr;
         }
 
-        if (atvData && atvData.length > 0) {
-          activeCases = atvData.map(r => r.dados);
+        if (atvData) {
+          activeCases = atvData.map(r => r.dados).filter(c => c && c.CD_USUARIO);
           localStorage.setItem(STORAGE_KEY, JSON.stringify(activeCases));
-          render();
-        } else if (activeCases && activeCases.length > 0) {
-          // A nuvem está vazia, mas o operador tem casos locais: envia para o Supabase
-          try {
-            const rows = activeCases.map(c => ({
-              cd_usuario: String(c.CD_USUARIO).trim(),
-              dados: c,
-              updated_at: new Date().toISOString()
-            }));
-            await supabaseClient.from('casos_ativos').upsert(rows);
-          } catch (e) {
-            console.warn('Erro seed ativos:', e);
-          }
         }
 
-        // 2. Cofre de Casos
-        const { data: vltData, error: vltErr } = await supabaseClient.from('cofre_casos').select('cd_usuario, dados');
+        // 2. Cofre de Casos (paginado para nunca cortar registros após 1000 linhas)
+        const { data: vltData, error: vltErr } = await fetchAllSupabaseRows('cofre_casos', 'cd_usuario, dados');
         if (!vltErr && vltData && vltData.length > 0) {
           vltData.forEach(r => {
-            vaultCases[r.cd_usuario] = r.dados;
+            if (r && r.cd_usuario && r.dados) {
+              const cod = String(r.cd_usuario).trim();
+              vaultCases[cod] = r.dados;
+            }
           });
           localStorage.setItem(VAULT_CASES_KEY, JSON.stringify(vaultCases));
-          render();
-        } else if (Object.keys(vaultCases).length > 0) {
-          try {
-            const vRows = Object.keys(vaultCases).map(k => ({
-              cd_usuario: k,
-              dados: vaultCases[k],
-              updated_at: new Date().toISOString()
-            }));
-            for (let i = 0; i < vRows.length; i += 100) {
-              await supabaseClient.from('cofre_casos').upsert(vRows.slice(i, i + 100));
-            }
-          } catch (e) {
-            console.warn('Erro seed cofre:', e);
-          }
         }
 
-        // 3. Cofre Logs
-        const { data: logData, error: logErr } = await supabaseClient.from('cofre_logs').select('cd_usuario, itens');
+        // 3. Cofre Logs (paginado para nunca cortar histórico após 1000 linhas)
+        const { data: logData, error: logErr } = await fetchAllSupabaseRows('cofre_logs', 'cd_usuario, itens');
         if (!logErr && logData && logData.length > 0) {
           logData.forEach(r => {
-            historyLog[r.cd_usuario] = r.itens || [];
+            if (r && r.cd_usuario) {
+              const cod = String(r.cd_usuario).trim();
+              const nuvemItens = Array.isArray(r.itens) ? r.itens : [];
+              const localItens = Array.isArray(historyLog[cod]) ? historyLog[cod] : [];
+              // Mescla logs locais e da nuvem sem duplicar e sem perder registros
+              const mapaLogs = new Map();
+              [...nuvemItens, ...localItens].forEach(item => {
+                if (item && item.text) {
+                  mapaLogs.set(`${item.date || ''}|${item.author || ''}|${item.text}`, item);
+                }
+              });
+              historyLog[cod] = Array.from(mapaLogs.values());
+            }
           });
           localStorage.setItem(HISTORY_KEY, JSON.stringify(historyLog));
           if (currentCase) renderSingleTimeline();
-        } else if (Object.keys(historyLog).length > 0) {
-          try {
-            const lRows = Object.keys(historyLog).map(k => ({
-              cd_usuario: k,
-              itens: historyLog[k] || [],
-              updated_at: new Date().toISOString()
-            }));
-            for (let i = 0; i < lRows.length; i += 100) {
-              await supabaseClient.from('cofre_logs').upsert(lRows.slice(i, i + 100));
-            }
-          } catch (e) {
-            console.warn('Erro seed logs:', e);
-          }
         }
+
+        render();
 
         // Conexão bem-sucedida!
         isCloudConnected = true;
@@ -1836,11 +1831,40 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
       return String(id || '').trim().replace(/[\/\.#$\[\]]/g, '_');
     }
 
-        function syncToVault(caso) {
+        function syncToVault(caso, forcarReabertura = false) {
       if (!caso || !caso.CD_USUARIO) return;
       const cod = String(caso.CD_USUARIO).trim();
+      const existente = vaultCases[cod];
+      const existenteConcluido = existente && (
+        (existente.STATUS_COFRE && String(existente.STATUS_COFRE).toUpperCase().includes('CONCLU')) ||
+        !!existente.DATA_FINALIZACAO ||
+        !!existente.FINALIZADO_EM_TS
+      );
+      const novoConcluido = (
+        (caso.STATUS_COFRE && String(caso.STATUS_COFRE).toUpperCase().includes('CONCLU')) ||
+        !!caso.DATA_FINALIZACAO ||
+        !!caso.FINALIZADO_EM_TS
+      );
+
+      let dadosMesclados = { ...caso };
+      // Proteção contra regressão: se já estava CONCLUÍDO no cofre e não é uma reabertura explícita nem uma nova finalização,
+      // mantém os dados de finalização intactos para o caso nunca sumir de Finalizados/Histórico!
+      if (existenteConcluido && !novoConcluido && !forcarReabertura) {
+        dadosMesclados = {
+          ...existente,
+          ...caso,
+          STATUS_COFRE: existente.STATUS_COFRE || 'CONCLUÍDO',
+          DESFECHO: caso.DESFECHO || existente.DESFECHO || '',
+          MICRO_DESFECHO: caso.MICRO_DESFECHO || existente.MICRO_DESFECHO || '',
+          FINALIZACAO_SIGO: caso.FINALIZACAO_SIGO || existente.FINALIZACAO_SIGO || '',
+          ULTIMO_DESFECHO: caso.ULTIMO_DESFECHO || existente.ULTIMO_DESFECHO || '',
+          DATA_FINALIZACAO: existente.DATA_FINALIZACAO,
+          FINALIZADO_EM_TS: existente.FINALIZADO_EM_TS
+        };
+      }
+
       const payload = {
-        ...caso,
+        ...dadosMesclados,
         ULTIMA_ATUALIZACAO: new Date().toLocaleString('pt-BR')
       };
       vaultCases[cod] = payload;
@@ -2705,7 +2729,7 @@ function solicitarSubirPlanilha() {
               }
 
               casoJaAtivo.STATUS_COFRE = 'EM ANDAMENTO';
-              syncToVault(casoJaAtivo);
+              syncToVault(casoJaAtivo, true);
               novosCasos.push(casoJaAtivo);
               return; // Continua na esteira com os dados enriquecidos
             }
@@ -2839,7 +2863,7 @@ function solicitarSubirPlanilha() {
             novoCaso.ULTIMO_DESFECHO = '';
             delete novoCaso.DATA_FINALIZACAO;
             delete novoCaso.FINALIZADO_EM_TS;
-            syncToVault(novoCaso);
+            syncToVault(novoCaso, true);
 
             novosCasos.push(novoCaso);
           });
@@ -2898,13 +2922,8 @@ function solicitarSubirPlanilha() {
           // Se estiver conectado na Nuvem, sincroniza em lote com retentativa e validação real de contagem
           let statusNuvemMsg = "⚠️ Salvos apenas localmente (Nuvem desconectada).";
           if (isCloudConnected && supabaseClient && !isAmbienteLocal) {
-            try {
-              // Limpa a fila anterior na nuvem para refletir exatamente a esteira da nova planilha carregada
-              const { error: delErr } = await supabaseClient.from('casos_ativos').delete().neq('cd_usuario', '_none_');
-              if (delErr) console.warn('Aviso ao limpar fila anterior no Supabase:', delErr);
-            } catch (delErr) {
-              console.warn('Aviso ao sincronizar esteira com Supabase:', delErr);
-            }
+            // Grava/atualiza primeiro todos os casos da nova planilha na nuvem sem apagar antes
+            // (a remoção apenas dos casos que saíram ocorre depois que os novos estiverem garantidos)
 
             const mapaRows = new Map();
             listaPlanilha.forEach((c, idx) => {
@@ -2942,6 +2961,14 @@ function solicitarSubirPlanilha() {
                     detalhesErro = singleErr.message || JSON.stringify(singleErr);
                   }
                 }
+              }
+            }
+
+            // Remove da nuvem APENAS os casos que não constam na nova planilha (após garantir o upsert acima)
+            if (errosEnvio === 0 && casosQueSumiram.length > 0) {
+              const codsRemover = casosQueSumiram.map(c => String(c.CD_USUARIO || '').trim()).filter(Boolean);
+              for (let i = 0; i < codsRemover.length; i += 50) {
+                await supabaseClient.from('casos_ativos').delete().in('cd_usuario', codsRemover.slice(i, i + 50));
               }
             }
 
@@ -3195,10 +3222,13 @@ function solicitarSubirPlanilha() {
 
     function extrairDataFinBR(c, cod) {
       if (!c) return '';
-      if (c._dataFinCache) return c._dataFinCache;
       if (c.DATA_FINALIZACAO) {
         const res = formatarDataBR(c.DATA_FINALIZACAO);
-        if (res) { c._dataFinCache = res; return res; }
+        if (res) return res;
+      }
+      if (c.FINALIZADO_EM_TS) {
+        const res = formatarDataBR(new Date(c.FINALIZADO_EM_TS));
+        if (res) return res;
       }
       const codSafe = cod || c.CD_USUARIO;
       const logs = (codSafe && historyLog[codSafe]) || [];
@@ -3209,7 +3239,11 @@ function solicitarSubirPlanilha() {
       );
       if (logFin && logFin.date) {
         const match = String(logFin.date).match(/\b(\d{1,2}\/\d{1,2}\/\d{4})\b/);
-        if (match) { c._dataFinCache = match[1]; return match[1]; }
+        if (match) return match[1];
+      }
+      if (c.ULTIMA_ATUALIZACAO) {
+        const match = String(c.ULTIMA_ATUALIZACAO).match(/\b(\d{1,2}\/\d{1,2}\/\d{4})\b/);
+        if (match) return match[1];
       }
       return '';
     }
@@ -4915,32 +4949,23 @@ function solicitarSubirPlanilha() {
     }
 
     function render() {
-      // Remove da esteira ativa qualquer caso que já possua desfecho ou finalização registrada
-      // (a menos que o desfecho seja GNMED ou Congênere, que a regra de negócio mantém na esteira)
+      // Limpa apenas da lista local em memória casos já concluídos (sem disparar DELETE no banco durante render)
       const totalAntesFiltro = activeCases.length;
       activeCases = activeCases.filter(c => {
-        // Se este é o caso que o operador está visualizando/editando na tela agora, NUNCA remove!
         if (currentCase && String(currentCase.CD_USUARIO) === String(c.CD_USUARIO)) {
           return true;
         }
-
         if (!isCasoComDesfechoOuFinalizado(c)) return true;
         const d = String(c.DESFECHO || c.ULTIMO_DESFECHO || '').toUpperCase();
         const logs = (c.CD_USUARIO && historyLog[String(c.CD_USUARIO).trim()]) || [];
         const logTxt = logs.map(l => String(l.text || '')).join(' ').toUpperCase();
         if (d.includes('GNMED') || d.includes('CONGÊNERE') || d.includes('CONGENERE') || logTxt.includes('GNMED') || logTxt.includes('CONGÊNERE') || logTxt.includes('CONGENERE')) {
-          return true; // permanece na esteira ativa por regra específica de GNMED/Congênere
-        }
-        // Garante sincronização no cofre
-        syncToVault(c);
-        // Remove do Supabase casos_ativos
-        if (isCloudConnected && supabaseClient && c.CD_USUARIO) {
-          supabaseClient.from('casos_ativos').delete().eq('cd_usuario', String(c.CD_USUARIO).trim()).then(() => {});
+          return true;
         }
         return false;
       });
       if (activeCases.length !== totalAntesFiltro) {
-        saveState();
+        agendarSalvarLocalStorage(200);
       }
 
       popularFiltroMedicos();
@@ -5225,9 +5250,14 @@ function solicitarSubirPlanilha() {
         const listaCofre = Object.values(vaultCases).filter(c => {
           if (!isCasoComDesfechoOuFinalizado(c)) return false;
           return casoCorrespondeBusca(c, q);
-        }).sort(compararDiasEsteira);
+        }).sort((a, b) => {
+          const tsA = a.FINALIZADO_EM_TS || (a.DATA_FINALIZACAO ? new Date(a.DATA_FINALIZACAO).getTime() : 0) || 0;
+          const tsB = b.FINALIZADO_EM_TS || (b.DATA_FINALIZACAO ? new Date(b.DATA_FINALIZACAO).getTime() : 0) || 0;
+          if (tsB !== tsA) return tsB - tsA;
+          return compararDiasEsteira(a, b);
+        });
 
-        const listaCofreExibida = (!q && listaCofre.length > 150) ? listaCofre.slice(0, 150) : listaCofre;
+        const listaCofreExibida = (!q && listaCofre.length > 500) ? listaCofre.slice(0, 500) : listaCofre;
 
         tbodyHist.innerHTML = listaCofreExibida.length ? listaCofreExibida.map(c => {
           const logs = historyLog[c.CD_USUARIO] || [];
