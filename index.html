@@ -2906,17 +2906,22 @@ function solicitarSubirPlanilha() {
               console.warn('Aviso ao sincronizar esteira com Supabase:', delErr);
             }
 
-            const rows = listaPlanilha.map(c => ({
-              cd_usuario: String(c.CD_USUARIO).trim(),
-              dados: c,
-              updated_at: new Date().toISOString()
-            }));
+            const mapaRows = new Map();
+            listaPlanilha.forEach((c, idx) => {
+              const codLimpo = String(c.CD_USUARIO || '').trim() || ('CASO_' + (idx + 1));
+              mapaRows.set(codLimpo, {
+                cd_usuario: codLimpo,
+                dados: c,
+                updated_at: new Date().toISOString()
+              });
+            });
+            const rows = Array.from(mapaRows.values());
 
-            // Envia em lotes menores (25 registros) com até 3 tentativas por lote para evitar timeout/proxy
+            // Envia em lotes de 20 registros com retentativa; se algum lote falhar, envia registro a registro
             let errosEnvio = 0;
             let detalhesErro = '';
-            for (let i = 0; i < rows.length; i += 25) {
-              const chunk = rows.slice(i, i + 25);
+            for (let i = 0; i < rows.length; i += 20) {
+              const chunk = rows.slice(i, i + 20);
               let loteEnviado = false;
               for (let tentativa = 1; tentativa <= 3; tentativa++) {
                 const { error: upsertErr } = await supabaseClient.from('casos_ativos').upsert(chunk, { onConflict: 'cd_usuario' });
@@ -2926,26 +2931,47 @@ function solicitarSubirPlanilha() {
                 }
                 detalhesErro = upsertErr.message || JSON.stringify(upsertErr);
                 console.warn(`Tentativa ${tentativa}/3 falhou no lote ${i}-${i + chunk.length}:`, upsertErr);
-                await new Promise(r => setTimeout(r, 400 * tentativa));
+                await new Promise(r => setTimeout(r, 350 * tentativa));
               }
               if (!loteEnviado) {
-                errosEnvio++;
+                // Fallback individual para garantir que registros válidos do lote sejam gravados
+                for (const item of chunk) {
+                  const { error: singleErr } = await supabaseClient.from('casos_ativos').upsert(item, { onConflict: 'cd_usuario' });
+                  if (singleErr) {
+                    errosEnvio++;
+                    detalhesErro = singleErr.message || JSON.stringify(singleErr);
+                  }
+                }
               }
             }
 
             // Verifica a contagem REAL gravada na tabela casos_ativos no Supabase
-            const { count: totalGravadoNuvem, error: countErr } = await supabaseClient
+            let { count: totalGravadoNuvem, error: countErr } = await supabaseClient
               .from('casos_ativos')
               .select('*', { count: 'exact', head: true });
 
+            // Se a contagem na nuvem ficou menor que o enviado, tenta reenviar os que faltam individualmente
+            if (!countErr && typeof totalGravadoNuvem === 'number' && totalGravadoNuvem < rows.length) {
+              const { data: existentesData } = await supabaseClient.from('casos_ativos').select('cd_usuario');
+              const setExistentes = new Set((existentesData || []).map(r => String(r.cd_usuario || '').trim()));
+              const faltantes = rows.filter(r => !setExistentes.has(r.cd_usuario));
+              for (const item of faltantes) {
+                await supabaseClient.from('casos_ativos').upsert(item, { onConflict: 'cd_usuario' });
+              }
+              const recheck = await supabaseClient.from('casos_ativos').select('*', { count: 'exact', head: true });
+              if (!recheck.error && typeof recheck.count === 'number') {
+                totalGravadoNuvem = recheck.count;
+              }
+            }
+
             if (!countErr && typeof totalGravadoNuvem === 'number') {
-              if (totalGravadoNuvem === listaPlanilha.length && errosEnvio === 0) {
-                statusNuvemMsg = `☁️ 100% Sincronizados na Nuvem (${totalGravadoNuvem}/${listaPlanilha.length} casos confirmados para toda a equipe)!`;
+              if (totalGravadoNuvem === rows.length && errosEnvio === 0) {
+                statusNuvemMsg = `☁️ 100% Sincronizados na Nuvem (${totalGravadoNuvem}/${rows.length} casos confirmados para toda a equipe)!`;
               } else {
-                statusNuvemMsg = `⚠️ ATENÇÃO NA NUVEM: Foram enviados ${listaPlanilha.length} casos, mas constam ${totalGravadoNuvem} gravados no Supabase!${detalhesErro ? '\nMotivo: ' + detalhesErro : ''}\nTente subir a planilha novamente se os números divergirem.`;
+                statusNuvemMsg = `⚠️ ATENÇÃO NA NUVEM: Foram enviados ${rows.length} casos, mas constam ${totalGravadoNuvem} gravados no Supabase!${detalhesErro ? '\nMotivo: ' + detalhesErro : ''}\nTente subir a planilha novamente se os números divergirem.`;
               }
             } else if (errosEnvio > 0) {
-              statusNuvemMsg = `⚠️ Falha parcial ao sincronizar com a Nuvem (${errosEnvio} lote(s) falharam: ${detalhesErro}).`;
+              statusNuvemMsg = `⚠️ Falha parcial ao sincronizar com a Nuvem (${errosEnvio} registro(s) falharam: ${detalhesErro}).`;
             } else {
               statusNuvemMsg = "☁️ Sincronizados na Nuvem!";
             }
