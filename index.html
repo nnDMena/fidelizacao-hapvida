@@ -2895,11 +2895,13 @@ function solicitarSubirPlanilha() {
           });
           const listaPlanilha = Array.from(mapaUnicos.values());
 
-          // Se estiver conectado na Nuvem, sincroniza em lote para todos os 30 usuários
+          // Se estiver conectado na Nuvem, sincroniza em lote com retentativa e validação real de contagem
+          let statusNuvemMsg = "⚠️ Salvos apenas localmente (Nuvem desconectada).";
           if (isCloudConnected && supabaseClient && !isAmbienteLocal) {
             try {
               // Limpa a fila anterior na nuvem para refletir exatamente a esteira da nova planilha carregada
-              await supabaseClient.from('casos_ativos').delete().neq('cd_usuario', '_none_');
+              const { error: delErr } = await supabaseClient.from('casos_ativos').delete().neq('cd_usuario', '_none_');
+              if (delErr) console.warn('Aviso ao limpar fila anterior no Supabase:', delErr);
             } catch (delErr) {
               console.warn('Aviso ao sincronizar esteira com Supabase:', delErr);
             }
@@ -2910,25 +2912,49 @@ function solicitarSubirPlanilha() {
               updated_at: new Date().toISOString()
             }));
 
-            // Envia em lotes de 50 para garantir velocidade e estabilidade
+            // Envia em lotes menores (25 registros) com até 3 tentativas por lote para evitar timeout/proxy
             let errosEnvio = 0;
-            for (let i = 0; i < rows.length; i += 50) {
-              const chunk = rows.slice(i, i + 50);
-              const { error: upsertErr } = await supabaseClient.from('casos_ativos').upsert(chunk);
-              if (upsertErr) {
-                console.error('Erro ao subir lote no Supabase:', upsertErr);
+            let detalhesErro = '';
+            for (let i = 0; i < rows.length; i += 25) {
+              const chunk = rows.slice(i, i + 25);
+              let loteEnviado = false;
+              for (let tentativa = 1; tentativa <= 3; tentativa++) {
+                const { error: upsertErr } = await supabaseClient.from('casos_ativos').upsert(chunk, { onConflict: 'cd_usuario' });
+                if (!upsertErr) {
+                  loteEnviado = true;
+                  break;
+                }
+                detalhesErro = upsertErr.message || JSON.stringify(upsertErr);
+                console.warn(`Tentativa ${tentativa}/3 falhou no lote ${i}-${i + chunk.length}:`, upsertErr);
+                await new Promise(r => setTimeout(r, 400 * tentativa));
+              }
+              if (!loteEnviado) {
                 errosEnvio++;
               }
             }
-            if (errosEnvio > 0) {
-              console.warn('Atenção: Houve instabilidade ao sincronizar casos na Nuvem.');
+
+            // Verifica a contagem REAL gravada na tabela casos_ativos no Supabase
+            const { count: totalGravadoNuvem, error: countErr } = await supabaseClient
+              .from('casos_ativos')
+              .select('*', { count: 'exact', head: true });
+
+            if (!countErr && typeof totalGravadoNuvem === 'number') {
+              if (totalGravadoNuvem === listaPlanilha.length && errosEnvio === 0) {
+                statusNuvemMsg = `☁️ 100% Sincronizados na Nuvem (${totalGravadoNuvem}/${listaPlanilha.length} casos confirmados para toda a equipe)!`;
+              } else {
+                statusNuvemMsg = `⚠️ ATENÇÃO NA NUVEM: Foram enviados ${listaPlanilha.length} casos, mas constam ${totalGravadoNuvem} gravados no Supabase!${detalhesErro ? '\nMotivo: ' + detalhesErro : ''}\nTente subir a planilha novamente se os números divergirem.`;
+              }
+            } else if (errosEnvio > 0) {
+              statusNuvemMsg = `⚠️ Falha parcial ao sincronizar com a Nuvem (${errosEnvio} lote(s) falharam: ${detalhesErro}).`;
+            } else {
+              statusNuvemMsg = "☁️ Sincronizados na Nuvem!";
             }
           }
 
           activeCases = listaPlanilha;
           saveState();
           render();
-          alert("✅ Conciliação Concluída!\n\n• Casos na Esteira Ativa: " + activeCases.length + " (Novos + Repetidos Atualizados)\n• Baixados para o Histórico (Grupo 3): " + casosQueSumiram.length + " casos marcados com \"CASO NÃO FINALIZADO NO SISTEMA\"\n" + (isCloudConnected ? "☁️ Sincronizados na Nuvem!" : "⚠️ Salvos localmente."));
+          alert("✅ Conciliação Concluída!\n\n• Casos na Esteira Ativa: " + activeCases.length + " (Novos + Repetidos Atualizados)\n• Baixados para o Histórico (Grupo 3): " + casosQueSumiram.length + " casos marcados com \"CASO NÃO FINALIZADO NO SISTEMA\"\n\n" + statusNuvemMsg);
         } catch (err) {
           console.error(err);
           alert('Erro ao processar planilha: ' + (err.message || err));
