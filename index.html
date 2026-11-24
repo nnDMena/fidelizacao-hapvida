@@ -2805,31 +2805,15 @@ function solicitarSubirPlanilha() {
             }
 
             const salvo = salvoNoCofre || {};
-            const d = String(salvo.DESFECHO || salvo.ULTIMO_DESFECHO || '').toUpperCase();
             const logs = (codUsuario && historyLog[codUsuario]) || [];
-            const logTxt = logs.map(l => String(l.text || '')).join(' ').toUpperCase();
-            const ehGnmedCongenere = d.includes('GNMED') || d.includes('CONGÊNERE') || d.includes('CONGENERE') || 
-                                     logTxt.includes('GNMED') || logTxt.includes('CONGÊNERE') || logTxt.includes('CONGENERE');
 
             const jaFinalizado = isCasoComDesfechoOuFinalizado(salvoNoCofre) || 
                                  isCasoComDesfechoOuFinalizado({ CD_USUARIO: codUsuario });
             const dtFinBR = extrairDataFinBR(salvo, codUsuario);
-            const foiFinalizadoHoje = jaFinalizado && (dtFinBR === hojeStrBR);
 
-            // 1. SE FOI FINALIZADO HOJE: Permanece no Histórico e NÃO entra na esteira
-            if (foiFinalizadoHoje && !ehGnmedCongenere) {
-              novoCaso.STATUS_COFRE = salvo.STATUS_COFRE || 'CONCLUÍDO';
-              novoCaso.DESFECHO = salvo.DESFECHO || '';
-              novoCaso.MICRO_DESFECHO = salvo.MICRO_DESFECHO || '';
-              novoCaso.FINALIZACAO_SIGO = salvo.FINALIZACAO_SIGO || '';
-              novoCaso.ULTIMO_DESFECHO = salvo.ULTIMO_DESFECHO || '';
-              novoCaso.DATA_FINALIZACAO = salvo.DATA_FINALIZACAO || new Date().toISOString();
-              syncToVault(novoCaso);
-              return; // NÃO entra na esteira ativa!
-            }
-
-            // 2. SE FOI FINALIZADO EM DIAS ANTERIORES: Entra na esteira e traz o histórico na observação
-            if (jaFinalizado && !foiFinalizadoHoje) {
+            // REGRA ATUALIZADA: Todos os casos da planilha sobem para a esteira ativa (sem bloquear finalizados do dia).
+            // Se já foi finalizado anteriormente (hoje ou em dias anteriores), traz o histórico na observação.
+            if (jaFinalizado) {
               let desfechoPassado = salvo.DESFECHO || salvo.ULTIMO_DESFECHO || '';
               let sigoPassado = salvo.FINALIZACAO_SIGO ? ' - ' + salvo.FINALIZACAO_SIGO : '';
               if (!desfechoPassado) {
@@ -3184,19 +3168,9 @@ function solicitarSubirPlanilha() {
 
       const isEmAndamento = (c.STATUS_COFRE && String(c.STATUS_COFRE).toUpperCase().includes('ANDAMENTO'));
 
-      // Se o caso está explicitamente EM ANDAMENTO (ex: reativado hoje pela planilha do dia)
+      // Se o caso está explicitamente EM ANDAMENTO (subiu na planilha do dia),
+      // não é bloqueado mesmo que exista log de finalização anterior no mesmo dia.
       if (isEmAndamento) {
-        const hojeStr = getHojeBrasiliaStr();
-        if (cod && typeof historyLog !== 'undefined' && historyLog[cod] && historyLog[cod].length > 0) {
-          const temLogFinHoje = historyLog[cod].some(l => {
-            const aut = String(l.author || '').toLowerCase();
-            const txt = String(l.text || '');
-            const dStr = String(l.date || '');
-            const ehFin = aut.includes('finaliza') || txt.startsWith('[DESFECHO:') || txt.includes('[DESFECHO:') || !!l.desfecho;
-            return ehFin && dStr.includes(hojeStr);
-          });
-          if (temLogFinHoje) return true;
-        }
         return false;
       }
 
@@ -3214,19 +3188,6 @@ function solicitarSubirPlanilha() {
         if (s.STATUS_COFRE && String(s.STATUS_COFRE).toUpperCase().includes('CONCLU')) {
           return true;
         }
-      }
-
-      // 3. Verificação na Linha do Tempo: se tem finalização oficial gravada na data de HOJE
-      const hojeStr = getHojeBrasiliaStr();
-      if (cod && typeof historyLog !== 'undefined' && historyLog[cod] && historyLog[cod].length > 0) {
-        const temLogFinHoje = historyLog[cod].some(l => {
-          const aut = String(l.author || '').toLowerCase();
-          const txt = String(l.text || '');
-          const dStr = String(l.date || '');
-          const ehFin = aut.includes('finaliza') || txt.startsWith('[DESFECHO:') || txt.includes('[DESFECHO:') || !!l.desfecho;
-          return ehFin && dStr.includes(hojeStr);
-        });
-        if (temLogFinHoje) return true;
       }
 
       return false;
