@@ -73,13 +73,13 @@
 
     <!-- ABAS DE GESTÃO MÉDICA (DRA. TALITA, DR. RUBENS & DR. VINICIUS) -->
     <div id="containerAbasDrRubens" class="hidden items-center flex-wrap gap-1.5 sm:gap-2">
-      <!-- Aba 1: Ausência de Consenso GNHAP / GNMED -->
+      <!-- Aba 1: Imunobiológico -->
       <button onclick="alternarEsteiraRubens('rubens_consenso')" id="btn-view-rubens_consenso" 
         class="h-9 w-[170px] sm:w-[185px] text-[11px] font-bold px-3 py-1.5 rounded-lg border border-amber-400/50 bg-amber-500/20 hover:bg-amber-500 hover:text-slate-950 text-amber-200 flex items-center justify-between gap-1.5 transition active:scale-[0.98] shadow-xs cursor-pointer" 
-        title="Casos finalizados com Ausência Completa de Consenso (GNHAP & GNMED)">
+        title="Casos com Terapia Imunobiológica Subcutânea ou Intravenosa">
         <div class="flex items-center gap-1.5 truncate">
-          <i class="fa-solid fa-scale-unbalanced text-amber-400 text-xs shrink-0"></i>
-          <span class="truncate">Ausência Consenso</span>
+          <i class="fa-solid fa-syringe text-amber-400 text-xs shrink-0"></i>
+          <span class="truncate">Imunobiológico</span>
         </div>
         <span id="badge-rubens-consenso" class="bg-amber-400 text-slate-950 text-[9.5px] font-black px-1.5 py-0.2 rounded-full shrink-0">0</span>
       </button>
@@ -87,7 +87,7 @@
       <!-- Aba 2: Procedimento Cirúrgico em Oncologia -->
       <button onclick="alternarEsteiraRubens('rubens_onco')" id="btn-view-rubens_onco" 
         class="h-9 w-[170px] sm:w-[185px] text-[11px] font-bold px-3 py-1.5 rounded-lg border border-rose-400/50 bg-rose-500/20 hover:bg-rose-600 hover:text-white text-rose-200 flex items-center justify-between gap-1.5 transition active:scale-[0.98] shadow-xs cursor-pointer" 
-        title="Casos oncológicos (Quimioterapia Sistêmica, Terapia Oncológica, Terapia Antineoplásica)">
+        title="Casos oncológicos (Quimioterapia, Terapia Oncológica, Terapia Antineoplásica, Radioterapia, Câncer de Tireoide)">
         <div class="flex items-center gap-1.5 truncate">
           <i class="fa-solid fa-ribbon text-rose-400 text-xs shrink-0"></i>
           <span class="truncate">Oncológicos</span>
@@ -328,7 +328,65 @@
               <p class="text-[11px] sm:text-xs text-emerald-200/90 mt-0.5">Guias que tiveram o parecer técnico emitido e foram devidamente finalizadas.</p>
             </div>
           </div>
-          <div class="flex items-center gap-2 w-full sm:w-auto">
+          <div class="flex flex-wrap items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
+            <!-- Filtro de Data -->
+            <div class="flex items-center gap-1.5 bg-slate-900/80 border border-emerald-500/40 rounded-xl px-2.5 py-1.5 shadow-xs" title="Filtrar por data de finalização">
+              <i class="fa-solid fa-calendar-day text-emerald-400 text-xs shrink-0"></i>
+              <input type="date" id="filtroDataFinalizados" onchange="setFiltroDataFinalizados(this.value)" class="bg-transparent text-emerald-100 text-xs font-bold focus:outline-none cursor-pointer [color-scheme:dark]">
+              <button type="button" onclick="limparFiltroDataFinalizados()" title="Limpar filtro de data" class="text-emerald-400 hover:text-white text-xs px-0.5 transition cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <!-- Filtro de Equipe -->
+            <div class="flex items-center gap-1.5 bg-slate-900/80 border border-emerald-500/40 rounded-xl px-2.5 py-1.5 shadow-xs" title="Filtrar por Gerente Médico, Equipe Técnica ou ADM">
+              <i class="fa-solid fa-users text-emerald-400 text-xs shrink-0"></i>
+              <select id="filtroEquipeFinalizados" onchange="setFiltroEquipeFinalizados(this.value)" class="bg-slate-900 text-emerald-100 text-xs font-bold border-0 focus:outline-none cursor-pointer max-w-[170px] sm:max-w-[200px] truncate">
+                <option value="">Toda a Equipe</option>
+                <optgroup label="👔 Gerentes Médicos">
+                  <option value="Dra Amanda">Dra Amanda</option>
+                  <option value="Dr Diego">Dr Diego</option>
+                  <option value="Dr João Henrique">Dr João Henrique</option>
+                  <option value="Dra Lorena Santana">Dra Lorena Santana</option>
+                  <option value="Dra Marcela Gutierre">Dra Marcela Gutierre</option>
+                  <option value="Dr Murilo Fernandes">Dr Murilo Fernandes</option>
+                </optgroup>
+                <optgroup label="⚙️ Equipe Técnica">
+                  <option value="Amanda Regina Marques Lira">Amanda Regina Marques Lira</option>
+                  <option value="Caroline Perin">Caroline Perin</option>
+                  <option value="Claudionice Aparecida Silva">Claudionice Aparecida Silva</option>
+                  <option value="Diego Godoi Bernardes da Silva">Diego Godoi Bernardes da Silva</option>
+                  <option value="Ederson Evaristo">Ederson Evaristo</option>
+                  <option value="Fernanda Sertorio Bartolli">Fernanda Sertorio Bartolli</option>
+                  <option value="Gabrielly Oliveira Costa">Gabrielly Oliveira Costa</option>
+                  <option value="Jaqueline Rocha Nascimento Sousa">Jaqueline Rocha Nascimento Sousa</option>
+                  <option value="João Henrique de Souza">João Henrique de Souza</option>
+                  <option value="Lorena de Souza Santana">Lorena de Souza Santana</option>
+                  <option value="Luiz Fernando Pavan Schwarz">Luiz Fernando Pavan Schwarz</option>
+                  <option value="Marcela Usberti Gutierre">Marcela Usberti Gutierre</option>
+                  <option value="Marco Antonio Pereira Guerra">Marco Antonio Pereira Guerra</option>
+                  <option value="Mauricio Cunha Guimaraes">Mauricio Cunha Guimaraes</option>
+                  <option value="Mauricio de Almeida Gomes">Mauricio de Almeida Gomes</option>
+                  <option value="Murilo Adolfo Fernandes">Murilo Adolfo Fernandes</option>
+                  <option value="Natália Santos do Carmo">Natália Santos do Carmo</option>
+                  <option value="Paula Orlandini Pertsew">Paula Orlandini Pertsew</option>
+                  <option value="Rodrigo Rodrigues">Rodrigo Rodrigues</option>
+                  <option value="Rubens Augusto Zapponi Nathan">Rubens Augusto Zapponi Nathan</option>
+                  <option value="Talita Costa Freire de Oliveira">Talita Costa Freire de Oliveira</option>
+                  <option value="Tania Ranchandani">Tania Ranchandani</option>
+                  <option value="Vinicius Nunes Azevedo">Vinicius Nunes Azevedo</option>
+                </optgroup>
+                <optgroup label="📋 Administrativo">
+                  <option value="Anna Carolina de Souza Hanna">Anna Carolina de Souza Hanna</option>
+                  <option value="Christiane Aparecida Balthazar">Christiane Aparecida Balthazar</option>
+                  <option value="Henrique Dos Santos Mozer">Henrique Dos Santos Mozer</option>
+                  <option value="Jose Alailton Reinaldo da Silva">Jose Alailton Reinaldo da Silva</option>
+                  <option value="Larissa Araujo Dos Santos">Larissa Araujo Dos Santos</option>
+                  <option value="Luciene de Paulo Borges">Luciene de Paulo Borges</option>
+                  <option value="Viviane Maconego Pereira Flauzino">Viviane Maconego Pereira Flauzino</option>
+                  <option value="Willian Lima Fogaça">Willian Lima Fogaça</option>
+                </optgroup>
+              </select>
+            </div>
+
             <button id="btnExportarFinalizados" onclick="verificarSenhaEExecutar('baixar_base')" class="hidden w-full sm:w-auto justify-center bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs px-3.5 py-2 rounded-xl items-center gap-2 shadow-sm transition">
               <i class="fa-solid fa-file-excel"></i> Exportar Base (.xlsx)
             </button>
@@ -370,7 +428,65 @@
               <p class="text-[11px] sm:text-xs text-emerald-200/90 mt-0.5">Todos os casos trabalhados, pareceres, pacotes e finalizações compartilhados.</p>
             </div>
           </div>
-          <div class="flex items-center gap-2 w-full sm:w-auto">
+          <div class="flex flex-wrap items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
+            <!-- Filtro de Data -->
+            <div class="flex items-center gap-1.5 bg-slate-900/80 border border-emerald-500/40 rounded-xl px-2.5 py-1.5 shadow-xs" title="Filtrar por data de finalização">
+              <i class="fa-solid fa-calendar-day text-emerald-400 text-xs shrink-0"></i>
+              <input type="date" id="filtroDataHistorico" onchange="setFiltroDataHistorico(this.value)" class="bg-transparent text-emerald-100 text-xs font-bold focus:outline-none cursor-pointer [color-scheme:dark]">
+              <button type="button" onclick="limparFiltroDataHistorico()" title="Limpar filtro de data" class="text-emerald-400 hover:text-white text-xs px-0.5 transition cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <!-- Filtro de Equipe -->
+            <div class="flex items-center gap-1.5 bg-slate-900/80 border border-emerald-500/40 rounded-xl px-2.5 py-1.5 shadow-xs" title="Filtrar por Gerente Médico, Equipe Técnica ou ADM">
+              <i class="fa-solid fa-users text-emerald-400 text-xs shrink-0"></i>
+              <select id="filtroEquipeHistorico" onchange="setFiltroEquipeHistorico(this.value)" class="bg-slate-900 text-emerald-100 text-xs font-bold border-0 focus:outline-none cursor-pointer max-w-[170px] sm:max-w-[200px] truncate">
+                <option value="">Toda a Equipe</option>
+                <optgroup label="👔 Gerentes Médicos">
+                  <option value="Dra Amanda">Dra Amanda</option>
+                  <option value="Dr Diego">Dr Diego</option>
+                  <option value="Dr João Henrique">Dr João Henrique</option>
+                  <option value="Dra Lorena Santana">Dra Lorena Santana</option>
+                  <option value="Dra Marcela Gutierre">Dra Marcela Gutierre</option>
+                  <option value="Dr Murilo Fernandes">Dr Murilo Fernandes</option>
+                </optgroup>
+                <optgroup label="⚙️ Equipe Técnica">
+                  <option value="Amanda Regina Marques Lira">Amanda Regina Marques Lira</option>
+                  <option value="Caroline Perin">Caroline Perin</option>
+                  <option value="Claudionice Aparecida Silva">Claudionice Aparecida Silva</option>
+                  <option value="Diego Godoi Bernardes da Silva">Diego Godoi Bernardes da Silva</option>
+                  <option value="Ederson Evaristo">Ederson Evaristo</option>
+                  <option value="Fernanda Sertorio Bartolli">Fernanda Sertorio Bartolli</option>
+                  <option value="Gabrielly Oliveira Costa">Gabrielly Oliveira Costa</option>
+                  <option value="Jaqueline Rocha Nascimento Sousa">Jaqueline Rocha Nascimento Sousa</option>
+                  <option value="João Henrique de Souza">João Henrique de Souza</option>
+                  <option value="Lorena de Souza Santana">Lorena de Souza Santana</option>
+                  <option value="Luiz Fernando Pavan Schwarz">Luiz Fernando Pavan Schwarz</option>
+                  <option value="Marcela Usberti Gutierre">Marcela Usberti Gutierre</option>
+                  <option value="Marco Antonio Pereira Guerra">Marco Antonio Pereira Guerra</option>
+                  <option value="Mauricio Cunha Guimaraes">Mauricio Cunha Guimaraes</option>
+                  <option value="Mauricio de Almeida Gomes">Mauricio de Almeida Gomes</option>
+                  <option value="Murilo Adolfo Fernandes">Murilo Adolfo Fernandes</option>
+                  <option value="Natália Santos do Carmo">Natália Santos do Carmo</option>
+                  <option value="Paula Orlandini Pertsew">Paula Orlandini Pertsew</option>
+                  <option value="Rodrigo Rodrigues">Rodrigo Rodrigues</option>
+                  <option value="Rubens Augusto Zapponi Nathan">Rubens Augusto Zapponi Nathan</option>
+                  <option value="Talita Costa Freire de Oliveira">Talita Costa Freire de Oliveira</option>
+                  <option value="Tania Ranchandani">Tania Ranchandani</option>
+                  <option value="Vinicius Nunes Azevedo">Vinicius Nunes Azevedo</option>
+                </optgroup>
+                <optgroup label="📋 Administrativo">
+                  <option value="Anna Carolina de Souza Hanna">Anna Carolina de Souza Hanna</option>
+                  <option value="Christiane Aparecida Balthazar">Christiane Aparecida Balthazar</option>
+                  <option value="Henrique Dos Santos Mozer">Henrique Dos Santos Mozer</option>
+                  <option value="Jose Alailton Reinaldo da Silva">Jose Alailton Reinaldo da Silva</option>
+                  <option value="Larissa Araujo Dos Santos">Larissa Araujo Dos Santos</option>
+                  <option value="Luciene de Paulo Borges">Luciene de Paulo Borges</option>
+                  <option value="Viviane Maconego Pereira Flauzino">Viviane Maconego Pereira Flauzino</option>
+                  <option value="Willian Lima Fogaça">Willian Lima Fogaça</option>
+                </optgroup>
+              </select>
+            </div>
+
             <button id="btnExportarCofre" onclick="verificarSenhaEExecutar('baixar_base')" class="hidden w-full sm:w-auto justify-center bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs px-3.5 py-2 rounded-xl items-center gap-2 shadow-sm transition">
               <i class="fa-solid fa-file-excel"></i> Exportar Planilha Base (.xlsx)
             </button>
@@ -397,18 +513,18 @@
         </div>
       </div>
 
-      <!-- 6. ESTEIRA DR. RUBENS: AUSÊNCIA DE CONSENSO (GNHAP & GNMED) -->
+      <!-- 6. ESTEIRA DE TRATAMENTO IMUNOBIOLÓGICO -->
       <div id="view-rubens_consenso" class="hidden space-y-4">
         <div class="bg-gradient-to-r from-amber-950 via-slate-900 to-indigo-950 text-white p-3.5 sm:p-4 rounded-2xl shadow-xs flex flex-wrap items-center justify-between gap-3 sm:gap-4 border border-amber-500/30">
           <div class="flex items-center gap-3">
             <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300 text-base sm:text-lg shrink-0">
-              <i class="fa-solid fa-scale-unbalanced"></i>
+              <i class="fa-solid fa-syringe"></i>
             </div>
             <div>
               <h2 class="text-xs sm:text-sm font-extrabold flex items-center gap-2 flex-wrap">
-                Esteira de Ausência de Consenso — GNHAP &amp; GNMED
+                Esteira de Tratamento Imunobiológico (Ativos na Fila)
               </h2>
-              <p class="text-[11px] sm:text-xs text-amber-200/90 mt-0.5">Casos finalizados com ausência completa de consenso para acompanhamento médico e deliberação.</p>
+              <p class="text-[11px] sm:text-xs text-amber-200/90 mt-0.5">Casos ativos na esteira com Terapia Imunobiológica Subcutânea ou Intravenosa.</p>
             </div>
           </div>
           <div class="flex items-center gap-2 w-full sm:w-auto">
@@ -420,16 +536,16 @@
 
         <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
           <div class="overflow-x-auto w-full">
-            <table class="w-full text-left border-collapse text-xs whitespace-nowrap sm:whitespace-normal min-w-[800px] sm:min-w-0">
+            <table class="w-full text-left border-collapse text-xs whitespace-nowrap sm:whitespace-normal min-w-[850px] sm:min-w-0">
               <thead>
                 <tr class="bg-amber-50/60 text-slate-700 uppercase tracking-wider font-bold border-b border-amber-200/60 text-[10.5px] sm:text-[11px]">
-                  <th class="py-2.5 sm:py-3 px-3 sm:px-4 text-center">Status (48h)</th>
                   <th class="py-2.5 sm:py-3 px-3 sm:px-4">Cód. Utente</th>
                   <th class="py-2.5 sm:py-3 px-3 sm:px-4">Beneficiário</th>
-                  <th class="py-2.5 sm:py-3 px-3 sm:px-4">Procedimento</th>
-                  <th class="py-2.5 sm:py-3 px-3 sm:px-4">Área / Origem</th>
-                  <th class="py-2.5 sm:py-3 px-3 sm:px-4">Desfecho &amp; Encaminhamento</th>
-                  <th class="py-2.5 sm:py-3 px-3 sm:px-4">Assumiu / Médico</th>
+                  <th class="py-2.5 sm:py-3 px-3 sm:px-4">Procedimento Imunobiológico</th>
+                  <th class="py-2.5 sm:py-3 px-3 sm:px-4">Prestador Solicitante</th>
+                  <th class="py-2.5 sm:py-3 px-3 sm:px-4 text-center">Prazos</th>
+                  <th class="py-2.5 sm:py-3 px-3 sm:px-4">Parecer / Desfecho</th>
+                  <th class="py-2.5 sm:py-3 px-3 sm:px-4">Equipe / Médico</th>
                   <th class="py-2.5 sm:py-3 px-3 sm:px-4 text-right">Ação</th>
                 </tr>
               </thead>
@@ -450,7 +566,7 @@
               <h2 class="text-xs sm:text-sm font-extrabold flex items-center gap-2 flex-wrap">
                 Esteira de Tratamento Oncológico (Ativos na Fila)
               </h2>
-              <p class="text-[11px] sm:text-xs text-rose-200/90 mt-0.5">Casos ativos na esteira com Quimioterapia Sistêmica, Terapia Oncológica ou Terapia Antineoplásica.</p>
+              <p class="text-[11px] sm:text-xs text-rose-200/90 mt-0.5">Casos ativos na esteira com Quimioterapia, Terapia Oncológica/Antineoplásica, Radioterapia ou Câncer de Tireoide.</p>
             </div>
           </div>
           <div class="flex items-center gap-2 w-full sm:w-auto flex-wrap">
@@ -989,6 +1105,10 @@
                   <option value="P67 (Verticalizado contratual com possibilidade de JUNTA MÉDICA, se falha da verticalização)">P67 (Verticalizado contratual com possibilidade de JUNTA MÉDICA, se falha da verticalização)</option>
                   <option value="P71 (Direcionado com possibilidade de JUNTA MÉDICA, se falha no direcionamento de rede)">P71 (Direcionado com possibilidade de JUNTA MÉDICA, se falha no direcionamento de rede)</option>
                   <option value="P71 (Direcionado com possibilidade de RESOLUÇÃO do valor, se falha na verticalização)">P71 (Direcionado com possibilidade de RESOLUÇÃO do valor, se falha na verticalização)</option>
+                  <option value="ADM - Direcionado após 12:00 do D8 com possibilidade de JUNTA MÉDICA, se falha no direcionamento de rede">ADM - Direcionado após 12:00 do D8 com possibilidade de JUNTA MÉDICA, se falha no direcionamento de rede</option>
+                  <option value="ADM - Direcionado após 12:00 do D8 com possibilidade de RESOLUÇÃO do valor, se falha na verticalização">ADM - Direcionado após 12:00 do D8 com possibilidade de RESOLUÇÃO do valor, se falha na verticalização</option>
+                  <option value="ADM - Verticalizado consensual com possibilidade de JUNTA MÉDICA, se falha da verticalização">ADM - Verticalizado consensual com possibilidade de JUNTA MÉDICA, se falha da verticalização</option>
+                  <option value="ADM - Verticalizado consensual com possibilidade de RESOLUÇÃO do valor, se falha da verticalização">ADM - Verticalizado consensual com possibilidade de RESOLUÇÃO do valor, se falha da verticalização</option>
                   <option value="P75 (Novo Formato enviado para acolhimento na Rede Credenciada)">P75 (Novo Formato enviado para acolhimento na Rede Credenciada)</option>
                 </select>
               </div>
@@ -1453,9 +1573,57 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
     const VAULT_CASES_KEY = 'hapvida_fidelizacao_vault_cases_v4';
     const SUPABASE_CONFIG_KEY = 'hapvida_supabase_config_v1';
 
+    function isTextoNaoFinalizado(str) {
+      if (!str) return false;
+      const s = String(str).toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      return s.includes('FINALIZADO NO SISTEMA') || 
+             s.includes('NAO FINALIZADO NO SISTEMA') || 
+             (s.includes('CASO NAO FINALIZADO') && s.includes('SISTEMA'));
+    }
+
+    function limparTextosNaoFinalizados(obj) {
+      if (!obj || typeof obj !== 'object') return;
+      if (isTextoNaoFinalizado(obj.FINALIZACAO_SIGO)) obj.FINALIZACAO_SIGO = '';
+      if (isTextoNaoFinalizado(obj.ULTIMO_DESFECHO)) obj.ULTIMO_DESFECHO = '';
+      if (isTextoNaoFinalizado(obj.DESFECHO)) obj.DESFECHO = '';
+      if (isTextoNaoFinalizado(obj.MICRO_DESFECHO)) obj.MICRO_DESFECHO = '';
+    }
+
     let activeCases = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
     let historyLog = JSON.parse(localStorage.getItem(HISTORY_KEY)) || {};
     let vaultCases = JSON.parse(localStorage.getItem(VAULT_CASES_KEY)) || {};
+    try {
+      let mudou = false;
+      activeCases.forEach(c => {
+        if (c && (isTextoNaoFinalizado(c.FINALIZACAO_SIGO) || isTextoNaoFinalizado(c.ULTIMO_DESFECHO) || isTextoNaoFinalizado(c.DESFECHO))) {
+          limparTextosNaoFinalizados(c);
+          mudou = true;
+        }
+      });
+      if (mudou) localStorage.setItem(STORAGE_KEY, JSON.stringify(activeCases));
+
+      let mudouVault = false;
+      Object.values(vaultCases).forEach(c => {
+        if (c && (isTextoNaoFinalizado(c.FINALIZACAO_SIGO) || isTextoNaoFinalizado(c.ULTIMO_DESFECHO) || isTextoNaoFinalizado(c.DESFECHO))) {
+          limparTextosNaoFinalizados(c);
+          mudouVault = true;
+        }
+      });
+      if (mudouVault) localStorage.setItem(VAULT_CASES_KEY, JSON.stringify(vaultCases));
+
+      let mudouHist = false;
+      Object.keys(historyLog).forEach(cod => {
+        if (Array.isArray(historyLog[cod])) {
+          historyLog[cod].forEach(l => {
+            if (l) {
+              if (isTextoNaoFinalizado(l.sigo)) { l.sigo = ''; mudouHist = true; }
+              if (isTextoNaoFinalizado(l.desfecho)) { l.desfecho = ''; mudouHist = true; }
+            }
+          });
+        }
+      });
+      if (mudouHist) localStorage.setItem(HISTORY_KEY, JSON.stringify(historyLog));
+    } catch (_) {}
     let currentCase = null;
     let currentView = 'kanban';
 
@@ -1685,6 +1853,7 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
         const { data: vltData, error: vltErr } = await supabaseClient.from('cofre_casos').select('cd_usuario, dados');
         if (!vltErr && vltData && vltData.length > 0) {
           vltData.forEach(r => {
+            if (r.dados) limparTextosNaoFinalizados(r.dados);
             vaultCases[r.cd_usuario] = r.dados;
           });
           localStorage.setItem(VAULT_CASES_KEY, JSON.stringify(vaultCases));
@@ -2903,20 +3072,20 @@ function solicitarSubirPlanilha() {
 
           casosQueSumiram.forEach(c => {
             const cod = String(c.CD_USUARIO).trim();
-            c.FINALIZACAO_SIGO = 'CASO NÃO FINALIZADO NO SISTEMA';
+            c.FINALIZACAO_SIGO = '';
             c.DESFECHO = c.DESFECHO || 'Cancelado / Não Consta em Planilha';
             c.MICRO_DESFECHO = c.MICRO_DESFECHO || c.DESFECHO;
             c.STATUS_COFRE = 'CONCLUÍDO';
             c.DATA_FINALIZACAO = agora.toISOString();
             c.FINALIZADO_EM_TS = agora.getTime();
-            c.ULTIMO_DESFECHO = 'CASO NÃO FINALIZADO NO SISTEMA';
+            c.ULTIMO_DESFECHO = c.DESFECHO || 'Cancelado / Não Consta em Planilha';
 
             addImmutableLog(
               cod,
               'Sistema (Conciliação Planilha)',
               agoraStr,
-              '📋 [BAIXA AUTOMÁTICA]: Caso retirado da esteira pois não constava na nova planilha carregada.\nFinalização - SIGO: CASO NÃO FINALIZADO NO SISTEMA.',
-              { desfecho: c.DESFECHO, sigo: 'CASO NÃO FINALIZADO NO SISTEMA' }
+              '📋 [BAIXA AUTOMÁTICA]: Caso retirado da esteira pois não constava na nova planilha carregada.',
+              { desfecho: c.DESFECHO, sigo: '' }
             );
 
             syncToVault(c);
@@ -2974,7 +3143,7 @@ function solicitarSubirPlanilha() {
           activeCases = listaPlanilha;
           saveState();
           render();
-          alert("✅ Conciliação Concluída!\n\n• Casos na Esteira Ativa: " + activeCases.length + " (Novos + Repetidos Atualizados)\n• Baixados para o Histórico (Grupo 3): " + casosQueSumiram.length + " casos marcados com \"CASO NÃO FINALIZADO NO SISTEMA\"\n" + (isCloudConnected ? "☁️ Sincronizados na Nuvem!" : "⚠️ Salvos localmente."));
+          alert("✅ Conciliação Concluída!\n\n• Casos na Esteira Ativa: " + activeCases.length + " (Novos + Repetidos Atualizados)\n• Baixados para o Histórico (Grupo 3): " + casosQueSumiram.length + " casos arquivados (não constam na nova planilha)\n" + (isCloudConnected ? "☁️ Sincronizados na Nuvem!" : "⚠️ Salvos localmente."));
         } catch (err) {
           console.error(err);
           alert('Erro ao processar planilha: ' + (err.message || err));
@@ -3264,10 +3433,41 @@ function solicitarSubirPlanilha() {
       return false;
     }
 
+    function isCasoImunobiologico(c) {
+      if (!c) return false;
+      const campos = [
+        c.PROCEDIMENTO_AGRUPADO,
+        c.DS_PROCEDIMENTO,
+        c.CD_PROCEDIMENTO,
+        c.ESPECIALIDADE,
+        c.NM_ESPECIALIDADE,
+        c.TRATAMENTO,
+        c.CID,
+        c.DS_CID,
+        c.OBSERVACAO,
+        c.ULTIMO_DESFECHO
+      ].filter(Boolean).join(' ');
+
+      const textoNorm = String(campos)
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+
+      const termosImuno = [
+        'terapia imunobiologica subcutanea',
+        'terapia imunobiologica intravenosa',
+        'imunobiologica subcutanea',
+        'imunobiologica intravenosa',
+        'imunobiologico',
+        'imunobiologica',
+        'terapia imunobiologica'
+      ];
+
+      return termosImuno.some(termo => textoNorm.includes(termo));
+    }
+
     function isCasoAusenciaConsenso(c) {
-      // Critério em definição pelo usuário. Fila temporariamente vazia.
-      // Quando o critério for definido, adicionar aqui a regra.
-      return false;
+      return isCasoImunobiologico(c);
     }
 
     function isCasoOncologia(c) {
@@ -3293,8 +3493,17 @@ function solicitarSubirPlanilha() {
 
       const termosOncoExatos = [
         'quimioterapia sistemica',
+        'quimioterapia por cateter intra-arterial',
+        'quimioterapia por cateter',
+        'quimioterapia',
         'terapia oncologica',
-        'terapia antineoplasica'
+        'terapia antineoplasica',
+        'radioterapia conformada tridimensional',
+        'radioterapia conformada',
+        'rct-3d',
+        'cancer da tireoide',
+        'cancer de tireoide',
+        'tratamento de cancer da tireoide'
       ];
 
       return termosOncoExatos.some(termo => textoNorm.includes(termo));
@@ -3626,6 +3835,99 @@ function solicitarSubirPlanilha() {
 
       // 4. Desempate estável por nome
       return String(a.NM_USUARIO || '').localeCompare(String(b.NM_USUARIO || ''), 'pt-BR');
+    }
+
+    function compararFinalizadosMaisRecentes(a, b) {
+      const da = extrairDataFinalizacaoCaso(a);
+      const db = extrairDataFinalizacaoCaso(b);
+      const ta = da ? da.getTime() : 0;
+      const tb = db ? db.getTime() : 0;
+      if (tb !== ta) return tb - ta; // Mais recentes primeiro (descendente)
+      return (b.DIAS_AUTORIZACAO || 0) - (a.DIAS_AUTORIZACAO || 0);
+    }
+
+    let filtroDataFinalizados = '';
+    let filtroEquipeFinalizados = '';
+    let filtroDataHistorico = '';
+    let filtroEquipeHistorico = '';
+
+    function setFiltroDataFinalizados(val) {
+      filtroDataFinalizados = val || '';
+      render();
+    }
+    function limparFiltroDataFinalizados() {
+      filtroDataFinalizados = '';
+      const el = document.getElementById('filtroDataFinalizados');
+      if (el) el.value = '';
+      render();
+    }
+    function setFiltroEquipeFinalizados(val) {
+      filtroEquipeFinalizados = val || '';
+      render();
+    }
+
+    function setFiltroDataHistorico(val) {
+      filtroDataHistorico = val || '';
+      render();
+    }
+    function limparFiltroDataHistorico() {
+      filtroDataHistorico = '';
+      const el = document.getElementById('filtroDataHistorico');
+      if (el) el.value = '';
+      render();
+    }
+    function setFiltroEquipeHistorico(val) {
+      filtroEquipeHistorico = val || '';
+      render();
+    }
+
+    function casoCorrespondeFiltroData(c, dataFiltroISO) {
+      if (!dataFiltroISO) return true;
+      const partes = String(dataFiltroISO).split('-');
+      if (partes.length !== 3) return true;
+      const dataFiltroBR = `${partes[2]}/${partes[1]}/${partes[0]}`;
+      
+      const dtBR = extrairDataFinBR(c, c.CD_USUARIO);
+      if (dtBR && dtBR === dataFiltroBR) return true;
+      
+      const dObj = extrairDataFinalizacaoCaso(c);
+      if (dObj) {
+        const dia = String(dObj.getDate()).padStart(2, '0');
+        const mes = String(dObj.getMonth() + 1).padStart(2, '0');
+        const ano = dObj.getFullYear();
+        const dObjBR = `${dia}/${mes}/${ano}`;
+        if (dObjBR === dataFiltroBR) return true;
+      }
+      return false;
+    }
+
+    function casoCorrespondeFiltroEquipe(c, nomeFiltro) {
+      if (!nomeFiltro) return true;
+      if (!c) return false;
+      
+      const normFiltro = normalizarTexto(String(nomeFiltro).replace(/dr\(a\)\.?|dr\.?|dra\.?/gi, ''));
+      if (!normFiltro) return true;
+      const partesFiltro = normFiltro.split(/\s+/).filter(p => p.length >= 3);
+      
+      const camposAlvo = [
+        c.GERENTE_MEDICO,
+        c.ASSUMIU_POR,
+        c.ADMINISTRATIVO,
+        c.MEDICO_CONSULTOR
+      ].filter(Boolean).map(v => normalizarTexto(String(v).replace(/dr\(a\)\.?|dr\.?|dra\.?/gi, '')));
+      
+      if (camposAlvo.length === 0) return false;
+      
+      for (const campo of camposAlvo) {
+        if (campo === normFiltro || campo.includes(normFiltro) || normFiltro.includes(campo)) return true;
+        if (partesFiltro.length >= 1 && partesFiltro.every(p => campo.includes(p))) return true;
+        const primeiroNomeFiltro = partesFiltro[0];
+        const primeiroNomeCampo = campo.split(/\s+/)[0];
+        if (primeiroNomeFiltro && primeiroNomeCampo && primeiroNomeFiltro === primeiroNomeCampo && primeiroNomeFiltro.length >= 4) {
+          return true;
+        }
+      }
+      return false;
     }
 
     let filtroUrgencia = null; // null | 'critico' | 'atencao' | 'regular' | 'sem_responsavel'
@@ -4270,16 +4572,21 @@ function solicitarSubirPlanilha() {
       const elDesfecho = document.getElementById('singleSelectDesfecho');
       if (elDesfecho) {
         let desfechoRestaurado = currentCase.DESFECHO || currentCase.MICRO_DESFECHO || (vaultCases[String(cod)] && (vaultCases[String(cod)].DESFECHO || vaultCases[String(cod)].MICRO_DESFECHO)) || '';
+        if (isTextoNaoFinalizado(desfechoRestaurado)) desfechoRestaurado = '';
         if (!desfechoRestaurado) {
           const logs = historyLog[String(cod)] || [];
           for (const l of logs) {
-            if (l.desfecho) { desfechoRestaurado = l.desfecho; break; }
+            if (l.desfecho && !isTextoNaoFinalizado(l.desfecho)) { desfechoRestaurado = l.desfecho; break; }
             if (l.text && String(l.text).startsWith('[DESFECHO:')) {
               const idx = l.text.indexOf('] - ');
-              if (idx !== -1) { desfechoRestaurado = l.text.substring('[DESFECHO:'.length, idx).trim(); break; }
+              if (idx !== -1) { 
+                const dPot = l.text.substring('[DESFECHO:'.length, idx).trim();
+                if (!isTextoNaoFinalizado(dPot)) { desfechoRestaurado = dPot; break; }
+              }
             }
           }
         }
+        if (isTextoNaoFinalizado(desfechoRestaurado)) desfechoRestaurado = '';
         currentCase.DESFECHO = desfechoRestaurado;
         elDesfecho.value = desfechoRestaurado;
         if (!elDesfecho.value && desfechoRestaurado) {
@@ -4291,17 +4598,40 @@ function solicitarSubirPlanilha() {
       const elNota = document.getElementById('singleInputNota');
       if (elNota) {
         let notaRestaurada = currentCase.FINALIZACAO_SIGO || (vaultCases[String(cod)] && vaultCases[String(cod)].FINALIZACAO_SIGO) || '';
+        if (isTextoNaoFinalizado(notaRestaurada)) notaRestaurada = '';
+
         if (!notaRestaurada) {
           const logs = historyLog[String(cod)] || [];
           for (const l of logs) {
-            if (l.sigo) { notaRestaurada = l.sigo; break; }
+            if (l.sigo && !isTextoNaoFinalizado(l.sigo)) { 
+              notaRestaurada = l.sigo; 
+              break; 
+            }
             if (l.text && String(l.text).startsWith('[DESFECHO:')) {
               const idx = l.text.indexOf('] - ');
-              if (idx !== -1) { notaRestaurada = l.text.substring(idx + 4).trim(); break; }
+              if (idx !== -1) { 
+                const potNota = l.text.substring(idx + 4).trim();
+                if (!isTextoNaoFinalizado(potNota)) {
+                  notaRestaurada = potNota; 
+                  break; 
+                }
+              }
             }
           }
         }
-        elNota.value = notaRestaurada;
+        if (isTextoNaoFinalizado(notaRestaurada)) {
+          notaRestaurada = '';
+        }
+        if (currentCase) {
+          limparTextosNaoFinalizados(currentCase);
+        }
+        if (vaultCases[String(cod)]) {
+          limparTextosNaoFinalizados(vaultCases[String(cod)]);
+        }
+        elNota.value = isTextoNaoFinalizado(notaRestaurada) ? '' : notaRestaurada;
+        if (isTextoNaoFinalizado(elNota.value)) {
+          elNota.value = '';
+        }
       }
 
       renderSingleTimeline();
@@ -4627,6 +4957,14 @@ function solicitarSubirPlanilha() {
       "P67 (Verticalizado contratual com possibilidade de JUNTA MÉDICA, se falha da verticalização)": "CÓDIGOS: [QUAL(IS) CÓDIGOS ACORDADOS]. OPME: [QUAL(IS) OPME ACORDADOS]. CASO PASSÍVEL DE JUNTA SE FALHA NA VERTICALIZAÇÃO. FORA DAS REGRAS DE AUTORIZAÇÃO. PACIENTE EM PLANOS PASSÍVEIS DE VERTICALIZAÇÃO (HMO \"NÃO LICITAÇÃO\", PPO ADVANCE 600/700 ENF). SINALIZAMOS PARA TRANSLADO/VERTICALIZAÇÃO. SUGERIMOS [ESPECIALIDADE]  [MÉDICO/CLÍNICA 00 00000000], QUE ATENDE NA CIDADE [CIDADE].",
       "P71 (Direcionado com possibilidade de JUNTA MÉDICA, se falha no direcionamento de rede)": "CÓDIGOS: [QUAL(IS) CÓDIGOS ACORDADOS]. OPME: [QUAL(IS) OPME ACORDADOS]. CASO PASSÍVEL DE JUNTA SE FALHA NO DIRECIONAMENTO. FORA DAS REGRAS DE AUTORIZAÇÃO. PACIENTE EM PLANOS PASSÍVEIS DE DIRECIONAMENTO DE REDE (HMO LICITAÇÃO, PPO - ADVANCE 600/700 APTO, PREMIUM E INFINITY). SUGERIMOS  [ESPECIALIDADE]  [MÉDICO/CLÍNICA 00 00000000], QUE ATENDE NA CIDADE [CIDADE].",
       "P71 (Direcionado com possibilidade de RESOLUÇÃO do valor, se falha na verticalização)": "CÓDIGOS: [QUAL(IS) CÓDIGOS ACORDADOS]. OPME: [QUAL(IS) OPME ACORDADOS]. CASO FORA DAS REGRAS DE AUTORIZAÇÃO. PACIENTE EM PLANOS PASSÍVEIS DE DIRECIONAMENTO DE REDE (HMO LICITAÇÃO, PPO - ADVANCE 600/700 APTO, PREMIUM E INFINITY). SUGERIMOS  [ESPECIALIDADE]  [MÉDICO/CLÍNICA 00 00000000], QUE ATENDE NA CIDADE [CIDADE].",
+      "ADM - Direcionado após 12:00 do D8 com possibilidade de JUNTA MÉDICA, se falha no direcionamento de rede": "CÓDIGOS: [QUAL(IS) CÓDIGOS ACORDADOS]. OPME: [QUAL(IS) OPME ACORDADOS]. CASO PASSÍVEL DE JUNTA SE FALHA NO DIRECIONAMENTO. FORA DAS REGRAS DE AUTORIZAÇÃO. PACIENTE EM PLANOS PASSÍVEIS DE DIRECIONAMENTO DE REDE (HMO LICITAÇÃO, PPO - ADVANCE 600/700 APTO, PREMIUM E INFINITY). SUGERIMOS  [ESPECIALIDADE]  [MÉDICO/CLÍNICA 00 00000000], QUE ATENDE NA CIDADE [CIDADE].",
+      "ADM - Direcionado após 12:00 do D8 com possibilidade de JUNTA MÉDICA, se falha no direcionamento de rede.": "CÓDIGOS: [QUAL(IS) CÓDIGOS ACORDADOS]. OPME: [QUAL(IS) OPME ACORDADOS]. CASO PASSÍVEL DE JUNTA SE FALHA NO DIRECIONAMENTO. FORA DAS REGRAS DE AUTORIZAÇÃO. PACIENTE EM PLANOS PASSÍVEIS DE DIRECIONAMENTO DE REDE (HMO LICITAÇÃO, PPO - ADVANCE 600/700 APTO, PREMIUM E INFINITY). SUGERIMOS  [ESPECIALIDADE]  [MÉDICO/CLÍNICA 00 00000000], QUE ATENDE NA CIDADE [CIDADE].",
+      "ADM - Direcionado após 12:00 do D8 com possibilidade de RESOLUÇÃO do valor, se falha na verticalização": "",
+      "ADM - Direcionado após 12:00 do D8 com possibilidade de RESOLUÇÃO do valor, se falha na verticalização.": "",
+      "ADM - Verticalizado consensual com possibilidade de JUNTA MÉDICA, se falha da verticalização": "CÓDIGOS: [QUAL(IS) CÓDIGOS ACORDADOS]. OPME: [QUAL(IS) OPME ACORDADOS]. CASO PASSÍVEL DE JUNTA SE FALHA NA VERTICALIZAÇÃO. FORA DAS REGRAS DE AUTORIZAÇÃO. PACIENTE EM PLANOS PASSÍVEIS DE VERTICALIZAÇÃO (HMO \"NÃO LICITAÇÃO\", PPO ADVANCE 600/700 ENF). SINALIZAMOS PARA TRANSLADO/VERTICALIZAÇÃO. SUGERIMOS [ESPECIALIDADE]  [MÉDICO/CLÍNICA 00 00000000], QUE ATENDE NA CIDADE [CIDADE].",
+      "ADM - Verticalizado consensual com possibilidade de JUNTA MÉDICA, se falha da verticalização.": "CÓDIGOS: [QUAL(IS) CÓDIGOS ACORDADOS]. OPME: [QUAL(IS) OPME ACORDADOS]. CASO PASSÍVEL DE JUNTA SE FALHA NA VERTICALIZAÇÃO. FORA DAS REGRAS DE AUTORIZAÇÃO. PACIENTE EM PLANOS PASSÍVEIS DE VERTICALIZAÇÃO (HMO \"NÃO LICITAÇÃO\", PPO ADVANCE 600/700 ENF). SINALIZAMOS PARA TRANSLADO/VERTICALIZAÇÃO. SUGERIMOS [ESPECIALIDADE]  [MÉDICO/CLÍNICA 00 00000000], QUE ATENDE NA CIDADE [CIDADE].",
+      "ADM - Verticalizado consensual com possibilidade de RESOLUÇÃO do valor, se falha da verticalização": "CÓDIGOS: [QUAL(IS) CÓDIGOS ACORDADOS]. OPME: [QUAL(IS) OPME ACORDADOS]. CASO FORA DAS REGRAS DE AUTORIZAÇÃO. PACIENTE EM PLANOS PASSÍVEIS DE VERTICALIZAÇÃO (HMO \"NÃO LICITAÇÃO\", PPO ADVANCE 600/700 ENF). SINALIZAMOS PARA TRANSLADO/VERTICALIZAÇÃO. SUGERIMOS [ESPECIALIDADE]  [MÉDICO/CLÍNICA 00 00000000], QUE ATENDE NA CIDADE [CIDADE].",
+      "ADM - Verticalizado consensual com possibilidade de RESOLUÇÃO do valor, se falha da verticalização.": "CÓDIGOS: [QUAL(IS) CÓDIGOS ACORDADOS]. OPME: [QUAL(IS) OPME ACORDADOS]. CASO FORA DAS REGRAS DE AUTORIZAÇÃO. PACIENTE EM PLANOS PASSÍVEIS DE VERTICALIZAÇÃO (HMO \"NÃO LICITAÇÃO\", PPO ADVANCE 600/700 ENF). SINALIZAMOS PARA TRANSLADO/VERTICALIZAÇÃO. SUGERIMOS [ESPECIALIDADE]  [MÉDICO/CLÍNICA 00 00000000], QUE ATENDE NA CIDADE [CIDADE].",
       // Aliases para compatibilidade retroativa com registros anteriores
       "P67 (Verticalizado contratual com possibilidade de JUNTA MÉDICA, se falha da verticalização, por OPME alto custo)": "CÓDIGOS: [QUAL(IS) CÓDIGOS ACORDADOS]. OPME: [QUAL(IS) OPME ACORDADOS]. CASO PASSÍVEL DE JUNTA SE FALHA NA VERTICALIZAÇÃO. FORA DAS REGRAS DE AUTORIZAÇÃO. PACIENTE EM PLANOS PASSÍVEIS DE VERTICALIZAÇÃO (HMO \"NÃO LICITAÇÃO\", PPO ADVANCE 600/700 ENF). SINALIZAMOS PARA TRANSLADO/VERTICALIZAÇÃO. SUGERIMOS [ESPECIALIDADE]  [MÉDICO/CLÍNICA 00 00000000], QUE ATENDE NA CIDADE [CIDADE].",
       "P71 (Direcionado com possibilidade de JUNTA MÉDICA, se falha do direcionamento de rede, por OPME alto custo)": "CÓDIGOS: [QUAL(IS) CÓDIGOS ACORDADOS]. OPME: [QUAL(IS) OPME ACORDADOS]. CASO PASSÍVEL DE JUNTA SE FALHA NO DIRECIONAMENTO. FORA DAS REGRAS DE AUTORIZAÇÃO. PACIENTE EM PLANOS PASSÍVEIS DE DIRECIONAMENTO DE REDE (HMO LICITAÇÃO, PPO - ADVANCE 600/700 APTO, PREMIUM E INFINITY). SUGERIMOS  [ESPECIALIDADE]  [MÉDICO/CLÍNICA 00 00000000], QUE ATENDE NA CIDADE [CIDADE].",
@@ -4642,9 +4980,10 @@ function solicitarSubirPlanilha() {
 
     function buscarTextoModeloFinalizacao(desfecho) {
       if (!desfecho) return '';
-      if (modelosFinalizacaoSIGO[desfecho]) return modelosFinalizacaoSIGO[desfecho];
+      if (modelosFinalizacaoSIGO.hasOwnProperty(desfecho)) return modelosFinalizacaoSIGO[desfecho];
       const target = String(desfecho).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
-      return mapaNormalizadoModelosSIGO[target] || '';
+      if (mapaNormalizadoModelosSIGO.hasOwnProperty(target)) return mapaNormalizadoModelosSIGO[target];
+      return '';
     }
 
     function aoMudarDesfecho(valor) {
@@ -5222,16 +5561,22 @@ function solicitarSubirPlanilha() {
 
       const tbodyFin = document.getElementById('finalizados-tbody');
       if (tbodyFin && currentView === 'finalizados') {
+        const elDtFin = document.getElementById('filtroDataFinalizados');
+        if (elDtFin && elDtFin.value !== filtroDataFinalizados) elDtFin.value = filtroDataFinalizados;
+        const elEqFin = document.getElementById('filtroEquipeFinalizados');
+        if (elEqFin && elEqFin.value !== filtroEquipeFinalizados) elEqFin.value = filtroEquipeFinalizados;
+
         const listaFinalizados = Object.values(vaultCases).filter(c => {
           if (!isCasoComDesfechoOuFinalizado(c)) return false;
-          const dtFin = extrairDataFinBR(c, c.CD_USUARIO);
-          if (dtFin !== hojeStrBR) return false;
+          if (filtroDataFinalizados && !casoCorrespondeFiltroData(c, filtroDataFinalizados)) return false;
+          if (filtroEquipeFinalizados && !casoCorrespondeFiltroEquipe(c, filtroEquipeFinalizados)) return false;
           return casoCorrespondeBusca(c, q);
-        }).sort(compararDiasEsteira);
+        }).sort(compararFinalizadosMaisRecentes);
 
         tbodyFin.innerHTML = listaFinalizados.length ? listaFinalizados.map(c => {
           const logs = historyLog[c.CD_USUARIO] || [];
           const ultimoLog = logs[0] ? `${logs[0].text} (${logs[0].date})` : (c.ULTIMO_DESFECHO || 'Sem parecer final');
+          const dtFinStr = extrairDataFinBR(c, c.CD_USUARIO);
           const temSetor = c.DIAS_SETOR !== undefined && c.DIAS_SETOR !== null && c.DIAS_SETOR !== '';
           return `
             <tr onclick="openCaseDetail('${c.CD_USUARIO}')" class="hover:bg-emerald-50/50 cursor-pointer transition">
@@ -5251,11 +5596,16 @@ function solicitarSubirPlanilha() {
                 <div class="flex flex-col gap-0.5">
                   ${c.ASSUMIU_POR ? `<span class="inline-flex items-center gap-1 font-extrabold text-amber-800 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-md text-[10px] w-fit" title="Equipe Técnica: ${c.ASSUMIU_POR}"><i class="fa-solid fa-user-gear text-amber-600 text-[8.5px]"></i> ${c.ASSUMIU_POR.split(' ')[0]}</span>` : ''}
                   ${c.ADMINISTRATIVO ? `<span class="inline-flex items-center gap-1 font-extrabold text-sky-800 bg-sky-50 border border-sky-200 px-1.5 py-0.5 rounded-md text-[10px] w-fit" title="Administrativo: ${c.ADMINISTRATIVO}"><i class="fa-solid fa-user-tie text-sky-600 text-[8.5px]"></i> ${c.ADMINISTRATIVO.split(' ')[0]}</span>` : ''}
-                  ${!c.ASSUMIU_POR && !c.ADMINISTRATIVO ? `<span class="text-slate-400 font-medium">${c.GERENTE_MEDICO || '-'}</span>` : ''}
+                  ${c.GERENTE_MEDICO ? `<span class="inline-flex items-center gap-1 font-bold text-indigo-700 text-[10px] w-fit" title="Gerente Médico: ${c.GERENTE_MEDICO}"><i class="fa-solid fa-user-doctor text-indigo-500 text-[8.5px]"></i> ${c.GERENTE_MEDICO}</span>` : (!c.ASSUMIU_POR && !c.ADMINISTRATIVO ? `<span class="text-slate-400 font-medium">-</span>` : '')}
                 </div>
               </td>
               <td class="py-3 px-4 text-slate-700 truncate max-w-sm">
-                <span class="font-bold text-emerald-800">${c.ULTIMO_DESFECHO || ultimoLog}</span>
+                <span class="font-bold text-emerald-800">${(() => {
+                  let p = c.ULTIMO_DESFECHO || (logs[0] && logs[0].text ? `${logs[0].text} (${logs[0].date})` : (c.DESFECHO || 'Sem parecer final'));
+                  if (isTextoNaoFinalizado(p)) p = (c.DESFECHO && !isTextoNaoFinalizado(c.DESFECHO)) ? c.DESFECHO : 'Sem parecer final';
+                  return p;
+                })()}</span>
+                ${dtFinStr ? `<span class="block text-[9.5px] font-semibold text-emerald-600 mt-0.5"><i class="fa-regular fa-calendar-check text-[8.5px]"></i> Finalizado em: ${dtFinStr}</span>` : ''}
               </td>
               <td class="py-3 px-4 text-center">
                 <div class="inline-flex items-center gap-1 justify-center">
@@ -5266,22 +5616,31 @@ function solicitarSubirPlanilha() {
               <td class="py-3 px-4 text-right font-bold text-emerald-700">Ver Ficha ➔</td>
             </tr>
           `;
-        }).join('') : `<tr><td colspan="7" class="py-8 text-center text-slate-400 italic">Nenhum caso finalizado no dia de hoje (${hojeStrBR}) até o momento. O histórico completo de dias anteriores está disponível na aba Histórico.</td></tr>`;
+        }).join('') : `<tr><td colspan="7" class="py-8 text-center text-slate-400 italic">Nenhum caso finalizado encontrado com os filtros selecionados.</td></tr>`;
       }
 
       // 2. Renderizar Histórico Completo (Cofre)
       const tbodyHist = document.getElementById('historico-tbody');
       if (tbodyHist && currentView === 'historico') {
+        const elDtHist = document.getElementById('filtroDataHistorico');
+        if (elDtHist && elDtHist.value !== filtroDataHistorico) elDtHist.value = filtroDataHistorico;
+        const elEqHist = document.getElementById('filtroEquipeHistorico');
+        if (elEqHist && elEqHist.value !== filtroEquipeHistorico) elEqHist.value = filtroEquipeHistorico;
+
         const listaCofre = Object.values(vaultCases).filter(c => {
           if (!isCasoComDesfechoOuFinalizado(c)) return false;
+          if (filtroDataHistorico && !casoCorrespondeFiltroData(c, filtroDataHistorico)) return false;
+          if (filtroEquipeHistorico && !casoCorrespondeFiltroEquipe(c, filtroEquipeHistorico)) return false;
           return casoCorrespondeBusca(c, q);
-        }).sort(compararDiasEsteira);
+        }).sort(compararFinalizadosMaisRecentes);
 
-        const listaCofreExibida = (!q && listaCofre.length > 150) ? listaCofre.slice(0, 150) : listaCofre;
+        const temFiltroAtivo = Boolean(q || filtroDataHistorico || filtroEquipeHistorico);
+        const listaCofreExibida = (!temFiltroAtivo && listaCofre.length > 250) ? listaCofre.slice(0, 250) : listaCofre;
 
         tbodyHist.innerHTML = listaCofreExibida.length ? listaCofreExibida.map(c => {
           const logs = historyLog[c.CD_USUARIO] || [];
           const ultimoLog = logs[0] ? `${logs[0].text} (${logs[0].date})` : (c.ULTIMO_DESFECHO || 'Sem parecer final');
+          const dtFinStr = extrairDataFinBR(c, c.CD_USUARIO);
           const isConcluido = (c.STATUS_COFRE && c.STATUS_COFRE.includes('CONCLU'));
           return `
             <tr onclick="openCaseDetail('${c.CD_USUARIO}')" class="hover:bg-emerald-50/50 cursor-pointer transition">
@@ -5294,62 +5653,52 @@ function solicitarSubirPlanilha() {
               <td class="py-3 px-4 font-bold text-slate-900" title="${c.NM_USUARIO || ''}">${mascararNomeBeneficiario(c.NM_USUARIO)}</td>
               <td class="py-3 px-4 text-slate-600 truncate max-w-xs">${c.PROCEDIMENTO_AGRUPADO || '-'}</td>
               <td class="py-3 px-4 text-xs">
-                <span class="font-bold text-indigo-700">${c.MEDICO_CONSULTOR || c.GERENTE_MEDICO || '-'}</span>
-                ${c['VALOR PACOTE'] ? `<span class="block text-[10px] font-extrabold text-emerald-700">Pacote: ${c['VALOR PACOTE']}</span>` : ''}
+                <div class="flex flex-col gap-0.5">
+                  ${c.GERENTE_MEDICO ? `<span class="inline-flex items-center gap-1 font-bold text-indigo-700 text-[10px] w-fit" title="Gerente Médico: ${c.GERENTE_MEDICO}"><i class="fa-solid fa-user-doctor text-indigo-500 text-[8.5px]"></i> ${c.GERENTE_MEDICO}</span>` : ''}
+                  ${c.ASSUMIU_POR ? `<span class="inline-flex items-center gap-1 font-extrabold text-amber-800 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-md text-[10px] w-fit" title="Equipe Técnica: ${c.ASSUMIU_POR}"><i class="fa-solid fa-user-gear text-amber-600 text-[8.5px]"></i> ${c.ASSUMIU_POR.split(' ')[0]}</span>` : ''}
+                  ${c.ADMINISTRATIVO ? `<span class="inline-flex items-center gap-1 font-extrabold text-sky-800 bg-sky-50 border border-sky-200 px-1.5 py-0.5 rounded-md text-[10px] w-fit" title="Administrativo: ${c.ADMINISTRATIVO}"><i class="fa-solid fa-user-tie text-sky-600 text-[8.5px]"></i> ${c.ADMINISTRATIVO.split(' ')[0]}</span>` : ''}
+                  ${!c.GERENTE_MEDICO && !c.ASSUMIU_POR && !c.ADMINISTRATIVO ? `<span class="text-slate-400 font-medium">${c.MEDICO_CONSULTOR || '-'}</span>` : ''}
+                </div>
+                ${c['VALOR PACOTE'] ? `<span class="block text-[10px] font-extrabold text-emerald-700 mt-0.5">Pacote: ${c['VALOR PACOTE']}</span>` : ''}
               </td>
-              <td class="py-3 px-4 text-slate-600 truncate max-w-sm">${ultimoLog}</td>
+              <td class="py-3 px-4 text-slate-600 truncate max-w-sm">
+                <span>${(() => {
+                  let p = (logs[0] && logs[0].text) ? `${logs[0].text} (${logs[0].date})` : (c.ULTIMO_DESFECHO || c.DESFECHO || 'Sem parecer final');
+                  if (isTextoNaoFinalizado(p)) p = (c.DESFECHO && !isTextoNaoFinalizado(c.DESFECHO)) ? c.DESFECHO : 'Sem parecer final';
+                  return p;
+                })()}</span>
+                ${dtFinStr ? `<span class="block text-[9.5px] font-semibold text-slate-400 mt-0.5"><i class="fa-regular fa-calendar-check text-[8.5px]"></i> ${dtFinStr}</span>` : ''}
+              </td>
               <td class="py-3 px-4 text-right font-bold text-emerald-700">Ver Ficha ➔</td>
             </tr>
           `;
-        }).join('') + (!q && listaCofre.length > 150 ? `<tr><td colspan="7" class="py-3 text-center text-xs font-bold text-slate-500 bg-slate-50">Exibindo os primeiros 150 casos de ${listaCofre.length}. Use a busca acima para filtrar instantaneamente.</td></tr>` : '') : `<tr><td colspan="7" class="py-8 text-center text-slate-400 italic">Nenhum registro acumulado no Cofre ainda.</td></tr>`;
+        }).join('') + (!temFiltroAtivo && listaCofre.length > 250 ? `<tr><td colspan="7" class="py-3 text-center text-xs font-bold text-slate-500 bg-slate-50">Exibindo os 250 casos mais recentes de ${listaCofre.length}. Use os filtros acima ou a busca para refinar.</td></tr>` : '') : `<tr><td colspan="7" class="py-8 text-center text-slate-400 italic">Nenhum registro encontrado no Cofre com os filtros aplicados.</td></tr>`;
       }
 
-      // 3. Renderizar Esteira Médica: Ausência de Consenso (Critério em definição - com regra de 48h pronta)
-      const listaRubensConsensoBase = Object.values(vaultCases).filter(c => {
-        if (!isCasoAusenciaConsenso(c)) return false;
+      // 3. Renderizar Esteira Médica: Imunobiológico (Ativos na Fila)
+      const listaRubensConsensoBase = activeCases.filter(c => {
+        if (!isCasoImunobiologico(c)) return false;
         if (medFiltro && !gerenteCorrespondeFiltro(c.GERENTE_MEDICO, medFiltro)) return false;
         return true;
       });
 
-      const totalConsensoDrRubens = listaRubensConsensoBase.filter(c => {
-        const horas = getHorasDesdeFinalizacao(c);
-        return c.STATUS_CONSENSO !== 'CONCLUÍDO' && horas <= 48;
-      }).length;
+      const totalConsensoDrRubens = listaRubensConsensoBase.length;
 
       const badgeConsensoEl = document.getElementById('badge-rubens-consenso');
       if (badgeConsensoEl) badgeConsensoEl.innerText = totalConsensoDrRubens;
 
       const tbodyConsenso = document.getElementById('rubens-consenso-tbody');
       if (tbodyConsenso && currentView === 'rubens_consenso') {
-        const listaRubensConsenso = listaRubensConsensoBase.filter(c => {
-          const horas = getHorasDesdeFinalizacao(c);
-          const isConcluido = c.STATUS_CONSENSO === 'CONCLUÍDO';
-          if (!isConcluido && horas > 48) return false;
-          return casoCorrespondeBusca(c, q);
-        });
+        const listaRubensConsenso = listaRubensConsensoBase.filter(c => casoCorrespondeBusca(c, q));
 
         tbodyConsenso.innerHTML = listaRubensConsenso.length ? listaRubensConsenso.map(c => {
-          const isConcluido = c.STATUS_CONSENSO === 'CONCLUÍDO';
-          const horas = getHorasDesdeFinalizacao(c);
           const logs = historyLog[c.CD_USUARIO] || [];
           const ultimoLog = logs[0] ? `${logs[0].text}` : (c.ULTIMO_DESFECHO || '-');
-          const areaExibida = c.AREA || (c.ULTIMO_DESFECHO && c.ULTIMO_DESFECHO.includes('GNMED') ? 'GNMED' : 'Auditoria / GNHAP');
-          const desfechoExibido = c.ULTIMO_DESFECHO || (c.MACRO_DESFECHO ? `${c.MACRO_DESFECHO} ➔ ${c.MICRO_DESFECHO || ''} | Encaminhar: ${c.ENCAMINHAR || ''}` : ultimoLog);
-          
-          let badgeStatusPrazo = '';
-          if (isConcluido) {
-            badgeStatusPrazo = `<span class="inline-flex items-center gap-1 text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300"><i class="fa-solid fa-check-double text-emerald-600"></i> CONCLUÍDO</span>`;
-          } else if (horas <= 48) {
-            const horasRestantes = Math.max(0, Math.round(48 - horas));
-            const corPrazo = horas >= 36 ? 'bg-rose-100 text-rose-700 border-rose-300 animate-pulse' : 'bg-amber-100 text-amber-800 border-amber-300';
-            badgeStatusPrazo = `<span class="inline-flex items-center gap-1 text-[10px] font-extrabold px-2.5 py-1 rounded-full ${corPrazo} border"><i class="fa-solid fa-clock"></i> ${horasRestantes}h restantes</span>`;
-          } else {
-            badgeStatusPrazo = `<span class="inline-flex items-center gap-1 text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-300"><i class="fa-solid fa-box-archive text-slate-400"></i> No Histórico</span>`;
-          }
+          const prestador = c.NM_PRESTADOR || c.PRESTADOR || '-';
+          const temSetor = c.DIAS_SETOR !== undefined && c.DIAS_SETOR !== null && c.DIAS_SETOR !== '';
 
           return `
             <tr onclick="openCaseDetail('${c.CD_USUARIO}')" class="hover:bg-amber-50/60 cursor-pointer transition">
-              <td class="py-3 px-4 text-center whitespace-nowrap">${badgeStatusPrazo}</td>
               <td class="py-3 px-4 font-mono font-bold text-slate-800">${c.CD_USUARIO}</td>
               <td class="py-3 px-4 font-bold text-slate-900">
                 <div class="flex items-center gap-1.5 flex-wrap">
@@ -5362,13 +5711,15 @@ function solicitarSubirPlanilha() {
                 </div>
               </td>
               <td class="py-3 px-4 text-slate-700 truncate max-w-xs font-medium">${c.PROCEDIMENTO_AGRUPADO || '-'}</td>
-              <td class="py-3 px-4">
-                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-bold text-[10.5px] ${areaExibida.includes('GNMED') ? 'bg-purple-100 text-purple-800 border border-purple-200' : 'bg-blue-100 text-blue-800 border border-blue-200'}">
-                  ${areaExibida}
-                </span>
+              <td class="py-3 px-4 text-slate-600 truncate max-w-xs">${prestador}</td>
+              <td class="py-3 px-4 text-center">
+                <div class="inline-flex items-center gap-1 justify-center">
+                  <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full ${c.DIAS_AUTORIZACAO > 10 ? 'bg-rose-100 text-rose-700' : (c.DIAS_AUTORIZACAO >= 7 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800')}">${c.DIAS_AUTORIZACAO || 0}d</span>
+                  ${temSetor ? `<span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">${c.DIAS_SETOR}d</span>` : ''}
+                </div>
               </td>
               <td class="py-3 px-4 text-slate-800 truncate max-w-sm">
-                <span class="font-bold text-amber-900">${desfechoExibido}</span>
+                <span class="font-bold text-amber-900">${c.ULTIMO_DESFECHO || ultimoLog}</span>
               </td>
               <td class="py-3 px-4 text-xs">
                 <div class="flex flex-col gap-0.5">
@@ -5377,25 +5728,14 @@ function solicitarSubirPlanilha() {
                   ${!c.ASSUMIU_POR && !c.ADMINISTRATIVO ? `<span class="text-slate-400 font-medium">${c.GERENTE_MEDICO || '-'}</span>` : ''}
                 </div>
               </td>
-              <td class="py-3 px-4 text-right" onclick="event.stopPropagation()">
-                <div class="inline-flex items-center gap-1.5 justify-end">
-                  <button onclick="openCaseDetail('${c.CD_USUARIO}')" class="px-2.5 py-1 bg-slate-100 hover:bg-amber-50 text-slate-700 hover:text-amber-700 border border-slate-300 hover:border-amber-300 text-[11px] font-bold rounded-lg transition flex items-center gap-1 shadow-2xs cursor-pointer" title="Verificar detalhes da guia">
-                    <i class="fa-solid fa-folder-open text-[10px]"></i> Verificar
-                  </button>
-                  ${!isConcluido ? `
-                    <button onclick="concluirConsenso('${c.CD_USUARIO}', event)" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold rounded-lg transition flex items-center gap-1 shadow-xs cursor-pointer" title="Marcar como Concluído na Ausência de Consenso">
-                      <i class="fa-solid fa-circle-check text-[10px]"></i> Concluir
-                    </button>
-                  ` : `
-                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 font-extrabold text-[10.5px] border border-emerald-300">
-                      <i class="fa-solid fa-circle-check text-emerald-600 text-[9px]"></i> Concluído
-                    </span>
-                  `}
-                </div>
+              <td class="py-3 px-4 text-right">
+                <button onclick="openCaseDetail('${c.CD_USUARIO}')" class="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-lg transition text-[11px] shadow-xs cursor-pointer">
+                  Ver Ficha ➔
+                </button>
               </td>
             </tr>
           `;
-        }).join('') : `<tr><td colspan="8" class="py-8 text-center text-slate-400 italic">Fila de Ausência de Consenso vazia no momento (aguardando definição dos critérios). Timer de 48h configurado.</td></tr>`;
+        }).join('') : `<tr><td colspan="8" class="py-8 text-center text-slate-400 italic">Nenhum caso de Imunobiológico ativo na esteira no momento.</td></tr>`;
       }
 
       // 4. Renderizar Esteira Médica: Tratamentos Oncológicos Específicos
