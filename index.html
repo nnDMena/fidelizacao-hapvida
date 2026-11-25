@@ -624,6 +624,9 @@
             <span id="singleDetailBaseTopBadge" class="text-[9.5px] sm:text-[10.5px] font-extrabold px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 border border-sky-300 flex items-center gap-1">
               <i class="fa-solid fa-map-pin text-[8.5px]"></i> <span id="labelBaseTop">-</span>
             </span>
+            <span id="singleDetailClassificacaoPlanoTopBadge" class="hidden text-[9.5px] sm:text-[10.5px] font-extrabold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 border border-indigo-300 items-center gap-1" title="Classificação do Plano">
+              <i class="fa-solid fa-layer-group text-[8.5px]"></i> <span id="labelClassificacaoPlanoTop">-</span>
+            </span>
             <span id="singleDetailDemandaTopBadge" class="hidden text-[9.5px] sm:text-[10px] font-black px-2.5 py-0.5 rounded-full bg-rose-600 text-white shadow-xs flex items-center gap-1 animate-pulse">
               <i class="fa-solid fa-triangle-exclamation text-[8.5px]"></i> <span id="labelDemandaTop">-</span>
             </span>
@@ -660,12 +663,15 @@
                 <span class="text-[9.5px] sm:text-[10px] font-bold uppercase text-slate-400 tracking-wider">Beneficiário</span>
                 <p id="singleDetailName" class="text-sm font-bold text-slate-900 mt-0.5 leading-snug">-</p>
               </div>
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-2 flex-wrap">
                 <span id="badgeDemandaAlerta" class="hidden text-[10px] font-black px-2.5 py-1 rounded-lg bg-rose-600 text-white shadow-xs flex items-center gap-1.5 animate-pulse">
                   <i class="fa-solid fa-triangle-exclamation"></i> <span id="labelDemandaAlerta">DEMANDA CRÍTICA</span>
                 </span>
                 <span id="singleDetailBaseBadge" class="self-start sm:self-auto text-xs font-extrabold px-3 py-1 rounded-lg bg-indigo-100 text-indigo-800 border border-indigo-200 flex items-center gap-1.5 shadow-2xs">
                   <i class="fa-solid fa-map-location-dot text-indigo-600"></i> <span id="labelBaseCard">-</span>
+                </span>
+                <span id="singleDetailClassificacaoPlanoBadge" class="self-start sm:self-auto text-xs font-extrabold px-3 py-1 rounded-lg bg-indigo-100 text-indigo-800 border border-indigo-200 flex items-center gap-1.5 shadow-2xs" title="Classificação do Plano">
+                  <i class="fa-solid fa-layer-group text-indigo-600"></i> <span id="labelClassificacaoPlanoCard">-</span>
                 </span>
               </div>
             </div>
@@ -2323,6 +2329,13 @@ function solicitarSubirPlanilha() {
         'nmplano', 'plano', 'nomeplano', 'nomedoplano', 'contrato', 'produto',
         'nmproduto', 'tipoplano', 'segmentacao'
       ],
+      CLASSIFICACAO_PLANO: [
+        'classificacaodeplano', 'classificacaodoplano', 'classificacaoplano',
+        'classificacaoplanos', 'classificacaodosplanos', 'classplano',
+        'classificacao', 'classificacaoproduto', 'categoriaplano',
+        'categoriadoplano', 'tipo_classificacao', 'tipoclassificacao',
+        'classificacaodocontrato', 'classificacaocontrato', 'classificacaocarteira'
+      ],
       NM_EMPRESA: [
         'nmempresa', 'empresa', 'nomeempresa', 'estipulante', 'subfatura'
       ],
@@ -2518,6 +2531,16 @@ function solicitarSubirPlanilha() {
                 pontos += 3;
                 return;
               }
+              if (
+                norm === 'classificacaodeplano' || norm === 'classificacaodoplano' ||
+                norm === 'classificacaoplano' || norm === 'classplano' ||
+                norm === 'classificacaoplanos' || norm === 'classificacaodosplanos' ||
+                norm === 'categoriaplano' || norm === 'categoriadoplano'
+              ) {
+                mapTentativo['CLASSIFICACAO_PLANO'] = colIdx;
+                pontos += 5;
+                return;
+              }
 
               for (const [campo, sinonimos] of Object.entries(DICIONARIO_COLUNAS)) {
                 if (mapTentativo[campo] !== undefined) continue;
@@ -2669,7 +2692,8 @@ function solicitarSubirPlanilha() {
               const camposParaAcrescentar = [
                 'NM_PRESTADOR', 'NM_SOLICITANTE', 'PROCEDIMENTO_AGRUPADO', 'CD_PROCEDIMENTO',
                 'CIDADE', 'UF', 'NM_PLANO', 'NM_EMPRESA', 'TEL_PESSOAL', 'TEL_CLINICA',
-                'NM_FILIAL', 'CD_FILIAL', 'FILIAL', 'ASSUMIU_POR', 'ADMINISTRATIVO', 'GERENTE_MEDICO'
+                'NM_FILIAL', 'CD_FILIAL', 'FILIAL', 'ASSUMIU_POR', 'ADMINISTRATIVO', 'GERENTE_MEDICO',
+                'CLASSIFICACAO_PLANO'
               ];
               camposParaAcrescentar.forEach(cmp => {
                 let valPlan = getVal(cmp);
@@ -2680,6 +2704,11 @@ function solicitarSubirPlanilha() {
                   casoJaAtivo[cmp] = valPlan;
                 }
               });
+
+              const classifPlanoPlan = getVal('CLASSIFICACAO_PLANO');
+              if (classifPlanoPlan) {
+                casoJaAtivo.CLASSIFICACAO_PLANO = classifPlanoPlan;
+              }
 
               const filialNomePlan = getVal('NM_FILIAL');
               const filialCodPlan = getVal('CD_FILIAL');
@@ -2757,6 +2786,7 @@ function solicitarSubirPlanilha() {
               STATUS_ADM: salvoNoCofre.STATUS_ADM || '',
               OBS_ADM: obsAdmPlan || salvoNoCofre.OBS_ADM || '',
               NM_PLANO: getVal('NM_PLANO', salvoNoCofre.NM_PLANO || '-'),
+              CLASSIFICACAO_PLANO: getVal('CLASSIFICACAO_PLANO', salvoNoCofre.CLASSIFICACAO_PLANO || salvoNoCofre.CLASSIFICACAO || ''),
               NM_EMPRESA: getVal('NM_EMPRESA', salvoNoCofre.NM_EMPRESA || '-'),
               NM_PRESTADOR: getVal('NM_PRESTADOR', salvoNoCofre.NM_PRESTADOR || '-'),
               PROCEDIMENTO_AGRUPADO: getVal('PROCEDIMENTO_AGRUPADO', salvoNoCofre.PROCEDIMENTO_AGRUPADO || '-'),
@@ -3013,6 +3043,8 @@ function solicitarSubirPlanilha() {
           'TEL_CLINICA': c.TEL_CLINICA || '',
           'CIDADE': c.CIDADE || '',
           'UF': c.UF || '',
+          'NM_PLANO': c.NM_PLANO || '',
+          'CLASSIFICACAO_PLANO': c.CLASSIFICACAO_PLANO || c.CLASSIFICACAO || '',
           'AREA': c.AREA || '',
           'MACRO_DESFECHO': c.MACRO_DESFECHO || '',
           'MICRO_DESFECHO': c.MICRO_DESFECHO || '',
@@ -3512,6 +3544,7 @@ function solicitarSubirPlanilha() {
       if (c.PRAZO_FINAL_DEMANDA) contextoSemantico += ` prazo final demanda ${c.PRAZO_FINAL_DEMANDA}`;
       if (c.OBSERVACAO) contextoSemantico += ` observacao obs nota ${c.OBSERVACAO}`;
       if (c.ENCAMINHAR) contextoSemantico += ` encaminhar encaminhamento ${c.ENCAMINHAR}`;
+      if (c.CLASSIFICACAO_PLANO) contextoSemantico += ` classificacao plano ${c.CLASSIFICACAO_PLANO}`;
 
       // Super texto abrangente com todos os campos existentes
       const superTexto = [
@@ -3525,6 +3558,7 @@ function solicitarSubirPlanilha() {
         c.UF,
         c.BASE,
         c.NM_PLANO,
+        c.CLASSIFICACAO_PLANO,
         c.GERENTE_MEDICO,
         c.ASSUMIU_POR,
         c.ADMINISTRATIVO,
@@ -4063,6 +4097,32 @@ function solicitarSubirPlanilha() {
       if (elBaseCard) elBaseCard.innerText = baseVal;
       const elDetailBase = document.getElementById('singleDetailBase');
       if (elDetailBase) elDetailBase.innerText = baseVal;
+
+      // Classificação do Plano
+      const classifPlano = String(currentCase.CLASSIFICACAO_PLANO || currentCase.CLASSIFICACAO || '').trim();
+      const elClassifCard = document.getElementById('labelClassificacaoPlanoCard');
+      const elClassifBadge = document.getElementById('singleDetailClassificacaoPlanoBadge');
+      if (elClassifCard) elClassifCard.innerText = classifPlano || '-';
+      if (elClassifBadge) {
+        if (classifPlano && classifPlano !== '-' && classifPlano !== '--') {
+          elClassifBadge.title = `Classificação do Plano: ${classifPlano}`;
+        } else {
+          elClassifBadge.title = 'Classificação do Plano: Não informado';
+        }
+      }
+
+      const elClassifTop = document.getElementById('labelClassificacaoPlanoTop');
+      const elClassifTopBadge = document.getElementById('singleDetailClassificacaoPlanoTopBadge');
+      if (elClassifTop) elClassifTop.innerText = classifPlano || '-';
+      if (elClassifTopBadge) {
+        if (classifPlano && classifPlano !== '-' && classifPlano !== '--') {
+          elClassifTopBadge.classList.remove('hidden');
+          elClassifTopBadge.classList.add('flex');
+        } else {
+          elClassifTopBadge.classList.add('hidden');
+          elClassifTopBadge.classList.remove('flex');
+        }
+      }
 
       // Campo Filial (prioriza o Nome da Filial vindo da coluna NM_FILIAL)
       const filialNome = currentCase.NM_FILIAL || currentCase.NOME_FILIAL || currentCase.FILIAL_OPERADORA || '';
@@ -4728,6 +4788,9 @@ function solicitarSubirPlanilha() {
       }
       if (hasVal(c.NM_PLANO)) {
         cabecalho.push(`- Plano: ${c.NM_PLANO.trim()}`);
+      }
+      if (hasVal(c.CLASSIFICACAO_PLANO || c.CLASSIFICACAO)) {
+        cabecalho.push(`- Classificação do Plano: ${(c.CLASSIFICACAO_PLANO || c.CLASSIFICACAO).trim()}`);
       }
       if (hasVal(c.BASE)) {
         cabecalho.push(`- Base: ${c.BASE.trim()}`);
