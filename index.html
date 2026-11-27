@@ -122,12 +122,19 @@
     <div class="flex items-center space-x-1.5 sm:space-x-2 ml-auto sm:ml-0">
       <!-- BOTÕES DE GESTÃO E ADMINISTRAÇÃO (EXCLUSIVO FERNANDO MENA E VITOR HUGO) -->
       <div id="containerBotoesAdmin" class="hidden items-center flex-wrap gap-1 sm:space-x-2">
-        <!-- Botão Subir Planilha do Dia -->
-        <button onclick="solicitarSubirPlanilha()" class="text-[10px] sm:text-[11px] bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-emerald-500 shadow-sm flex items-center gap-1 transition active:scale-[0.98]" title="Carregar planilha do dia e enviar para todos">
+        <!-- Botão Subir Planilha do Dia (Conciliação Geral) -->
+        <button onclick="solicitarSubirPlanilha()" class="text-[10px] sm:text-[11px] bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-emerald-500 shadow-sm flex items-center gap-1 transition active:scale-[0.98]" title="Carregar planilha geral do dia com conciliação completa">
           <i class="fa-solid fa-cloud-arrow-up text-xs"></i>
           <span>Subir Planilha</span>
         </button>
         <input type="file" id="inputPlanilhaDia" accept=".xlsx, .xls, .csv" class="hidden" onchange="executarSubirPlanilha(event)">
+
+        <!-- Botão Adicionar Casos Avulsos (Sem excluir quem já está na esteira ativa) -->
+        <button onclick="solicitarAdicionarCasos()" class="text-[10px] sm:text-[11px] bg-sky-600 hover:bg-sky-700 text-white font-extrabold px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-sky-400 shadow-sm flex items-center gap-1 transition active:scale-[0.98]" title="Adicionar poucos casos avulsos à esteira sem excluir ou arquivar nenhum caso já ativo">
+          <i class="fa-solid fa-file-circle-plus text-xs text-sky-200"></i>
+          <span>Adicionar Casos</span>
+        </button>
+        <input type="file" id="inputAdicionarCasos" accept=".xlsx, .xls, .csv" class="hidden" onchange="executarAdicionarCasos(event)">
 
         <!-- Botão Exportar Planilha Base do Histórico -->
         <button onclick="verificarSenhaEExecutar('baixar_base')" title="Baixar Planilha Base completa com todo o Histórico acumulado (.xlsx)"
@@ -2087,13 +2094,26 @@ create policy "Acesso livre cofre_logs" on cofre_logs for all using (true) with 
         console.warn('Alerta de armazenamento:', err);
       }
     }
-function solicitarSubirPlanilha() {
+    function solicitarSubirPlanilha() {
       if (!isOperadorAdmin()) {
         alert('🔒 Acesso Restrito\nApenas Fernando Mena e Vitor Hugo possuem permissão para subir planilhas.');
         return;
       }
       const input = document.getElementById('inputPlanilhaDia');
       if (input) input.click();
+    }
+
+    function solicitarAdicionarCasos() {
+      if (!isOperadorAdmin()) {
+        alert('🔒 Acesso Restrito\nApenas Fernando Mena e Vitor Hugo possuem permissão para adicionar casos.');
+        return;
+      }
+      const input = document.getElementById('inputAdicionarCasos');
+      if (input) input.click();
+    }
+
+    function executarAdicionarCasos(event) {
+      executarSubirPlanilha(event, true);
     }
 
     function solicitarRestaurarBase() {
@@ -2663,7 +2683,7 @@ function solicitarSubirPlanilha() {
       return 0;
     }
 
-    function executarSubirPlanilha(event) {
+    function executarSubirPlanilha(event, isModoIncremental = false) {
       const file = (event && event.target && event.target.files) ? event.target.files[0] : null;
       if (!file) return;
 
@@ -3172,41 +3192,44 @@ function solicitarSubirPlanilha() {
           });
           // -------------------------------------------------------------
           // GRUPO 3: CASOS QUE ESTAVAM NA FILA E NÃO VIERAM NA PLANILHA NOVA
-          // (Vão direto para o Histórico com "CASO NÃO FINALIZADO NO SISTEMA")
+          // (Apenas no Modo Geral. No Modo Incremental/Avulso, a esteira é 100% preservada!)
           // -------------------------------------------------------------
-          const casosQueSumiram = activeCases.filter(c => {
-            const kCod = normalizarChaveBusca(c.CD_USUARIO);
-            const kNm = normalizarNomeBusca(c.NM_USUARIO);
-            return (!kCod || !codigosAtualizadosSet.has(kCod)) && (!kNm || !nomesAtualizadosSet.has(kNm));
-          });
+          let casosQueSumiram = [];
+          if (!isModoIncremental) {
+            casosQueSumiram = activeCases.filter(c => {
+              const kCod = normalizarChaveBusca(c.CD_USUARIO);
+              const kNm = normalizarNomeBusca(c.NM_USUARIO);
+              return (!kCod || !codigosAtualizadosSet.has(kCod)) && (!kNm || !nomesAtualizadosSet.has(kNm));
+            });
 
-          const agora = new Date();
-          const agoraStr = agora.toLocaleDateString('pt-BR') + ' às ' + agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            const agora = new Date();
+            const agoraStr = agora.toLocaleDateString('pt-BR') + ' às ' + agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
-          casosQueSumiram.forEach(c => {
-            const cod = String(c.CD_USUARIO).trim();
-            c.FINALIZACAO_SIGO = '';
-            c.DESFECHO = c.DESFECHO || 'Cancelado / Não Consta em Planilha';
-            c.MICRO_DESFECHO = c.MICRO_DESFECHO || c.DESFECHO;
-            c.STATUS_COFRE = 'CONCLUÍDO';
-            c.DATA_FINALIZACAO = agora.toISOString();
-            c.FINALIZADO_EM_TS = agora.getTime();
-            c.ULTIMO_DESFECHO = c.DESFECHO || 'Cancelado / Não Consta em Planilha';
+            casosQueSumiram.forEach(c => {
+              const cod = String(c.CD_USUARIO).trim();
+              c.FINALIZACAO_SIGO = '';
+              c.DESFECHO = c.DESFECHO || 'Cancelado / Não Consta em Planilha';
+              c.MICRO_DESFECHO = c.MICRO_DESFECHO || c.DESFECHO;
+              c.STATUS_COFRE = 'CONCLUÍDO';
+              c.DATA_FINALIZACAO = agora.toISOString();
+              c.FINALIZADO_EM_TS = agora.getTime();
+              c.ULTIMO_DESFECHO = c.DESFECHO || 'Cancelado / Não Consta em Planilha';
 
-            addImmutableLog(
-              cod,
-              'Sistema (Conciliação Planilha)',
-              agoraStr,
-              '📋 [BAIXA AUTOMÁTICA]: Caso retirado da esteira pois não constava na nova planilha carregada.',
-              { desfecho: c.DESFECHO, sigo: '' }
-            );
+              addImmutableLog(
+                cod,
+                'Sistema (Conciliação Planilha)',
+                agoraStr,
+                '📋 [BAIXA AUTOMÁTICA]: Caso retirado da esteira pois não constava na nova planilha carregada.',
+                { desfecho: c.DESFECHO, sigo: '' }
+              );
 
-            syncToVault(c);
+              syncToVault(c);
 
-            if (isCloudConnected && supabaseClient && !isAmbienteLocal) {
-              supabaseClient.from('casos_ativos').delete().eq('cd_usuario', cod).then(() => {});
-            }
-          });
+              if (isCloudConnected && supabaseClient && !isAmbienteLocal) {
+                supabaseClient.from('casos_ativos').delete().eq('cd_usuario', cod).then(() => {});
+              }
+            });
+          }
 
           if (novosCasos.length === 0) {
             alert('Nenhum caso identificado na planilha.');
@@ -3225,11 +3248,13 @@ function solicitarSubirPlanilha() {
 
           // Se estiver conectado na Nuvem, sincroniza em lote para todos os 30 usuários
           if (isCloudConnected && supabaseClient && !isAmbienteLocal) {
-            try {
-              // Limpa a fila anterior na nuvem para refletir exatamente a esteira da nova planilha carregada
-              await supabaseClient.from('casos_ativos').delete().neq('cd_usuario', '_none_');
-            } catch (delErr) {
-              console.warn('Aviso ao sincronizar esteira com Supabase:', delErr);
+            if (!isModoIncremental) {
+              try {
+                // Modo Geral: Limpa a fila anterior na nuvem para refletir exatamente a esteira da nova planilha carregada
+                await supabaseClient.from('casos_ativos').delete().neq('cd_usuario', '_none_');
+              } catch (delErr) {
+                console.warn('Aviso ao sincronizar esteira com Supabase:', delErr);
+              }
             }
 
             const rows = listaPlanilha.map(c => ({
@@ -3253,10 +3278,26 @@ function solicitarSubirPlanilha() {
             }
           }
 
-          activeCases = listaPlanilha;
-          saveState();
-          render();
-          alert("✅ Conciliação Concluída!\n\n• Casos na Esteira Ativa: " + activeCases.length + " (Novos + Repetidos Atualizados)\n• Baixados para o Histórico (Grupo 3): " + casosQueSumiram.length + " casos arquivados (não constam na nova planilha)\n" + (isCloudConnected ? "☁️ Sincronizados na Nuvem!" : "⚠️ Salvos localmente."));
+          if (isModoIncremental) {
+            // Modo Incremental (Casos Avulsos): MANTÉM todos os casos da esteira ativa e adiciona/atualiza os novos
+            const mapaFinal = new Map();
+            activeCases.forEach(c => {
+              if (c && c.CD_USUARIO) mapaFinal.set(String(c.CD_USUARIO).trim(), c);
+            });
+            listaPlanilha.forEach(c => {
+              if (c && c.CD_USUARIO) mapaFinal.set(String(c.CD_USUARIO).trim(), c);
+            });
+            activeCases = Array.from(mapaFinal.values());
+            saveState();
+            render();
+            alert(`✅ Casos Adicionados com Sucesso!\n\n• Casos avulsos processados: ${listaPlanilha.length}\n• Total atual na Esteira Ativa: ${activeCases.length}\n• 🛡️ Nenhum caso anterior da esteira foi excluído!\n${isCloudConnected ? '☁️ Sincronizados na Nuvem para todos!' : '⚠️ Salvos localmente.'}`);
+          } else {
+            // Modo Geral (Conciliação diária completa)
+            activeCases = listaPlanilha;
+            saveState();
+            render();
+            alert("✅ Conciliação Concluída!\n\n• Casos na Esteira Ativa: " + activeCases.length + " (Novos + Repetidos Atualizados)\n• Baixados para o Histórico (Grupo 3): " + casosQueSumiram.length + " casos arquivados (não constam na nova planilha)\n" + (isCloudConnected ? "☁️ Sincronizados na Nuvem!" : "⚠️ Salvos localmente."));
+          }
         } catch (err) {
           console.error(err);
           alert('Erro ao processar planilha: ' + (err.message || err));
